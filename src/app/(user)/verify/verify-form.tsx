@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { resendOtpAction, verifyOtpAction } from "@/actions/user-auth";
-import { initialState } from "@/lib/action-state";
+import { initialState, type ActionState } from "@/lib/action-state";
 import { Alert, Field, SubmitButton, inputClass } from "@/components/ui";
 import { useT } from "@/i18n/client";
 
@@ -11,9 +11,23 @@ function secondsUntil(iso: string | null, now: number) {
   return Math.max(0, Math.ceil((new Date(iso).getTime() - now) / 1000));
 }
 
-export function VerifyForm({ expiresAt, resendAvailableAt }: { expiresAt: string | null; resendAvailableAt: string | null }) {
-  const [state, verify] = useActionState(verifyOtpAction, initialState);
-  const [resendState, resend] = useActionState(resendOtpAction, initialState);
+type VerifyAction = (prev: ActionState, formData: FormData) => Promise<ActionState>;
+type ResendAction = (prev: ActionState) => Promise<ActionState>;
+
+/** شاشة الرمز. تُستخدم للعميل، وللأدمن بتمرير actions الخاصة به. */
+export function VerifyForm({
+  expiresAt,
+  resendAvailableAt,
+  verifyAction = verifyOtpAction,
+  resendAction = resendOtpAction,
+}: {
+  expiresAt: string | null;
+  resendAvailableAt: string | null;
+  verifyAction?: VerifyAction;
+  resendAction?: ResendAction;
+}) {
+  const [state, verify] = useActionState(verifyAction, initialState);
+  const [resendState, resend] = useActionState(resendAction, initialState);
   const [now, setNow] = useState(() => Date.now());
   const t = useT();
   const [code, setCode] = useState("");

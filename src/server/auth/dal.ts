@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { db } from "@/server/db";
 import { ADMIN_COOKIE, USER_COOKIE, readSessionId } from "@/server/auth/session";
 
@@ -41,6 +41,7 @@ export const getAdminSession = cache(async () => {
 
 export async function requireAdmin() {
   const s = await getAdminSession();
-  if (!s) redirect("/admin/login");
+  // جلسة منتهية أو كوكي مزوّر: 404 بدل التوجيه حتى لا ينكشف رابط الدخول السري
+  if (!s) notFound();
   return s;
 }

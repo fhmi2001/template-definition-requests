@@ -11,6 +11,9 @@ export function generateOtpCode() {
   return randomInt(0, 1_000_000).toString().padStart(6, "0");
 }
 
+/** مفتاح رموز الأدمن في جدول otp_codes (بدل البريد) حتى لا تختلط برموز العملاء. */
+export const adminOtpKey = (adminId: string) => `admin:${adminId}`;
+
 /** لا نخزّن الرمز نفسه؛ نخزّن HMAC مربوطاً بالبريد. */
 export function hashOtp(email: string, code: string) {
   return createHmac("sha256", env().OTP_SECRET).update(`${email}:${code}`).digest("hex");

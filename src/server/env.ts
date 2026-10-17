@@ -8,6 +8,8 @@ const schema = z.object({
   OTP_SECRET: z.string().min(32, "يجب أن يكون 32 حرفاً على الأقل"),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().min(3).default("Template Definition Requests <onboarding@resend.dev>"),
+  /** يصله رمز التحقق مع كل دخول أدمن. بدونه يُرفض دخول الأدمن. */
+  ADMIN_OTP_EMAIL: z.email().optional(),
 });
 
 type Env = z.infer<typeof schema>;
@@ -21,6 +23,7 @@ export function env(): Env {
     ...process.env,
     RESEND_API_KEY: process.env.RESEND_API_KEY || undefined,
     EMAIL_FROM: process.env.EMAIL_FROM || undefined,
+    ADMIN_OTP_EMAIL: process.env.ADMIN_OTP_EMAIL?.trim().toLowerCase() || undefined,
   });
   if (!parsed.success) {
     const details = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(" | ");

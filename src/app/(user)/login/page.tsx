@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
 import { redirect } from "next/navigation";
-import { AuthShell, FooterLink } from "@/components/auth-shell";
+import { AuthShell } from "@/components/auth-shell";
 import { getUserSession } from "@/server/auth/dal";
 import { LoginForm } from "./login-form";
 
@@ -16,12 +16,7 @@ export default async function LoginPage() {
 
   return (
     <AuthShell
-      footer={
-        <>
-          <span>{t("login.footerWarn")}</span>
-          <FooterLink href="/admin/login">{t("login.adminLink")}</FooterLink>
-        </>
-      }
+      footer={<span>{t("login.footerWarn")}</span>}
     >
       <div className="flex flex-col gap-7">
         <div className="flex flex-col gap-2.5">

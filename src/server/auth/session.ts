@@ -7,6 +7,7 @@ import { env, isProduction } from "@/server/env";
 export const USER_COOKIE = "tdr_session";
 export const ADMIN_COOKIE = "tdr_admin";
 const OTP_EMAIL_COOKIE = "tdr_otp_email";
+const ADMIN_OTP_COOKIE = "tdr_admin_otp";
 
 const USER_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 أيام
 const ADMIN_TTL_MS = 8 * 60 * 60 * 1000; // 8 ساعات
@@ -93,4 +94,30 @@ export async function getPendingOtpEmail() {
 
 export async function clearPendingOtpEmail() {
   (await cookies()).delete({ name: OTP_EMAIL_COOKIE, path: "/" });
+}
+
+/** أدمن أدخل كلمة مرور صحيحة وينتظر إدخال رمز البريد (10 دقائق). */
+export async function setPendingAdmin(adminId: string) {
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  const token = await new SignJWT({ adminId })
+    .setProtectedHeader({ alg: "HS256" })
+    .setAudience("ADMIN_OTP")
+    .setExpirationTime(expiresAt)
+    .sign(secretKey());
+  (await cookies()).set(ADMIN_OTP_COOKIE, token, cookieOptions(expiresAt, "/admin"));
+}
+
+export async function getPendingAdmin() {
+  const token = (await cookies()).get(ADMIN_OTP_COOKIE)?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secretKey(), { algorithms: ["HS256"], audience: "ADMIN_OTP" });
+    return typeof payload.adminId === "string" ? payload.adminId : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function clearPendingAdmin() {
+  (await cookies()).delete({ name: ADMIN_OTP_COOKIE, path: "/admin" });
 }
