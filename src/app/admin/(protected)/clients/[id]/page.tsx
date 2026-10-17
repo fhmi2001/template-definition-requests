@@ -19,7 +19,11 @@ import { AddEmailsForm, EditClientForm, LinkSendersForm } from "../client-forms"
 import { SenderStatusChip } from "../../senders/sender-ui";
 import { senderTypeLabel } from "@/lib/sender-types";
 import { ConfirmButton } from "@/components/ui";
+import { REVIEW_STATUSES, REVIEW_STYLE } from "@/lib/review-status";
+import { referenceText } from "@/server/requests";
 
+
+const REQUESTS_SHOWN = 10;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -41,7 +45,29 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   });
   if (!client) notFound();
 
-  const senders = await linkedSendersForAdmin(client.id);
+  const submitted = { clientId: client.id, status: "SUBMITTED" as const };
+  const [senders, requests, requestsTotal, byStatus] = await Promise.all([
+    linkedSendersForAdmin(client.id),
+    db.templateRequest.findMany({
+      where: submitted,
+      orderBy: [{ submittedAt: "desc" }, { referenceNo: "desc" }],
+      take: REQUESTS_SHOWN,
+      select: {
+        id: true,
+        referenceNo: true,
+        templateName: true,
+        senderName: true,
+        submittedAt: true,
+        reviewStatus: true,
+        user: { select: { email: true } },
+        // البريد الذي وصله تأكيد الاستلام: احتياطاً إذا حُذف بريد مقدّم الطلب
+        statusChanges: { orderBy: { createdAt: "asc" }, take: 1, select: { emailTo: true } },
+      },
+    }),
+    db.templateRequest.count({ where: submitted }),
+    db.templateRequest.groupBy({ by: ["reviewStatus"], where: submitted, _count: { _all: true } }),
+  ]);
+  const statusCount = new Map(byStatus.map((g) => [g.reviewStatus, g._count._all]));
   const today = todayRiyadh();
   const visible = senders.filter((m) => m.isActive && !m.missingFromFile).length;
 
@@ -224,6 +250,78 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         )}
 
         <LinkSendersForm clientId={client.id} />
+      </section>
+
+      <section aria-labelledby="requests-title" className="flex flex-col gap-5 rounded-2xl border border-line bg-white p-6">
+        <div className="flex flex-col gap-1">
+          <h2 id="requests-title" className="text-lg font-bold">
+            {t("clientDetail.requests")}
+          </h2>
+          <p className="text-[13px] text-muted">{t("clientDetail.requestsIntro")}</p>
+        </div>
+
+        {requestsTotal === 0 ? (
+          <p className="rounded-xl bg-canvas px-3.5 py-3 text-sm text-muted">{t("clientDetail.noRequests")}</p>
+        ) : (
+          <>
+            <ul className="flex flex-wrap gap-2">
+              {REVIEW_STATUSES.map((st) => (
+                <li key={st} className={`rounded-full px-3 py-1 text-[13px] font-semibold ${REVIEW_STYLE[st]}`}>
+                  {t(`rv.${st}`)} · {formatNumber(statusCount.get(st) ?? 0)}
+                </li>
+              ))}
+            </ul>
+            <div className="overflow-x-auto rounded-xl border border-line">
+              <table className="w-full min-w-[820px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
+                    <th scope="col" className="px-4 py-3 font-semibold">{t("col.refNo")}</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">{t("col.templateName")}</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">Sender Name</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">{t("col.requestedBy")}</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">{t("col.submittedAt")}</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">{t("col.status")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.map((r) => {
+                    const by = r.user?.email ?? r.statusChanges[0]?.emailTo ?? null;
+                    return (
+                      <tr key={r.id} className="border-b border-hair last:border-0">
+                        <td className="whitespace-nowrap px-4 py-2.5">
+                          <Link href={`/admin/requests/${r.id}`} dir="ltr" className="font-mono font-medium text-brand-600 underline-offset-4 hover:underline">
+                            {referenceText(r.referenceNo)}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-2.5">{r.templateName ?? "—"}</td>
+                        <td dir="ltr" className="px-4 py-2.5 font-mono text-[13px]">{r.senderName}</td>
+                        <td dir="ltr" className="px-4 py-2.5 font-mono text-[13px]">
+                          {by ?? <span dir="auto" className="font-sans text-muted">{t("clientDetail.removedEmail")}</span>}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-2.5 text-[13px] text-muted">{formatDateTime(r.submittedAt, locale)}</td>
+                        <td className="px-4 py-2.5">
+                          {r.reviewStatus ? (
+                            <span className={`rounded-full px-2.5 py-1 text-[13px] font-semibold ${REVIEW_STYLE[r.reviewStatus]}`}>{t(`rv.${r.reviewStatus}`)}</span>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {requestsTotal > REQUESTS_SHOWN ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                <span className="text-muted">{t("clientDetail.requestsLatest", { n: formatNumber(REQUESTS_SHOWN), total: formatNumber(requestsTotal) })}</span>
+                <Link href={`/admin/requests?client=${client.id}`} className="font-semibold text-brand-600 underline-offset-4 hover:underline">
+                  {t("clientDetail.viewAllRequests")}
+                </Link>
+              </div>
+            ) : null}
+          </>
+        )}
       </section>
 
       <section aria-labelledby="danger-title" className="flex flex-col gap-3 rounded-2xl border border-danger-200 bg-white p-6">
