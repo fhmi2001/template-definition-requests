@@ -137,8 +137,8 @@ export function SenderPicker({
         )}
       </fieldset>
 
-      {/* مسافة سفلية حتى لا تغطي شارة Netlify الثابتة (أسفل الشاشة، 64px) زر المتابعة */}
-      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white/95 px-4 pb-[76px] pt-3 backdrop-blur sm:bottom-20 sm:mx-0 sm:py-3 sm:rounded-2xl sm:border sm:px-5 sm:shadow-[0_12px_32px_-16px_rgb(0_0_0/0.25)]">
+      {/* شريط الاختيار ثابت أسفل القائمة (لا يطفو فوق البطاقات أثناء التمرير) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-4 py-3 sm:px-5">
         <p aria-live="polite" className="text-sm text-muted">
           {chosen ? (
             <>
