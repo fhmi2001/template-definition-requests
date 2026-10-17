@@ -64,7 +64,7 @@ export function TemplateForm({
             }`}
           />
         </Field>
-        <p id="template-description-count" className={`text-end text-[12px] ${over ? "font-semibold text-danger-600" : "text-muted"}`}>
+        <p id="template-description-count" className={`text-end text-[13px] ${over ? "font-semibold text-danger-600" : "text-muted"}`}>
           <span dir="ltr">
             {description.length} / {DESCRIPTION_MAX}
           </span>

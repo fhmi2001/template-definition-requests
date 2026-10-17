@@ -64,7 +64,7 @@ export default async function SenderDetailPage({ params }: { params: Promise<{ i
             </h1>
             <div className="flex flex-wrap items-center gap-2">
               <SenderStatusChip status={status} />
-              <span className="rounded-md bg-chip px-2 py-0.5 text-xs font-semibold text-ink-2">
+              <span className="rounded-md bg-chip px-2 py-0.5 text-[13px] font-semibold text-ink-2">
                 {linked ? t("senderDetail.fromExcel") : t("senderDetail.manual")}
               </span>
             </div>

@@ -95,7 +95,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {client.isActive ? (
-              <span className="rounded-full bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-600">{t("state.activeM")}</span>
+              <span className="rounded-full bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-700">{t("state.activeM")}</span>
             ) : (
               <span className="rounded-full bg-chip px-3 py-1.5 text-sm font-semibold text-ink-2">{t("state.disabledM")}</span>
             )}
@@ -152,7 +152,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                     </td>
                     <td className="px-4 py-3">
                       {u.isActive ? (
-                        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand-600">{t("state.activeM")}</span>
+                        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand-700">{t("state.activeM")}</span>
                       ) : (
                         <span className="rounded-full bg-chip px-2.5 py-1 text-[13px] font-semibold text-ink-2">{t("state.disabledM")}</span>
                       )}
@@ -234,7 +234,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                         <form action={unlinkSenderAction.bind(null, m.id)} className="flex justify-end">
                           <ConfirmButton
                             variant="ghost"
-                            className="min-h-9 whitespace-nowrap px-2.5 text-[13px] text-danger-700! hover:bg-danger-50"
+                            className="min-h-11 sm:min-h-9 whitespace-nowrap px-2.5 text-[13px] text-danger-700! hover:bg-danger-50"
                             message={t("clientDetail.unlinkConfirm", { sender: m.name, name: client.name })}
                           >
                             {t("clientDetail.unlink")}

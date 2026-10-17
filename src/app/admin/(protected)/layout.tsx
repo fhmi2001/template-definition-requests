@@ -14,14 +14,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <aside className="flex flex-[1_1_220px] flex-col gap-7 bg-night px-4 py-6 text-night-fg md:max-w-[260px]">
         <div className="px-2">
           <BrandLogo tone="dark" />
-          <span className="mt-2 block text-xs text-night-muted">{t("admin.panel")}</span>
+          <span className="mt-2 block text-[13px] text-night-muted">{t("admin.panel")}</span>
         </div>
         <AdminNav />
         <div className="mt-auto flex flex-col gap-2 border-t border-night-line px-3 pt-3.5">
           <span dir="ltr" className="font-mono text-[13px] text-white">
             {admin.username}
           </span>
-          <span className="text-xs text-night-muted">{admin.role === "SUPER_ADMIN" ? t("admin.superAdmin") : t("admin.admin")}</span>
+          <span className="text-[13px] text-night-muted">{admin.role === "SUPER_ADMIN" ? t("admin.superAdmin") : t("admin.admin")}</span>
           <form action={adminLogoutAction}>
             <button type="submit" className="min-h-10 text-[13px] font-semibold text-night-fg underline-offset-4 hover:underline">
               {t("common.logout")}

@@ -37,13 +37,13 @@ export default async function RequestSubmittedPage({ params }: { params: Promise
         <div aria-hidden="true" className="h-1.5 bg-brand-400" />
         <div className="flex flex-wrap items-center justify-between gap-6 px-6 py-7 sm:px-8">
           <div className="flex items-center gap-4">
-            <span aria-hidden="true" className="flex size-12 flex-none items-center justify-center rounded-full bg-brand-50 text-brand-600">
+            <span aria-hidden="true" className="flex size-12 flex-none items-center justify-center rounded-full bg-brand-50 text-brand-700">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12l5 5L20 7" />
               </svg>
             </span>
             <div className="flex flex-col gap-1">
-              <h1 className="text-[24px] font-bold leading-tight sm:text-[26px]">{t("submitted.heading")}</h1>
+              <h1 className="text-[28px] font-bold leading-tight sm:text-[32px]">{t("submitted.heading")}</h1>
               <p className="text-[14px] text-muted">
                 {t("submitted.ref")}{" "}
                 <span dir="ltr" className="font-mono text-[15px] font-semibold text-ink">

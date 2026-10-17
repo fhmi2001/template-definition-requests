@@ -24,7 +24,7 @@ const COLUMNS: { key: "name" | "email" | "sender"; required: boolean; note: Mess
 async function StatusBadge({ status, expired }: { status: "PREVIEW" | "APPLIED" | "CANCELLED"; expired: boolean }) {
   const { t } = await getT();
   const map: Record<typeof status, [MessageKey, string]> = {
-    APPLIED: ["ci.st.applied", "bg-brand-50 text-brand-600"],
+    APPLIED: ["ci.st.applied", "bg-brand-50 text-brand-700"],
     CANCELLED: ["ci.st.cancelled", "bg-chip text-ink-2"],
     PREVIEW: expired ? ["ci.st.expired", "bg-chip text-ink-2"] : ["ci.st.pending", "bg-warn-50 text-warn-700"],
   };

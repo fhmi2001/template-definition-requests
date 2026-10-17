@@ -25,7 +25,7 @@ const FILTERS = ["all", "create", "update", "unchanged", "rejected"] as const;
 type Filter = (typeof FILTERS)[number];
 
 const STATUS_TEXT: Record<PlanStatus, { preview: MessageKey; done: MessageKey; cls: string }> = {
-  create: { preview: "ci.ps.create", done: "ci.ps.created", cls: "bg-brand-50 text-brand-600" },
+  create: { preview: "ci.ps.create", done: "ci.ps.created", cls: "bg-brand-50 text-brand-700" },
   update: { preview: "ci.ps.update", done: "ci.ps.updated", cls: "bg-info-50 text-info-700" },
   unchanged: { preview: "ci.ps.unchanged", done: "ci.ps.unchanged", cls: "bg-chip text-ink-2" },
   rejected: { preview: "ci.ps.rejected", done: "ci.ps.rejected", cls: "bg-danger-50 text-danger-700" },
@@ -65,7 +65,7 @@ async function ClientRow({ c, done }: { c: PlanClient; done: boolean }) {
         ) : (
           <span className="font-semibold">{c.name}</span>
         )}
-        <div className="mt-0.5 text-[12px] text-muted">
+        <div className="mt-0.5 text-[13px] text-muted">
           {rowsText(t, c.rows)}
           {c.clientId && c.status !== "create" ? t("ci.existingClient") : ""}
           {c.clientActive === false ? t("ci.disabledSuffix") : ""}
@@ -81,7 +81,7 @@ async function ClientRow({ c, done }: { c: PlanClient; done: boolean }) {
             ))}
           </ul>
         ) : null}
-        {c.keptEmails.length ? <div className="mt-0.5 text-[12px] text-muted">{t("ci.keptEmails", { n: formatNumber(c.keptEmails.length) })}</div> : null}
+        {c.keptEmails.length ? <div className="mt-0.5 text-[13px] text-muted">{t("ci.keptEmails", { n: formatNumber(c.keptEmails.length) })}</div> : null}
         {!(showAdds && c.addEmails.length) && !c.keptEmails.length ? <span className="text-muted">—</span> : null}
       </td>
       <td className="px-4 py-3">
@@ -94,7 +94,7 @@ async function ClientRow({ c, done }: { c: PlanClient; done: boolean }) {
             ))}
           </ul>
         ) : null}
-        {c.keptSenders.length ? <div className="mt-0.5 text-[12px] text-muted">{t("ci.keptSenders", { n: formatNumber(c.keptSenders.length) })}</div> : null}
+        {c.keptSenders.length ? <div className="mt-0.5 text-[13px] text-muted">{t("ci.keptSenders", { n: formatNumber(c.keptSenders.length) })}</div> : null}
         {!(showAdds && c.addSenders.length) && !c.keptSenders.length ? <span className="text-muted">—</span> : null}
       </td>
       <td dir="ltr" className="px-4 py-3 font-mono">
@@ -306,9 +306,9 @@ export default async function ClientImportPreviewPage({
                         <td dir="ltr" className="whitespace-nowrap px-4 py-2.5 font-mono text-[13px]">{i.column ?? "—"}</td>
                         <td className="px-4 py-2.5">
                           {i.severity === "ERROR" ? (
-                            <span className="whitespace-nowrap rounded-full bg-danger-50 px-2.5 py-0.5 text-xs font-semibold text-danger-700">{t("ci.notImported")}</span>
+                            <span className="whitespace-nowrap rounded-full bg-danger-50 px-2.5 py-0.5 text-[13px] font-semibold text-danger-700">{t("ci.notImported")}</span>
                           ) : (
-                            <span className="whitespace-nowrap rounded-full bg-warn-50 px-2.5 py-0.5 text-xs font-semibold text-warn-700">{t("ci.warning")}</span>
+                            <span className="whitespace-nowrap rounded-full bg-warn-50 px-2.5 py-0.5 text-[13px] font-semibold text-warn-700">{t("ci.warning")}</span>
                           )}
                         </td>
                         <td className="px-4 py-2.5 leading-6 text-ink-2">{translateStored(locale, i.message)}</td>

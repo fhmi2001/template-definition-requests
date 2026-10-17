@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import type { ComponentProps, ReactNode } from "react";
+import { cloneElement, isValidElement, type ComponentProps, type ReactNode } from "react";
 import { useT } from "@/i18n/client";
 import { buttonClass, cx, type ButtonVariant } from "./button-styles";
 
@@ -29,6 +29,9 @@ export function SubmitButton({
   );
 }
 
+const NATIVE_CONTROLS = new Set(["input", "select", "textarea"]);
+type FieldControlProps = { "aria-describedby"?: string; "aria-invalid"?: boolean | "true" | "false" };
+
 export function Field({
   id,
   label,
@@ -42,18 +45,29 @@ export function Field({
   hint?: ReactNode;
   children: ReactNode;
 }) {
+  const noteId = error ? `${id}-error` : hint ? `${id}-hint` : null;
+  // يربط الخطأ أو التلميح بالحقل حتى يقرأه قارئ الشاشة عند الوقوف عليه
+  // (للحقول الأصلية فقط؛ ما يضبطه النموذج بنفسه يبقى كما هو).
+  let control = children;
+  if (noteId && isValidElement<FieldControlProps>(children) && typeof children.type === "string" && NATIVE_CONTROLS.has(children.type)) {
+    const own = children.props["aria-describedby"];
+    control = cloneElement(children, {
+      "aria-describedby": own?.split(" ").includes(noteId) ? own : [own, noteId].filter(Boolean).join(" "),
+      "aria-invalid": children.props["aria-invalid"] ?? (error ? true : undefined),
+    });
+  }
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor={id} className="text-sm font-semibold">
         {label}
       </label>
-      {children}
+      {control}
       {error ? (
         <p id={`${id}-error`} role="alert" className="text-[13px] leading-relaxed text-danger-600">
           {error}
         </p>
       ) : hint ? (
-        <p className="text-[13px] leading-relaxed text-muted">{hint}</p>
+        <p id={`${id}-hint`} className="text-[13px] leading-relaxed text-muted">{hint}</p>
       ) : null}
     </div>
   );

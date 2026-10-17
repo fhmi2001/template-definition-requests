@@ -167,7 +167,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
                     </td>
                     <td className="px-4 py-3.5">
                       {c.isActive ? (
-                        <span className="inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand-600">{t("state.activeM")}</span>
+                        <span className="inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand-700">{t("state.activeM")}</span>
                       ) : (
                         <span className="inline-flex rounded-full bg-chip px-2.5 py-1 text-[13px] font-semibold text-ink-2">{t("state.disabledM")}</span>
                       )}

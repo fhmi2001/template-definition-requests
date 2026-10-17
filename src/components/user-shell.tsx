@@ -140,7 +140,7 @@ export async function RequestSteps({ current, draftId }: { current: number; draf
               />
               <span className="hidden items-center gap-1.5 text-[13px] sm:flex">
                 <span
-                  className={`flex size-5 flex-none items-center justify-center rounded-full text-[11px] font-semibold ${
+                  className={`flex size-5 flex-none items-center justify-center rounded-full text-[13px] font-semibold ${
                     state === "next" ? "bg-chip text-muted" : "bg-brand-600 text-white"
                   }`}
                 >
@@ -161,7 +161,7 @@ export async function RequestSteps({ current, draftId }: { current: number; draf
           return (
             <li key={label} aria-current={state === "current" ? "step" : undefined}>
               {href ? (
-                <Link href={href} className="group flex min-h-9 flex-col gap-2 underline-offset-4">
+                <Link href={href} className="group flex min-h-11 sm:min-h-9 flex-col gap-2 underline-offset-4">
                   {body}
                 </Link>
               ) : (

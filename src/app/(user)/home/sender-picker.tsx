@@ -91,7 +91,8 @@ export function SenderPicker({
                     value={s.id}
                     checked={isOn}
                     onChange={() => setSelected(s.id)}
-                    aria-label={t("picker.selectName", { name: s.name })}
+                    aria-labelledby={`sender-${s.id}-name`}
+                    aria-describedby={`sender-${s.id}-details`}
                     className="sr-only"
                   />
                   <span className="flex items-start justify-between gap-3">
@@ -102,7 +103,7 @@ export function SenderPicker({
                       >
                         {s.name.trim().charAt(0).toUpperCase()}
                       </span>
-                      <span dir="ltr" className="truncate font-mono text-[16px] font-semibold">
+                      <span id={`sender-${s.id}-name`} dir="ltr" className="truncate font-mono text-[15px] font-semibold">
                         {s.name}
                       </span>
                     </span>
@@ -117,15 +118,16 @@ export function SenderPicker({
                       ) : null}
                     </span>
                   </span>
-                  <span className="flex flex-col gap-2">
+                  {/* اسم العميل والأنواع وحالة الانتهاء: تُقرأ مع اسم المرسل */}
+                  <span id={`sender-${s.id}-details`} className="flex flex-col gap-2">
                     <span className="text-[14px] leading-6 text-ink-2">{s.clientName ?? <span className="text-muted">—</span>}</span>
                     <span className="flex flex-wrap gap-1.5">
                       {s.types.map((ty) => (
-                        <span key={ty} className="rounded-md bg-chip px-2 py-0.5 text-xs text-ink-2">
+                        <span key={ty} className="rounded-md bg-chip px-2 py-0.5 text-[13px] text-ink-2">
                           {ty}
                         </span>
                       ))}
-                      {s.expired ? <span className="rounded-md bg-warn-50 px-2 py-0.5 text-xs font-semibold text-warn-700">{t("picker.expired")}</span> : null}
+                      {s.expired ? <span className="rounded-md bg-warn-50 px-2 py-0.5 text-[13px] font-semibold text-warn-700">{t("picker.expired")}</span> : null}
                     </span>
                   </span>
                 </label>

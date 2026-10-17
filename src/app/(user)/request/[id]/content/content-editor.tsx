@@ -95,7 +95,7 @@ function RuleItem({ r }: { r: RuleResult }) {
           <ul className="flex flex-col gap-0.5 text-[13px] leading-6 text-ink-2">
             {r.status !== "pass" ? (
               <li
-                className={`text-[12px] font-semibold ${
+                className={`text-[13px] font-semibold ${
                   r.status === "fail" ? "text-danger-700" : r.status === "note" ? "text-warn-700" : r.status === "exception" ? "text-info-700" : "text-muted"
                 }`}
               >
@@ -123,7 +123,7 @@ function SaveStatus({ status, onRetry }: { status: AutosaveStatus; onRetry: () =
     return (
       <span role="alert" className="flex flex-wrap items-center gap-x-2 text-[13px] font-semibold text-danger-700">
         {status.message ?? t("autosave.failed")}
-        <button type="button" onClick={onRetry} className="min-h-9 rounded-lg px-1.5 underline underline-offset-4 hover:bg-danger-50">
+        <button type="button" onClick={onRetry} className="min-h-11 sm:min-h-9 rounded-lg px-1.5 underline underline-offset-4 hover:bg-danger-50">
           {t("autosave.retry")}
         </button>
       </span>
@@ -416,7 +416,7 @@ export function ContentEditor({
               <span className="text-base font-semibold" data-testid="signature-line">
                 {signature}
               </span>
-              <span className="text-[12px] text-muted">
+              <span className="text-[13px] text-muted">
                 {t("content.signatureNote")}{" "}
                 <Link href={signatureEditHref} className="font-semibold text-brand-600 underline-offset-4 hover:underline">
                   {t("content.editName")}
@@ -481,7 +481,7 @@ export function ContentEditor({
                     <button
                       type="button"
                       onClick={() => removeVariable(i)}
-                      className="inline-flex min-h-9 items-center rounded-lg px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-danger-50"
+                      className="inline-flex min-h-11 sm:min-h-9 items-center rounded-lg px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-danger-50"
                       aria-label={t("content.removeVar", { name: tokenText(i + 1) })}
                     >
                       {t("common.delete")}
@@ -565,7 +565,7 @@ export function ContentEditor({
                   {t("content.pledgeDownload")}
                 </a>
               </div>
-              <span className="text-[12px] text-muted">{t("content.pledgePrefilled")}</span>
+              <span className="text-[13px] text-muted">{t("content.pledgePrefilled")}</span>
             </li>
             <li className="flex flex-col gap-2">
               <span className="text-sm font-semibold">{t("content.pledgeStep2")}</span>
@@ -577,14 +577,14 @@ export function ContentEditor({
                   <a href={pledge.href} data-no-guard dir="auto" className="min-w-0 break-all text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
                     {pledge.fileName}
                   </a>
-                  <span dir="ltr" className="text-[12px] text-muted">
+                  <span dir="ltr" className="text-[13px] text-muted">
                     {kb(pledge.size)}
                   </span>
                   <button
                     type="button"
                     onClick={() => startTransition(() => removeAction())}
                     disabled={removing}
-                    className="ms-auto inline-flex min-h-9 items-center rounded-lg px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-white"
+                    className="ms-auto inline-flex min-h-11 sm:min-h-9 items-center rounded-lg px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-white"
                   >
                     {removing ? t("common.deleting") : t("common.delete")}
                   </button>
@@ -611,7 +611,7 @@ export function ContentEditor({
                   {uploading ? t("content.uploading") : pledge ? t("content.replacePledge") : t("content.uploadPledge")}
                 </button>
               </div>
-              <span className="text-[12px] text-muted">{t("content.pledgeFormats")}</span>
+              <span className="text-[13px] text-muted">{t("content.pledgeFormats")}</span>
             </li>
           </ol>
         </section>

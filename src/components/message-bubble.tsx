@@ -20,7 +20,7 @@ export function MessageBubble({
     <figure className={`flex flex-col gap-2 ${className}`}>
       {sender ? (
         <figcaption className="flex items-center gap-2">
-          <span aria-hidden="true" className="flex size-7 flex-none items-center justify-center rounded-full bg-brand-400 text-[12px] font-bold text-white">
+          <span aria-hidden="true" className="flex size-7 flex-none items-center justify-center rounded-full bg-brand-400 text-[13px] font-bold text-white">
             {sender.trim().charAt(0).toUpperCase()}
           </span>
           <span dir="ltr" className="font-mono text-[13px] font-semibold text-ink">
@@ -34,7 +34,7 @@ export function MessageBubble({
       >
         {children}
       </div>
-      {meta ? <div className="text-[12px] text-muted">{meta}</div> : null}
+      {meta ? <div className="text-[13px] text-muted">{meta}</div> : null}
     </figure>
   );
 }

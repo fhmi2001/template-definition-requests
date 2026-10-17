@@ -115,7 +115,7 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
               {t("rq.d.statusTitle")}
             </h2>
             <StatusForm requestId={r.id} current={r.reviewStatus} />
-            <p className="text-[12px] leading-5 text-muted">
+            <p className="text-[13px] leading-5 text-muted">
               {recipient ? t("rq.d.emailTo", { email: `\u2068${recipient}\u2069`, lang: t(`lang.${reqLocale}`) }) : t("rq.d.noEmail")}
             </p>
           </section>
@@ -128,8 +128,8 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
               {r.statusChanges.map((c) => (
                 <li key={c.id} className="flex flex-col gap-1 border-t border-hair py-3 first:border-0 first:pt-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${REVIEW_STYLE[c.toStatus]}`}>{t(`rv.${c.toStatus}`)}</span>
-                    <span className="text-[12px] text-muted">{formatDateTime(c.createdAt, locale)}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-[13px] font-semibold ${REVIEW_STYLE[c.toStatus]}`}>{t(`rv.${c.toStatus}`)}</span>
+                    <span className="text-[13px] text-muted">{formatDateTime(c.createdAt, locale)}</span>
                   </div>
                   <div className="text-[13px] leading-6 text-ink-2">
                     {c.fromStatus ? t("rq.h.changed", { from: t(`rv.${c.fromStatus}`), to: t(`rv.${c.toStatus}`) }) : t("rq.h.received")}
@@ -149,7 +149,7 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
                     </div>
                   ) : null}
                   <div
-                    className={`text-[12px] ${
+                    className={`text-[13px] ${
                       c.emailStatus === "SENT" ? "text-brand-700" : c.emailStatus === "FAILED" ? "text-danger-700" : "text-muted"
                     }`}
                   >
@@ -159,7 +159,7 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
                         ? t("rq.mail.SKIPPED")
                         : t(`rq.mail.${c.emailStatus}`, { email: c.emailTo ?? "—" })}
                     {c.emailStatus === "FAILED" && c.emailError ? (
-                      <span dir="ltr" className="mt-0.5 block font-mono text-[11px] text-muted">
+                      <span dir="ltr" className="mt-0.5 block font-mono text-[13px] text-muted">
                         {c.emailError}
                       </span>
                     ) : null}

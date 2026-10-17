@@ -67,8 +67,8 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
                   {on ? <span className="size-2 rounded-full bg-brand-600" /> : null}
                 </span>
                 <span className="flex min-w-0 flex-col">
-                  <span className={`self-start rounded-full px-2 py-0.5 text-[12px] font-semibold ${REVIEW_STYLE[s]}`}>{t(`rv.${s}`)}</span>
-                  {isCurrent ? <span className="mt-0.5 text-[11px]">{t("rq.d.current")}</span> : null}
+                  <span className={`self-start rounded-full px-2 py-0.5 text-[13px] font-semibold ${REVIEW_STYLE[s]}`}>{t(`rv.${s}`)}</span>
+                  {isCurrent ? <span className="mt-0.5 text-[13px]">{t("rq.d.current")}</span> : null}
                 </span>
               </label>
             );
@@ -104,7 +104,7 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
               {reasonError}
             </p>
           ) : null}
-          <div className="flex items-start justify-between gap-3 text-[12px] text-muted">
+          <div className="flex items-start justify-between gap-3 text-[13px] text-muted">
             <span id="reason-hint">{t("rq.d.reasonHint")}</span>
             <span dir="ltr" className="flex-none font-mono">
               {reasonLength} / {REJECTION_REASON_MAX}
@@ -133,11 +133,11 @@ export function ResendEmailButton({ changeId }: { changeId: string }) {
   const t = useT();
   return (
     <form action={action} className="flex flex-col gap-1">
-      <SubmitButton variant="ghost" pendingText={t("rq.resending")} className="min-h-8 self-start px-2 text-[12px]">
+      <SubmitButton variant="ghost" pendingText={t("rq.resending")} className="min-h-8 self-start px-2 text-[13px]">
         {t("rq.resend")}
       </SubmitButton>
-      {state.error ? <span className="text-[12px] text-danger-600">{state.error}</span> : null}
-      {state.ok && state.message ? <span className="text-[12px] text-brand-700">{state.message}</span> : null}
+      {state.error ? <span className="text-[13px] text-danger-600">{state.error}</span> : null}
+      {state.ok && state.message ? <span className="text-[13px] text-brand-700">{state.message}</span> : null}
     </form>
   );
 }

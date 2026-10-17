@@ -213,7 +213,7 @@ export default async function SendersPage({
                     <td className="px-4 py-3 leading-6">
                       {s.clientName ?? <span className="text-muted">—</span>}
                       {s.customerType ? <div className="text-[13px] text-muted">{customerTypeLabel(t, s.customerType)}</div> : null}
-                      <div className="mt-0.5 text-[12px]">
+                      <div className="mt-0.5 text-[13px]">
                         {s.client ? (
                           <Link href={`/admin/clients/${s.client.id}`} className="text-brand-600 underline-offset-4 hover:underline">
                             {t("senders.linkedTo", { name: s.client.name })}
@@ -227,7 +227,7 @@ export default async function SendersPage({
                       <div className="flex flex-wrap gap-1">
                         {s.senderTypes.length
                           ? s.senderTypes.map((x) => (
-                              <span key={x} className="rounded-md bg-chip px-1.5 py-0.5 text-xs">
+                              <span key={x} className="rounded-md bg-chip px-1.5 py-0.5 text-[13px]">
                                 {senderTypeLabel(t, x)}
                               </span>
                             ))

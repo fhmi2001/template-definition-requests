@@ -30,7 +30,7 @@ function Tile({ label, value, note, tone }: { label: string; value: number; note
       <span dir="ltr" className={`font-mono text-[28px] font-medium ${color}`}>
         {formatNumber(value)}
       </span>
-      {note ? <span className="text-xs leading-5 text-muted">{note}</span> : null}
+      {note ? <span className="text-[13px] leading-5 text-muted">{note}</span> : null}
     </div>
   );
 }
@@ -204,9 +204,9 @@ export default async function ImportReportPage({
                           <td dir="ltr" className="px-4 py-2.5 font-mono text-[13px]">{i.column ?? "—"}</td>
                           <td className="px-4 py-2.5">
                             {i.severity === "ERROR" ? (
-                              <span className="rounded-full bg-danger-50 px-2.5 py-0.5 text-xs font-semibold text-danger-700">{t("ir.sev.error")}</span>
+                              <span className="rounded-full bg-danger-50 px-2.5 py-0.5 text-[13px] font-semibold text-danger-700">{t("ir.sev.error")}</span>
                             ) : (
-                              <span className="rounded-full bg-warn-50 px-2.5 py-0.5 text-xs font-semibold text-warn-700">{t("ir.sev.warning")}</span>
+                              <span className="rounded-full bg-warn-50 px-2.5 py-0.5 text-[13px] font-semibold text-warn-700">{t("ir.sev.warning")}</span>
                             )}
                           </td>
                           <td className="px-4 py-2.5 leading-6 text-ink-2">{translateStored(locale, i.message)}</td>

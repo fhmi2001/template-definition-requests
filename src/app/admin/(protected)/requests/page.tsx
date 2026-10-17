@@ -210,7 +210,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                   <td className="px-4 py-3 leading-6">
                     <div className="font-semibold">{r.client.name}</div>
                     {r.user ? (
-                      <div dir="ltr" className="font-mono text-[12px] text-muted">
+                      <div dir="ltr" className="font-mono text-[13px] text-muted">
                         {r.user.email}
                       </div>
                     ) : null}
@@ -219,7 +219,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                     <div dir="ltr" className="font-mono font-medium">
                       {r.senderName}
                     </div>
-                    {r.senderType ? <div className="text-[12px] text-muted">{senderTypeDisplay(t, r.senderType)}</div> : null}
+                    {r.senderType ? <div className="text-[13px] text-muted">{senderTypeDisplay(t, r.senderType)}</div> : null}
                   </td>
                   <td className="max-w-[260px] px-4 py-3 leading-6">
                     <div className="break-words">{r.templateName ?? "—"}</div>
@@ -233,7 +233,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                     ) : (
                       "—"
                     )}
-                    {r.reviewedAt ? <div className="mt-1 whitespace-nowrap text-[12px] text-muted">{formatDateTime(r.reviewedAt, locale)}</div> : null}
+                    {r.reviewedAt ? <div className="mt-1 whitespace-nowrap text-[13px] text-muted">{formatDateTime(r.reviewedAt, locale)}</div> : null}
                   </td>
                   <td className="px-4 py-3">
                     <Link href={`/admin/requests/${r.id}`} className="font-semibold text-brand-600 underline-offset-4 hover:underline">

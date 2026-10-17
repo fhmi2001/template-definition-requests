@@ -2,7 +2,7 @@ import { STATUS_KEY, type SenderStatus } from "@/lib/sender-status";
 import { getT } from "@/i18n/server";
 
 const STATUS_STYLE: Record<SenderStatus, string> = {
-  active: "bg-brand-50 text-brand-600",
+  active: "bg-brand-50 text-brand-700",
   expiring: "bg-warn-50 text-warn-700",
   expired: "bg-chip text-ink-2",
   missing: "bg-danger-50 text-danger-700",

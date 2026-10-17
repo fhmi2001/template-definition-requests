@@ -22,7 +22,7 @@ export function AdminNav() {
           return (
             <span key={item.href} className="flex min-h-11 items-center justify-between gap-2 rounded-xl px-3 text-sm text-night-muted">
               {t(item.label)}
-              <span className="rounded-full bg-night-2 px-2 py-0.5 text-[11px]">{t("nav.soon")}</span>
+              <span className="rounded-full bg-night-2 px-2 py-0.5 text-[13px]">{t("nav.soon")}</span>
             </span>
           );
         }

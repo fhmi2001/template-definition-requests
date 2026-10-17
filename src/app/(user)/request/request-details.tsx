@@ -42,7 +42,7 @@ function Section({
       {edit?.length ? (
         <div className="flex flex-wrap gap-5 pt-1">
           {edit.map((e) => (
-            <Link key={e.href} href={e.href} className="inline-flex min-h-9 items-center text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
+            <Link key={e.href} href={e.href} className="inline-flex min-h-11 sm:min-h-9 items-center text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
               {e.label}
             </Link>
           ))}

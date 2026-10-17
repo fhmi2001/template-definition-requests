@@ -52,7 +52,7 @@ export function TypeForm({
                   on
                     ? "border-brand-600 bg-brand-25 shadow-[inset_0_0_0_1px_var(--color-brand-600)]"
                     : typeError
-                      ? "border-danger-600/50 bg-white hover:border-field-strong"
+                      ? "border-danger-600 bg-white hover:border-danger-700"
                       : "border-line-strong bg-white hover:border-field-strong"
                 }`}
               >

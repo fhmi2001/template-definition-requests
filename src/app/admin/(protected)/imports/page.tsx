@@ -81,7 +81,7 @@ export default async function ImportsPage() {
             <summary className="cursor-pointer font-semibold text-brand-600">{t("imports.readColumns", { n: READ_COLUMNS.length })}</summary>
             <div dir="ltr" className={`mt-3 flex flex-wrap gap-1.5 ${locale === "ar" ? "justify-end" : ""}`}>
               {READ_COLUMNS.map((c) => (
-                <span key={c} className="rounded-md bg-chip px-2 py-0.5 font-mono text-xs">
+                <span key={c} className="rounded-md bg-chip px-2 py-0.5 font-mono text-[13px]">
                   {c}
                 </span>
               ))}

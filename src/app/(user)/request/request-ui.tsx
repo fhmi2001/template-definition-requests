@@ -39,7 +39,7 @@ export async function ChosenSender({
             {name.trim().charAt(0).toUpperCase()}
           </span>
           <div className="flex flex-col">
-            <dt className="text-[11px] text-muted">{t("col.senderName")}</dt>
+            <dt className="text-[13px] text-muted">{t("col.senderName")}</dt>
             <dd dir="ltr" className="font-mono text-[15px] font-semibold leading-tight">
               {name}
             </dd>
@@ -62,7 +62,7 @@ export async function ChosenSender({
 function Item({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col sm:border-s sm:border-hair sm:ps-6">
-      <dt className="text-[11px] text-muted">{label}</dt>
+      <dt className="text-[13px] text-muted">{label}</dt>
       <dd className="text-[14px] font-medium leading-tight">{children}</dd>
     </div>
   );

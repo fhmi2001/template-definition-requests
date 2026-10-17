@@ -175,7 +175,7 @@ export default async function MyRequestsPage({ searchParams }: { searchParams: P
                       {referenceText(r.referenceNo)}
                     </span>
                     {r.reviewStatus ? (
-                      <span className={`justify-self-end rounded-full px-3 py-1 text-[12px] font-semibold md:order-last ${REVIEW_STYLE[r.reviewStatus]}`}>
+                      <span className={`justify-self-end rounded-full px-3 py-1 text-[13px] font-semibold md:order-last ${REVIEW_STYLE[r.reviewStatus]}`}>
                         {t(`rv.${r.reviewStatus}`)}
                       </span>
                     ) : (
@@ -183,7 +183,7 @@ export default async function MyRequestsPage({ searchParams }: { searchParams: P
                     )}
                     <span className="col-span-2 flex min-w-0 items-center gap-2 md:col-span-1">
                       <span className="truncate text-[15px] font-medium">{r.templateName}</span>
-                      <span dir="ltr" className="flex-none rounded-md bg-chip px-1.5 py-0.5 font-mono text-[12px] text-ink-2">
+                      <span dir="ltr" className="flex-none rounded-md bg-chip px-1.5 py-0.5 font-mono text-[13px] text-ink-2">
                         {r.senderName}
                       </span>
                     </span>

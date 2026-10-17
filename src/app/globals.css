@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: var(--font-plex-sans), "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
 
   /* محايدات مأخوذة من رمادي شعار Deewan (#2D2D2D) */
   --color-canvas: #f4f6f5;
@@ -16,8 +16,8 @@
   --color-line-strong: #cdd3cf;
   --color-hair: #eef0ef;
   --color-chip: #eceeed;
-  --color-field: #c3cac6;
-  --color-field-strong: #8e9792;
+  --color-field: #848d88; /* 3.4:1 على الأبيض (WCAG 1.4.11) */
+  --color-field-strong: #6b726e;
 
   /* أخضر الشعار #35A169؛ الدرجات الأغمق للنصوص والأزرار (تباين كافٍ مع الأبيض) */
   --color-brand-25: #f4fbf7;
@@ -63,7 +63,7 @@ body {
 
 input::placeholder,
 textarea::placeholder {
-  color: #7a847f;
+  color: var(--color-subtle);
 }
 
 /*
