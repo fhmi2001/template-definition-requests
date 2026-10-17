@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { logoutUserAction } from "@/actions/user-auth";
 import { BrandLogo } from "@/components/brand";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { SkipLink } from "@/components/skip-link";
 import { getT } from "@/i18n/server";
 import type { MessageKey } from "@/i18n/translate";
 
@@ -19,7 +20,7 @@ async function AccountMenu({ email, clientName }: { email: string; clientName: s
   return (
     <details className="group relative">
       <summary
-        aria-label={t("unav.account")}
+        aria-label={`${clientName} – ${t("unav.account")}`}
         className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl px-1.5 hover:bg-canvas [&::-webkit-details-marker]:hidden"
       >
         <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-brand-50 text-sm font-bold text-brand-700 ring-1 ring-brand-200">
@@ -65,6 +66,7 @@ export async function UserShell({
   const { t } = await getT();
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
+      <SkipLink label={t("common.skipToContent")} />
       <header className="sticky top-0 z-20 border-b border-line bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex min-h-16 w-full max-w-[1120px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2 sm:px-6">
           <Link href="/home" className="rounded-lg">
@@ -93,7 +95,7 @@ export async function UserShell({
           </div>
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-[1120px] flex-1 flex-col gap-6 px-4 pb-20 pt-8 sm:px-6 sm:pt-10">{children}</main>
+      <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-[1120px] outline-none flex-1 flex-col gap-6 px-4 pb-20 pt-8 sm:px-6 sm:pt-10">{children}</main>
     </div>
   );
 }

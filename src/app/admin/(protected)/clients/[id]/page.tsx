@@ -133,7 +133,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           <p className="rounded-xl bg-warn-50 px-3.5 py-3 text-sm text-warn-700">{t("clientDetail.noEmails")}</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-line">
-            <table className="w-full min-w-[620px] border-collapse text-sm">
+            <table aria-labelledby="emails-title" className="w-full min-w-[620px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.email")}</th>
@@ -205,7 +205,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               {t("clientDetail.linkedCount", { n: senders.length, count: formatNumber(senders.length), visible: formatNumber(visible) })}
             </p>
             <div className="overflow-x-auto rounded-xl border border-line">
-              <table className="w-full min-w-[820px] border-collapse text-sm">
+              <table aria-labelledby="senders-title" className="w-full min-w-[820px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                     <th scope="col" className="px-4 py-3 font-semibold">Sender Name</th>
@@ -272,7 +272,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               ))}
             </ul>
             <div className="overflow-x-auto rounded-xl border border-line">
-              <table className="w-full min-w-[820px] border-collapse text-sm">
+              <table aria-labelledby="requests-title" className="w-full min-w-[820px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                     <th scope="col" className="px-4 py-3 font-semibold">{t("col.refNo")}</th>

@@ -35,7 +35,7 @@ export async function ChosenSender({
     >
       <dl className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <div className="flex items-center gap-2.5">
-          <span aria-hidden="true" className="flex size-8 flex-none items-center justify-center rounded-full bg-brand-400 text-[13px] font-bold text-white">
+          <span aria-hidden="true" className="flex size-8 flex-none items-center justify-center rounded-full bg-brand-600 text-[13px] font-bold text-white">
             {name.trim().charAt(0).toUpperCase()}
           </span>
           <div className="flex flex-col">

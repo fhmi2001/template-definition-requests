@@ -119,6 +119,7 @@ export async function RequestDetails({
         {r.specs.length ? (
           <div className="overflow-x-auto rounded-xl border border-line">
             <table className="w-full border-collapse text-sm">
+              <caption className="sr-only">{t("content.varsTitle")}</caption>
               <thead>
                 <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-2.5 font-semibold">{t("details.variable")}</th>

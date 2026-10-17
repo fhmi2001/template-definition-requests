@@ -80,7 +80,7 @@ export function SenderPicker({
                 <label
                   key={s.id}
                   htmlFor={`sender-${s.id}`}
-                  className={`relative flex min-h-[104px] cursor-pointer flex-col gap-3 rounded-2xl border bg-white p-4 transition-[border-color,box-shadow,background-color] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-300 ${
+                  className={`relative flex min-h-[104px] cursor-pointer flex-col gap-3 rounded-2xl border bg-white p-4 transition-[border-color,box-shadow,background-color] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600 ${
                     isOn ? "border-brand-600 bg-brand-25 shadow-[inset_0_0_0_1px_var(--color-brand-600)]" : "border-line hover:border-field-strong"
                   }`}
                 >
@@ -137,7 +137,8 @@ export function SenderPicker({
         )}
       </fieldset>
 
-      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white/95 px-4 py-3 backdrop-blur sm:bottom-4 sm:mx-0 sm:rounded-2xl sm:border sm:px-5 sm:shadow-[0_12px_32px_-16px_rgb(0_0_0/0.25)]">
+      {/* مسافة سفلية حتى لا تغطي شارة Netlify الثابتة (أسفل الشاشة، 64px) زر المتابعة */}
+      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white/95 px-4 pb-[76px] pt-3 backdrop-blur sm:bottom-20 sm:mx-0 sm:py-3 sm:rounded-2xl sm:border sm:px-5 sm:shadow-[0_12px_32px_-16px_rgb(0_0_0/0.25)]">
         <p aria-live="polite" className="text-sm text-muted">
           {chosen ? (
             <>

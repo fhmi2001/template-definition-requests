@@ -43,7 +43,7 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
             return (
               <label
                 key={s}
-                className={`flex min-h-12 items-center gap-2.5 rounded-xl border-2 px-3 py-2 text-sm transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-300 ${
+                className={`flex min-h-12 items-center gap-2.5 rounded-xl border-2 px-3 py-2 text-sm transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600 ${
                   isCurrent
                     ? "cursor-not-allowed border-dashed border-line bg-canvas text-muted"
                     : on

@@ -31,7 +31,7 @@ export function AdminLoginForm() {
       </Field>
 
       <Field id="password" label={t("adminLogin.password")} error={state.fields?.password}>
-        <div className="flex overflow-hidden rounded-xl border border-field bg-white focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-brand-300 focus-within:outline-solid">
+        <div className="flex overflow-hidden rounded-xl border border-field bg-white focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-brand-600 focus-within:outline-solid">
           <input
             id="password"
             name="password"

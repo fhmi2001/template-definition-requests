@@ -185,7 +185,7 @@ export default async function ImportReportPage({
             ) : (
               <>
                 <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-                  <table className="w-full min-w-[900px] border-collapse text-sm">
+                  <table aria-labelledby="issues-title" className="w-full min-w-[900px] border-collapse text-sm">
                     <thead>
                       <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                         <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.row")}</th>

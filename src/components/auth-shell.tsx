@@ -62,14 +62,14 @@ export function AuthShell({ children, footer, dark = false }: { children: ReactN
   if (dark) {
     return (
       <div className="flex min-h-screen flex-col bg-night">
-        <header className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 sm:px-8">
+        <header data-surface="dark" className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 sm:px-8">
           <BrandLogo tone="dark" product={t("admin.panel")} />
           <LanguageSwitcher dark />
         </header>
         <main className="flex flex-1 items-center justify-center px-4 pb-16 pt-6">
           <div className="w-full max-w-[440px] rounded-2xl bg-white px-6 py-10 shadow-[0_24px_48px_-24px_rgb(0_0_0/0.5)] sm:px-8">{children}</div>
         </main>
-        {footer ? <footer className="flex flex-wrap items-center justify-between gap-3 px-6 py-5 text-[13px] text-night-fg sm:px-8">{footer}</footer> : null}
+        {footer ? <footer data-surface="dark" className="flex flex-wrap items-center justify-between gap-3 px-6 pb-24 pt-5 text-[13px] text-night-fg sm:px-8 sm:pb-5">{footer}</footer> : null}
       </div>
     );
   }
@@ -88,7 +88,7 @@ export function AuthShell({ children, footer, dark = false }: { children: ReactN
           <div className="w-full max-w-[420px]">{children}</div>
         </main>
         {footer ? (
-          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-5 text-[13px] text-muted sm:px-8">{footer}</footer>
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 pb-24 pt-5 text-[13px] text-muted sm:px-8 sm:pb-5">{footer}</footer>
         ) : null}
       </div>
     </div>

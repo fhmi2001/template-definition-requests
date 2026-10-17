@@ -77,7 +77,7 @@ export default async function ClientsImportPage() {
           </a>
         </div>
         <div className="overflow-x-auto rounded-xl border border-line">
-          <table className="w-full min-w-[640px] border-collapse text-sm">
+          <table aria-labelledby="format-title" className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                 <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.column")}</th>
@@ -122,7 +122,7 @@ export default async function ClientsImportPage() {
             {t("ci.recent")}
           </h2>
           <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-            <table className="w-full min-w-[720px] border-collapse text-sm">
+            <table aria-labelledby="recent-title" className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.file")}</th>

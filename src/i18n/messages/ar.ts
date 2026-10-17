@@ -53,6 +53,7 @@ export const ar = {
   "common.all": "الكل",
   "common.actions": "إجراءات",
   "common.logout": "تسجيل الخروج",
+  "common.skipToContent": "تخطَّ إلى المحتوى",
   "common.yes": "نعم",
   "common.optional": "(اختياري)",
   "common.add": "إضافة",

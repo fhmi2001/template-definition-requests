@@ -52,6 +52,7 @@ export const en: Record<MessageKey, Entry> = {
   "common.all": "All",
   "common.actions": "Actions",
   "common.logout": "Sign out",
+  "common.skipToContent": "Skip to main content",
   "common.yes": "Yes",
   "common.optional": "(optional)",
   "common.add": "Add",

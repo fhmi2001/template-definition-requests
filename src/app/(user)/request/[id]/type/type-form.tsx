@@ -48,7 +48,7 @@ export function TypeForm({
             return (
               <label
                 key={o.value}
-                className={`flex min-h-[72px] cursor-pointer items-center gap-3.5 rounded-xl border px-4 py-3 transition-[border-color,background-color,box-shadow] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-300 ${
+                className={`flex min-h-[72px] cursor-pointer items-center gap-3.5 rounded-xl border px-4 py-3 transition-[border-color,background-color,box-shadow] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600 ${
                   on
                     ? "border-brand-600 bg-brand-25 shadow-[inset_0_0_0_1px_var(--color-brand-600)]"
                     : typeError

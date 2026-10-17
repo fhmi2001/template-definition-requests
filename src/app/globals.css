@@ -56,9 +56,13 @@ body {
   color: var(--color-ink);
 }
 
+/* إطار التركيز: أخضر داكن على الأسطح الفاتحة (4.9:1)، وفاتح على الأسطح الداكنة (7.4:1). WCAG 1.4.11 */
 :focus-visible {
-  outline: 3px solid var(--color-brand-300);
+  outline: 3px solid var(--color-brand-600);
   outline-offset: 2px;
+}
+[data-surface="dark"] :focus-visible {
+  outline-color: var(--color-brand-300);
 }
 
 input::placeholder,

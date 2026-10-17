@@ -192,7 +192,7 @@ export default async function SendersPage({
           </div>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-            <table className="w-full min-w-[960px] border-collapse text-sm">
+            <table aria-labelledby="list-title" className="w-full min-w-[960px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.sender")}</th>

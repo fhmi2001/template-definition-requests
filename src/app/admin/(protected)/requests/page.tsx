@@ -62,7 +62,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
     <div className="flex flex-col gap-7">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex max-w-[680px] flex-col gap-1.5">
-          <h1 className="text-[28px] font-bold">{t("rq.title")}</h1>
+          <h1 id="rq-title" className="text-[28px] font-bold">{t("rq.title")}</h1>
           <p className="text-sm leading-6 text-muted">{t("rq.intro")}</p>
         </div>
         <a
@@ -183,7 +183,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         <div className="rounded-2xl border border-line bg-white px-6 py-12 text-center text-sm text-muted">{filtered ? t("rq.noMatch") : t("rq.empty")}</div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table className="w-full min-w-[940px] border-collapse text-sm">
+          <table aria-labelledby="rq-title" className="w-full min-w-[940px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line bg-canvas text-[13px] text-ink-2">
                 <th scope="col" className="px-4 py-3 font-semibold">{t("rq.th.ref")}</th>

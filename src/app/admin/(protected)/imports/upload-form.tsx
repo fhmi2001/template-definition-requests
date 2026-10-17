@@ -32,7 +32,7 @@ export function UploadForm() {
 
       <label
         htmlFor="file"
-        className="flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed border-field bg-canvas-2 px-6 py-10 text-center hover:border-brand-600 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-brand-300 focus-within:outline-solid"
+        className="flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed border-field bg-canvas-2 px-6 py-10 text-center hover:border-brand-600 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-brand-600 focus-within:outline-solid"
       >
         <span aria-hidden="true" className="flex size-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">

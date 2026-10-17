@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { cloneElement, isValidElement, type ComponentProps, type ReactNode } from "react";
+import { cloneElement, isValidElement, useId, useRef, type ComponentProps, type ReactNode } from "react";
 import { useT } from "@/i18n/client";
 import { buttonClass, cx, type ButtonVariant } from "./button-styles";
 
@@ -88,7 +88,11 @@ export function Alert({ tone = "error", children }: { tone?: "error" | "warning"
   );
 }
 
-/** زر داخل form يطلب تأكيداً قبل الإرسال (للحذف والتعطيل). */
+/**
+ * زر داخل form يطلب تأكيداً قبل الإرسال (التقديم، الحذف، التعطيل).
+ * نافذة <dialog> بلغة التطبيق واتجاهه بدل نافذة المتصفح: تحبس التركيز، وتُغلق بـ Esc،
+ * وتعيد التركيز إلى الزر. «إلغاء» هو الزر المركّز افتراضياً حتى لا يُؤكَّد بالخطأ.
+ */
 export function ConfirmButton({
   message,
   children,
@@ -104,17 +108,48 @@ export function ConfirmButton({
   variant?: ButtonVariant;
   disabled?: boolean;
 }) {
+  const { pending } = useFormStatus();
+  const t = useT();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const messageId = useId();
+  const off = pending || disabled;
+
+  function confirm() {
+    dialogRef.current?.close();
+    triggerRef.current?.form?.requestSubmit();
+  }
+
   return (
-    <SubmitButton
-      variant={variant}
-      pendingText={pendingText}
-      className={className}
-      disabled={disabled}
-      onClick={(e) => {
-        if (!window.confirm(message)) e.preventDefault();
-      }}
-    >
-      {children}
-    </SubmitButton>
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        disabled={off}
+        aria-disabled={off}
+        aria-haspopup="dialog"
+        onClick={() => dialogRef.current?.showModal()}
+        className={cx(buttonClass(variant), className)}
+      >
+        {pending ? (pendingText ?? t("common.working")) : children}
+      </button>
+      <dialog
+        ref={dialogRef}
+        aria-labelledby={messageId}
+        className="m-auto w-[min(92vw,440px)] rounded-2xl border border-line bg-white p-6 text-ink shadow-[0_24px_48px_-24px_rgb(0_0_0/0.5)] backdrop:bg-night/50"
+      >
+        <p id={messageId} className="text-[15px] leading-7">
+          {message}
+        </p>
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button type="button" autoFocus onClick={() => dialogRef.current?.close()} className={buttonClass("secondary")}>
+            {t("common.cancel")}
+          </button>
+          <button type="button" onClick={confirm} className={buttonClass(variant === "danger" ? "danger" : "primary")}>
+            {children}
+          </button>
+        </div>
+      </dialog>
+    </>
   );
 }
