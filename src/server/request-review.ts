@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/server/db";
-import { isLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE, isLocale } from "@/i18n/config";
 import { messageSignature, sanitizeSpecs } from "@/lib/template-rules";
 import { referenceText } from "@/server/requests";
 import { sendEmail } from "@/server/email/send";
@@ -42,7 +42,7 @@ export async function notifyStatusChange(changeId: string) {
       await db.requestStatusChange.update({ where: { id: changeId }, data: { emailStatus: "SKIPPED", emailTo: null, emailError: "no client email" } });
       return;
     }
-    const locale = isLocale(r.locale) ? r.locale : "ar";
+    const locale = isLocale(r.locale) ? r.locale : DEFAULT_LOCALE;
     const data = {
       ref: referenceText(r.referenceNo),
       submittedAt: r.submittedAt,

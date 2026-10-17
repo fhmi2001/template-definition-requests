@@ -6,7 +6,7 @@ import { requireAdmin } from "@/server/auth/dal";
 import { getPledge, referenceText } from "@/server/requests";
 import { requestRecipient } from "@/server/request-review";
 import { getT } from "@/i18n/server";
-import { isLocale } from "@/i18n/config";
+import { DEFAULT_LOCALE, isLocale } from "@/i18n/config";
 import { formatDateTime } from "@/lib/format";
 import { REVIEW_STYLE } from "@/lib/review-status";
 import { messageSignature, sanitizeSpecs } from "@/lib/template-rules";
@@ -43,7 +43,7 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
 
   const [pledge, recipient] = await Promise.all([getPledge(r.id), requestRecipient(r)]);
   const ref = referenceText(r.referenceNo);
-  const reqLocale = isLocale(r.locale) ? r.locale : "ar";
+  const reqLocale = isLocale(r.locale) ? r.locale : DEFAULT_LOCALE;
   // بريد ما زال يُرسل: نحدّث الصفحة تلقائياً لنعرض النتيجة
   const sending = r.statusChanges.some((c) => c.emailStatus === null && Date.now() - c.createdAt.getTime() < 2 * 60 * 1000);
 
