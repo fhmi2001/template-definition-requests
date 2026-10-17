@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-canvas: #f4f5f2;
+  --color-surface: #ffffff;
+  --color-ink: #16201c;
+  --color-muted: #4a5551;
+  --color-subtle: #5c6662;
+  --color-line: #dde1dc;
+  --color-field: #b9c1bc;
+
+  --color-brand-50: #e3efea;
+  --color-brand-600: #0b5d4b;
+  --color-brand-700: #08463a;
+  --color-night: #10241e;
+  --color-night-2: #1e3c33;
+
+  --color-danger-50: #fbe7e5;
+  --color-danger-600: #a8221a;
+  --color-danger-700: #8e1c15;
+  --color-warn-50: #fbf0dc;
+  --color-warn-700: #7a4700;
+}
+
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 3px solid #8cc4b3;
+  outline-offset: 2px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #7a847f;
+}
+
+/*
+ * نصوص من اليسار لليمين داخل الصفحة (بريد، أسماء مرسلين، أرقام) تُحاذى مع اتجاه الصفحة:
+ * يميناً في العربية ويساراً في الإنجليزية. :where يجعلها قابلة للتجاوز بأي class.
+ */
+:where([dir="ltr"]:not(html)) {
+  text-align: match-parent;
+}
+
+/* عناوين الجداول تبدأ من جهة بداية السطر في اللغتين (Chrome يوسّطها افتراضياً). */
+:where(thead th) {
+  text-align: start;
+}
+
+/* نصوص قارئ الشاشة (sr-only) داخل الجداول القابلة للتمرير لا تُوسّع الصفحة على الجوال. */
+:where(.overflow-x-auto) {
+  position: relative;
+}

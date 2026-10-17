@@ -1,0 +1,10 @@
+# النشر على Netlify (يكتشف Next.js تلقائياً ويستخدم محوّل OpenNext)
+[build]
+  # prisma generate يُشغَّل أيضاً تلقائياً بعد التثبيت (postinstall)، ونكرره هنا للتأكد
+  command = "npx prisma generate && npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # لا يُرسل Next.js بيانات استخدام مجهولة أثناء البناء
+  NEXT_TELEMETRY_DISABLED = "1"

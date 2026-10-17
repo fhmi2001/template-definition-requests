@@ -1,0 +1,468 @@
+// =============================================================================
+//  Template Definition Requests — Prisma Schema (PostgreSQL, Prisma 7)
+// =============================================================================
+//  أقسام المخطط:
+//    1) الهوية والمصادقة: Client, User, RateLimit, OtpCode, Admin, Session
+//    2) أسماء المرسلين:   Sender (مع بيانات آخر طلب Paid من الإكسل)
+//    3) الاستيراد والتدقيق: ImportBatch, ImportIssue, ClientImport, AuditLog
+//    4) الطلبات:          TemplateRequest, RequestAttachment
+//
+//  اصطلاحات:
+//    - أسماء الجداول والأعمدة في قاعدة البيانات snake_case عبر @@map / @map.
+//    - المعرّفات UUID v7 (مرتّبة زمنياً → فهارس أسرع من v4).
+//    - التواريخ القادمة من الإكسل بلا وقت → @db.Date.
+//    - القيم التي يتحكم بها النظام المصدر (الحالة، نوع العميل، نوع المرسل...)
+//      تُخزَّن نصاً وتُتحقق في Zod مقابل قائمة معروفة؛ القيمة الجديدة تُستورد
+//      مع تحذير في التقرير بدلاً من رفض الصف.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// رابط الاتصال في prisma.config.ts (أسلوب Prisma 7)
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// Enums
+// -----------------------------------------------------------------------------
+
+enum AdminRole {
+  SUPER_ADMIN // يدير الأدمن الآخرين
+  ADMIN
+}
+
+enum SessionActor {
+  USER
+  ADMIN
+}
+
+enum SenderSource {
+  MANUAL // أضافه الأدمن يدوياً
+  EXCEL // أُنشئ تلقائياً أثناء استيراد ملف
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  COMPLETED_WITH_ERRORS
+  FAILED
+}
+
+enum AttachmentKind {
+  PLEDGE /// خطاب التعهد الموقّع
+}
+
+enum RequestStatus {
+  DRAFT /// العميل ما زال يعبئ المراحل
+  SUBMITTED /// قُدّم (حالة المراجعة في reviewStatus)
+}
+
+/// حالة الطلب المقدَّم كما يراها العميل والإدارة
+enum ReviewStatus {
+  RECEIVED /// مستلم
+  UNDER_REVIEW /// تحت الموافقة
+  APPROVED /// مقبول
+  REJECTED /// مرفوض
+}
+
+/// نتيجة إرسال بريد الإشعار للعميل
+enum EmailStatus {
+  SENT
+  FAILED
+  SKIPPED /// لا توجد خدمة بريد مهيأة (التطوير) أو لا يوجد بريد للعميل
+}
+
+enum ClientImportStatus {
+  PREVIEW
+  APPLIED
+  CANCELLED
+}
+
+enum IssueSeverity {
+  ERROR // الصف لم يُستورد
+  WARNING // الصف استُورد مع ملاحظة
+}
+
+// =============================================================================
+// 1) الهوية والمصادقة
+// =============================================================================
+
+/// العملاء — يضيفهم الأدمن. لكل عميل بريد دخول واحد أو أكثر (جدول users).
+/// لا يُرسل رمز التحقق إلا لبريد مسجّل لعميل مفعّل.
+model Client {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  name        String   @db.VarChar(200)
+  isActive    Boolean  @default(true) @map("is_active")
+  notes       String?  @db.VarChar(500)
+  createdById String?  @map("created_by_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  createdBy Admin?            @relation("ClientCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  users     User[]
+  /// أسماء المرسلين التي يراها العميل عند إنشاء الطلب
+  senders   Sender[]
+  requests  TemplateRequest[]
+
+  @@index([isActive, name])
+  @@map("clients")
+}
+
+/// بريد دخول تابع لعميل — يدخل بالبريد + OTP
+model User {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  clientId    String    @map("client_id") @db.Uuid
+  email       String    @unique @db.VarChar(254) /// يُخزَّن lowercase بعد التطبيع
+  fullName    String?   @map("full_name") @db.VarChar(150)
+  isActive    Boolean   @default(true) @map("is_active")
+  lastLoginAt DateTime? @map("last_login_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  client      Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sessions    Session[]
+  requests    TemplateRequest[]
+  attachments RequestAttachment[]
+
+  @@index([clientId])
+  @@map("users")
+}
+
+/// عدّاد محاولات بنافذة زمنية ثابتة (طلب رمز التحقق، دخول الأدمن)
+model RateLimit {
+  key         String   @id @db.VarChar(200)
+  count       Int      @default(0)
+  windowStart DateTime @map("window_start")
+
+  @@map("rate_limits")
+}
+
+/// رموز التحقق — لا يُخزَّن الرمز نفسه، فقط HMAC-SHA256 له
+model OtpCode {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  email      String    @db.VarChar(254)
+  codeHash   String    @map("code_hash") @db.Char(64)
+  expiresAt  DateTime  @map("expires_at")
+  attempts   Int       @default(0) /// محاولات الإدخال الخاطئة (الحد 5)
+  consumedAt DateTime? @map("consumed_at") /// يُعبّأ عند الاستخدام أو الإبطال
+  requestIp  String?   @map("request_ip") @db.VarChar(45)
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([email, createdAt(sort: Desc)]) // آخر رمز للبريد + حد الإرسال
+  @@index([requestIp, createdAt]) // حد الإرسال لكل IP
+  @@index([expiresAt]) // مهمة التنظيف الدورية
+  @@map("otp_codes")
+}
+
+/// حسابات الأدمن — لا توجد صفحة تسجيل؛ أول حساب يُنشأ عبر seed
+model Admin {
+  id                String    @id @default(uuid(7)) @db.Uuid
+  username          String    @unique @db.VarChar(50) /// lowercase
+  passwordHash      String    @map("password_hash") /// argon2id
+  displayName       String?   @map("display_name") @db.VarChar(100)
+  role              AdminRole @default(ADMIN)
+  isActive          Boolean   @default(true) @map("is_active")
+  failedLoginCount  Int       @default(0) @map("failed_login_count")
+  lockedUntil       DateTime? @map("locked_until")
+  lastLoginAt       DateTime? @map("last_login_at")
+  passwordChangedAt DateTime  @default(now()) @map("password_changed_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  sessions       Session[]
+  clientsCreated Client[]       @relation("ClientCreatedBy")
+  sendersCreated Sender[]       @relation("SenderCreatedBy")
+  sendersUpdated Sender[]       @relation("SenderUpdatedBy")
+  imports        ImportBatch[]
+  clientImports  ClientImport[]
+  auditLogs      AuditLog[]
+  statusChanges  RequestStatusChange[]
+
+  @@map("admins")
+}
+
+/// جلسات الدخول (للمستخدم والأدمن). الـ JWT في الكوكي يحمل id هذا السجل (sid)،
+/// فيمكن إبطال أي جلسة فوراً بتعبئة revokedAt.
+/// قيد إضافي في الـ migration (SQL):
+///   CHECK ((actor = 'USER'  AND user_id  IS NOT NULL AND admin_id IS NULL) OR
+///          (actor = 'ADMIN' AND admin_id IS NOT NULL AND user_id  IS NULL))
+model Session {
+  id         String       @id @default(uuid(7)) @db.Uuid
+  actor      SessionActor
+  userId     String?      @map("user_id") @db.Uuid
+  adminId    String?      @map("admin_id") @db.Uuid
+  expiresAt  DateTime     @map("expires_at")
+  revokedAt  DateTime?    @map("revoked_at")
+  ipAddress  String?      @map("ip_address") @db.VarChar(45)
+  userAgent  String?      @map("user_agent") @db.VarChar(500)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  lastSeenAt DateTime     @default(now()) @map("last_seen_at")
+
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  admin Admin? @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// =============================================================================
+// 2) أسماء المرسلين (+ بيانات آخر طلب Paid من ملف الإكسل)
+// =============================================================================
+
+/// جدول واحد يديره الأدمن ويُغذّى من ملف الإكسل.
+/// من الإكسل تُستورد صفوف Status = Paid فقط، وسجل واحد لكل مرسل (آخر طلب حسب Request Date).
+/// المفتاح nameKey = lower(trim(name)) فلا يتكرر المرسل باختلاف حالة الأحرف.
+/// حقول الطلب فارغة للمرسل المضاف يدوياً ما لم يظهر لاحقاً في ملف.
+model Sender {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  name        String       @db.VarChar(11) /// اسم العرض (للمرسل القادم من الإكسل يُسمح بتغيير حالة الأحرف فقط)
+  nameKey     String       @unique @map("name_key") @db.VarChar(11)
+  description String?      @db.VarChar(500)
+  isActive    Boolean      @default(true) @map("is_active") /// تفعيل/تعطيل يدوي من الأدمن
+  source      SenderSource @default(MANUAL)
+
+  // ---- بيانات آخر طلب Paid من ملف الإكسل ----
+  requestId               String?   @unique @map("request_id") @db.VarChar(40) /// Excel: Request Id
+  requestStatus           String?   @map("request_status") @db.VarChar(30) /// Excel: Status
+  requestDate             DateTime? @map("request_date") @db.Date
+  expiryDate              DateTime? @map("expiry_date") @db.Date
+  senderExpiryDate        DateTime? @map("sender_expiry_date") @db.Date
+  senderTypes             String[]  @default([]) @map("sender_types") /// Excel: Sender Type مفككاً
+  clientName              String?   @map("client_name") @db.VarChar(255)
+  customerType            String?   @map("customer_type") @db.VarChar(30)
+  enterpriseUnifiedNumber String?   @map("enterprise_unified_number") @db.VarChar(40)
+  crNumber                String?   @map("cr_number") @db.VarChar(40)
+  representativeName      String?   @map("representative_name") @db.VarChar(150)
+  representativeEmail     String?   @map("representative_email") @db.VarChar(254)
+  representativeMobile    String?   @map("representative_mobile") @db.VarChar(20)
+
+  // ---- المزامنة ----
+  rowHash         String?   @map("row_hash") @db.Char(64) /// بصمة بيانات الإكسل لكشف التغيير
+  missingFromFile Boolean   @default(false) @map("missing_from_file") /// غاب عن آخر ملف (لم يعد Paid) فعُطّل تلقائياً
+  syncedAt        DateTime? @map("synced_at") /// آخر مرة ظهر فيها في ملف
+  lastImportId    String?   @map("last_import_id") @db.Uuid
+
+  /// العميل الذي يتبعه المرسل (يربطه الأدمن يدوياً أو من ملف العملاء). مرسل واحد لعميل واحد.
+  clientId String? @map("client_id") @db.Uuid
+
+  createdById String?  @map("created_by_id") @db.Uuid
+  updatedById String?  @map("updated_by_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  client     Client?           @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  requests   TemplateRequest[]
+  createdBy  Admin?            @relation("SenderCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy  Admin?            @relation("SenderUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  lastImport ImportBatch?      @relation(fields: [lastImportId], references: [id], onDelete: SetNull)
+
+  @@index([isActive, name])
+  @@index([senderExpiryDate])
+  @@index([lastImportId])
+  @@index([clientId])
+  @@map("senders")
+}
+
+// =============================================================================
+// 3) الاستيراد والتدقيق
+// =============================================================================
+
+// =============================================================================
+// 4) طلبات تعريف القوالب
+// =============================================================================
+
+/// طلب تعريف قالب. يُحفظ كمسودة من لحظة اختيار اسم المرسل، وتُحدَّث بياناته مع كل مرحلة.
+model TemplateRequest {
+  id       String        @id @default(uuid(7)) @db.Uuid
+  clientId String        @map("client_id") @db.Uuid
+  userId   String?       @map("user_id") @db.Uuid /// البريد الذي أنشأ الطلب
+  status   RequestStatus @default(DRAFT)
+
+  // المرحلة 1: اسم المرسل (نحفظ الاسم أيضاً لأن المرسل قد يُحذف أو يُعاد تسميته لاحقاً)
+  senderId   String? @map("sender_id") @db.Uuid
+  senderName String  @map("sender_name") @db.VarChar(11)
+
+  // المرحلة 2: نوع المرسل، و Client Name عند اختيار Awareness
+  senderType          String? @map("sender_type") @db.VarChar(40)
+  awarenessClientName String? @map("awareness_client_name") @db.VarChar(255)
+
+  // المرحلة 3: القالب
+  templateName        String? @map("template_name") @db.VarChar(100)
+  templateDescription String? @map("template_description") @db.VarChar(1000)
+
+  // المرحلة 4: نص القالب. المتغيرات تُكتب {{1}} و {{2}}... بترتيب ظهورها
+  content      String?  @db.VarChar(1000)
+  /// [{ "type": "NUMBER" | "TEXT" | "ALPHANUMERIC" | "URL", "length": 10 }] بنفس ترتيب المتغيرات في النص
+  variables    Json?
+  /// Customer Type الذي طُبّقت عليه الشروط (من بيانات اسم المرسل)
+  customerType String?  @map("customer_type") @db.VarChar(30)
+  /// استثناءات الجهة الحكومية المستخدمة: MAX_VARIABLES, STATIC_RATIO, VARIABLE_LENGTH (تتطلب خطاب تعهد)
+  exceptions   String[] @default([])
+
+  // التقديم
+  referenceNo Int?      @unique @map("reference_no") /// رقم الطلب الظاهر للعميل، يُعطى عند التقديم
+  submittedAt DateTime? @map("submitted_at")
+  /// لغة العميل عند التقديم: تُرسل بها رسائل البريد اللاحقة
+  locale      String    @default("ar") @db.VarChar(5)
+
+  // المراجعة (للطلبات المقدّمة فقط)
+  reviewStatus    ReviewStatus? @map("review_status")
+  rejectionReason String?       @map("rejection_reason") @db.VarChar(1000)
+  reviewedAt      DateTime?     @map("reviewed_at") /// آخر تغيير للحالة من الإدارة
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  client      Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user        User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sender      Sender?             @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  attachments   RequestAttachment[]
+  statusChanges RequestStatusChange[]
+
+  @@index([clientId, status, updatedAt(sort: Desc)])
+  @@index([status, reviewStatus, submittedAt(sort: Desc)])
+  @@index([senderId])
+  @@index([userId])
+  @@map("template_requests")
+}
+
+/// مرفقات الطلب (حالياً: خطاب التعهد للجهات الحكومية). تُخزَّن في قاعدة البيانات ولا تُتاح إلا عبر الخادم.
+/// سجل حالات الطلب: الاستلام عند التقديم، وكل تغيير من الإدارة، مع نتيجة بريد الإشعار.
+model RequestStatusChange {
+  id          String        @id @default(uuid(7)) @db.Uuid
+  requestId   String        @map("request_id") @db.Uuid
+  fromStatus  ReviewStatus? @map("from_status")
+  toStatus    ReviewStatus  @map("to_status")
+  reason      String?       @db.VarChar(1000) /// سبب الرفض
+  adminId     String?       @map("admin_id") @db.Uuid /// فارغ = تلقائي عند التقديم
+  emailTo     String?       @map("email_to") @db.VarChar(254)
+  emailStatus EmailStatus?  @map("email_status") /// فارغ = لم يُرسل بعد
+  emailError  String?       @map("email_error") @db.VarChar(500)
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  request TemplateRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  admin   Admin?          @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([requestId, createdAt])
+  @@map("request_status_changes")
+}
+
+model RequestAttachment {
+  id           String         @id @default(uuid(7)) @db.Uuid
+  requestId    String         @map("request_id") @db.Uuid
+  kind         AttachmentKind
+  fileName     String         @map("file_name") @db.VarChar(255)
+  mimeType     String         @map("mime_type") @db.VarChar(100)
+  size         Int
+  sha256       String         @db.Char(64)
+  data         Bytes
+  uploadedById String?        @map("uploaded_by_id") @db.Uuid
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  request    TemplateRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  uploadedBy User?           @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([requestId, kind])
+  @@map("request_attachments")
+}
+
+/// استيراد العملاء من إكسل: يُقرأ الملف ويُحفظ هنا للمعاينة، ولا يُطبَّق إلا بعد تأكيد الأدمن.
+model ClientImport {
+  id           String             @id @default(uuid(7)) @db.Uuid
+  fileName     String             @map("file_name") @db.VarChar(255)
+  fileSha256   String             @map("file_sha256") @db.Char(64)
+  sheetName    String?            @map("sheet_name") @db.VarChar(100)
+  status       ClientImportStatus @default(PREVIEW)
+  totalRows    Int                @map("total_rows")
+  /// العملاء كما قُرئوا من الملف بعد التجميع (الاسم، الإيميلات، الأرقام، أرقام الصفوف)
+  parsed       Json
+  /// أخطاء وملاحظات الصفوف وقت القراءة
+  fileIssues   Json               @map("file_issues")
+  /// ما نُفّذ فعلاً عند التأكيد
+  result       Json?
+  uploadedById String             @map("uploaded_by_id") @db.Uuid
+  createdAt    DateTime           @default(now()) @map("created_at")
+  finishedAt   DateTime?          @map("finished_at")
+
+  uploadedBy Admin @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+
+  @@index([createdAt(sort: Desc)])
+  @@map("client_imports")
+}
+
+/// عملية رفع ملف واحدة + ملخص التقرير
+model ImportBatch {
+  id           String       @id @default(uuid(7)) @db.Uuid
+  fileName     String       @map("file_name") @db.VarChar(255)
+  fileSize     Int          @map("file_size")
+  fileSha256   String       @map("file_sha256") @db.Char(64) /// لكشف رفع نفس الملف مرتين
+  sheetName    String?      @map("sheet_name") @db.VarChar(100)
+  status       ImportStatus @default(PENDING)
+  uploadedById String       @map("uploaded_by_id") @db.Uuid
+
+  totalRows      Int     @default(0) @map("total_rows") /// كل صفوف الملف
+  paidRows       Int     @default(0) @map("paid_rows") /// صفوف Status = Paid
+  duplicateCount Int     @default(0) @map("duplicate_count") /// صفوف Paid مكررة لنفس المرسل (أُبقي آخر طلب)
+  insertedCount  Int     @default(0) @map("inserted_count") /// مرسلون جدد
+  updatedCount   Int     @default(0) @map("updated_count")
+  unchangedCount Int     @default(0) @map("unchanged_count")
+  failedCount    Int     @default(0) @map("failed_count") /// صفوف Paid رُفضت لخطأ
+  warningCount   Int     @default(0) @map("warning_count")
+  missingCount   Int     @default(0) @map("missing_count") /// مرسلون عُطّلوا تلقائياً لغيابهم عن الملف
+  restoredCount  Int     @default(0) @map("restored_count") /// مرسلون عادوا للملف فأُعيد تفعيلهم
+  missingSkipped Boolean @default(false) @map("missing_skipped") /// لم يُطبّق التعطيل التلقائي لأن الملف بدا ناقصاً
+
+  errorMessage String?   @map("error_message") /// خطأ قاتل أوقف العملية كاملة
+  startedAt    DateTime  @default(now()) @map("started_at")
+  finishedAt   DateTime? @map("finished_at")
+
+  uploadedBy Admin         @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  issues     ImportIssue[]
+  senders    Sender[]
+
+  @@index([startedAt(sort: Desc)])
+  @@index([fileSha256])
+  @@map("import_batches")
+}
+
+/// أخطاء وتحذيرات على مستوى الصف/العمود
+model ImportIssue {
+  id        BigInt        @id @default(autoincrement())
+  importId  String        @map("import_id") @db.Uuid
+  rowNumber Int           @map("row_number") /// رقم الصف في الإكسل (العناوين = 1)
+  requestId String?       @map("request_id") @db.VarChar(40)
+  column    String?       @db.VarChar(100)
+  severity  IssueSeverity
+  message   String        @db.VarChar(500)
+  rawValue  String?       @map("raw_value") @db.VarChar(500)
+
+  import ImportBatch @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@index([importId, severity, rowNumber])
+  @@map("import_issues")
+}
+
+/// سجل عمليات الأدمن (إضافة/تعديل/حذف مرسل، رفع ملف، دخول...)
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  adminId    String?  @map("admin_id") @db.Uuid
+  action     String   @db.VarChar(50) /// مثل: sender.create, sender.update, import.run, admin.login
+  entityType String   @map("entity_type") @db.VarChar(50)
+  entityId   String?  @map("entity_id") @db.VarChar(64)
+  metadata   Json? /// before/after أو ملخص العملية
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([adminId, createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
