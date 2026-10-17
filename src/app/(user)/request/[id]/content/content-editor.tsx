@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useActionState, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import { startTransition, useActionState, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   removePledgeAction,
   saveContentAction,
@@ -36,12 +36,16 @@ import { TemplatePreview } from "../../template-preview";
 import { buttonClass } from "@/components/button-styles";
 import { StepFooter } from "@/components/step-footer";
 import { MessageBubble } from "@/components/message-bubble";
-import { useT } from "@/i18n/client";
+import { useLocale, useT } from "@/i18n/client";
 import { msg, type MessageKey } from "@/i18n/translate";
+import { formatTime } from "@/lib/format";
+import { useAutosave, type AutosaveStatus } from "./use-autosave";
 
 type Pledge = { fileName: string; size: number; href: string } | null;
 
 const card = "flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 sm:p-6";
+/** مهلة التوقف عن الكتابة قبل إظهار الشروط غير المحققة */
+const SETTLE_MS = 900;
 const kb = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);
 
 const STATUS: Record<RuleStatus, { label: MessageKey; ring: string; icon: React.ReactNode }> = {
@@ -110,6 +114,39 @@ function RuleItem({ r }: { r: RuleResult }) {
   );
 }
 
+/** حالة الحفظ التلقائي بجانب عدّاد الأحرف. الخطأ وحده يُعلَن لقارئ الشاشة حتى لا يتكرر الإعلان مع كل توقف. */
+function SaveStatus({ status, onRetry }: { status: AutosaveStatus; onRetry: () => void }) {
+  const t = useT();
+  const locale = useLocale();
+  if (status.kind === "idle") return <span />;
+  if (status.kind === "error") {
+    return (
+      <span role="alert" className="flex flex-wrap items-center gap-x-2 text-[13px] font-semibold text-danger-700">
+        {status.message ?? t("autosave.failed")}
+        <button type="button" onClick={onRetry} className="min-h-9 rounded-lg px-1.5 underline underline-offset-4 hover:bg-danger-50">
+          {t("autosave.retry")}
+        </button>
+      </span>
+    );
+  }
+  return (
+    <span className="flex min-h-9 items-center gap-1.5 text-[13px] text-muted">
+      {status.kind === "saved" ? (
+        <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className="text-brand-600">
+          <path d="M5 12l5 5L20 7" />
+        </svg>
+      ) : (
+        <span aria-hidden="true" className={`size-1.5 rounded-full ${status.kind === "saving" ? "bg-brand-400" : "bg-field-strong"}`} />
+      )}
+      {status.kind === "saved"
+        ? t("autosave.saved", { time: formatTime(status.at, locale) })
+        : status.kind === "saving"
+          ? t("common.saving")
+          : t("autosave.unsaved")}
+    </span>
+  );
+}
+
 /** مقتطف قصير حول المتغير ليعرف العميل أي متغير هذا. */
 function contextOf(text: string, start: number, end: number) {
   const before = text.slice(Math.max(0, start - 18), start).replace(/\s+/g, " ");
@@ -153,7 +190,6 @@ export function ContentEditor({
   const caret = useRef<number | null>(null);
 
   const [saveState, saveAction, saving] = useActionState(saveContentAction.bind(null, draftId), initialState);
-  const [draftState, draftAction, drafting] = useActionState(saveContentDraftAction.bind(null, draftId), initialState);
   const [pledgeState, pledgeAction, uploading] = useActionState(uploadPledgeAction.bind(null, draftId), initialState);
   const [removeState, removeAction, removing] = useActionState(removePledgeAction.bind(null, draftId), initialState);
   const [pledgeFile, setPledgeFile] = useState<File | null>(null);
@@ -164,10 +200,44 @@ export function ContentEditor({
   // النص المعروض في المربع: مع علامة اتجاه قبل كل متغير (لا تُحفظ)
   const display = useMemo(() => markTokens(text), [text]);
   const [renderTick, forceRender] = useReducer((x: number) => x + 1, 0);
-  const evaluation = useMemo(
+  const live = useMemo(
     () => evaluateTemplate({ text, signature, variables: specs, customerType, hasPledge: !!pledge }),
     [text, signature, specs, customerType, pledge],
   );
+
+  // ما يتحقق يظهر فوراً، أما الإخفاق فينتظر توقف الكتابة (أو مغادرة المربع)
+  // حتى لا تتحول الشروط إلى «غير محقق» في منتصف الجملة.
+  const [settledText, setSettledText] = useState(text);
+  useEffect(() => {
+    const id = window.setTimeout(() => setSettledText(text), SETTLE_MS);
+    return () => window.clearTimeout(id);
+  }, [text]);
+  const settled = useMemo(
+    () => (settledText === text ? live : evaluateTemplate({ text: settledText, signature, variables: specs, customerType, hasPledge: !!pledge })),
+    [settledText, text, live, signature, specs, customerType, pledge],
+  );
+  const rules = useMemo(() => {
+    const before = new Map(settled.rules.map((r) => [r.id, r]));
+    return live.rules.map((r) => (r.status === "pass" ? r : (before.get(r.id) ?? r)));
+  }, [live, settled]);
+
+  // الحفظ التلقائي: النص والمتغيرات كما هي، دون اشتراط تحقق الشروط
+  const snapshot = useMemo(() => JSON.stringify({ text, specs }), [text, specs]);
+  const autosave = useAutosave({
+    snapshot,
+    leaveMessage: t("autosave.leaveConfirm"),
+    save: (snap) => {
+      const s = JSON.parse(snap) as { text: string; specs: VariableSpec[] };
+      const fd = new FormData();
+      fd.set("content", s.text);
+      fd.set("variables", JSON.stringify(s.specs));
+      return saveContentDraftAction(draftId, initialState, fd);
+    },
+  });
+  // «حفظ والعودة لاحقاً»: رسالة النجاح تبقى ما دام النص لم يتغير بعد الحفظ
+  const [drafting, setDrafting] = useState(false);
+  const [savedLater, setSavedLater] = useState<string | null>(null);
+  const showSavedLater = savedLater === snapshot && !autosave.dirty;
   const busy = saving || drafting;
 
   // إعادة المؤشر لمكانه بعد إعادة ترقيم المتغيرات أو الإدراج
@@ -238,7 +308,12 @@ export function ContentEditor({
     return fd;
   }
   const next = () => startTransition(() => saveAction(payload()));
-  const saveDraft = () => startTransition(() => draftAction(payload()));
+  async function saveDraft() {
+    setDrafting(true);
+    const ok = await autosave.flush();
+    setDrafting(false);
+    if (ok) setSavedLater(snapshot);
+  }
   function upload() {
     if (!pledgeFile) return;
     const fd = new FormData();
@@ -250,12 +325,17 @@ export function ContentEditor({
 
   // الطول يشمل السطر الثابت لأنه جزء من الرسالة
   const length = charCount(composeMessage(text, signature).trim());
-  const failing = evaluation.rules.filter((r) => r.status === "fail" || r.status === "pending").length;
-  const counted = evaluation.rules.length;
-  const satisfied = counted - failing;
-  const showPledge = government && (evaluation.exceptions.length > 0 || !!pledge);
+  const blocking = (r: RuleResult) => r.status === "fail" || r.status === "pending";
+  const open = rules.filter((r) => r.status !== "pass");
+  const passed = rules.filter((r) => r.status === "pass");
+  const failing = rules.filter(blocking).length;
+  const counted = rules.length;
+  const allMet = failing === 0;
+  // ما يُعلَن لقارئ الشاشة: الحالة بعد التوقف فقط
+  const settledMet = counted - settled.rules.filter(blocking).length;
+  const showPledge = government && (settled.exceptions.length > 0 || !!pledge);
   const addDisabled = !government && tokens.length >= MAX_VARIABLES;
-  const stats = evaluation.stats;
+  const stats = live.stats;
   const ratio = stats.staticRatio;
   const maxLength = stats.variablesLength === null ? null : stats.staticLength + stats.variablesLength;
   const rows = 4 + (showPledge ? 1 : 0);
@@ -315,6 +395,7 @@ export function ContentEditor({
             ref={areaRef}
             value={display}
             onChange={onType}
+            onBlur={() => setSettledText(text)}
             rows={7}
             dir="auto"
             placeholder={t("content.placeholder")}
@@ -343,37 +424,27 @@ export function ContentEditor({
               </span>
             </div>
           ) : null}
-          <p id="content-count" className={`text-end text-[12px] ${length > TEMPLATE_MAX_LENGTH ? "font-semibold text-danger-600" : "text-muted"}`}>
-            <span dir="ltr">
-              {length} / {TEMPLATE_MAX_LENGTH}
-            </span>
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            <SaveStatus status={autosave.status} onRetry={() => void autosave.flush()} />
+            <p id="content-count" className={`ms-auto text-[13px] ${length > TEMPLATE_MAX_LENGTH ? "font-semibold text-danger-600" : "text-muted"}`}>
+              <span dir="ltr">
+                {length} / {TEMPLATE_MAX_LENGTH}
+              </span>
+            </p>
+          </div>
         </div>
-      </section>
 
-      {/* ---------------- الشروط ---------------- */}
-      <aside
-        aria-labelledby="rules-title"
-        className={`${card} gap-1 lg:sticky lg:top-6 lg:col-start-2 lg:row-start-1 lg:self-start lg:[grid-row-end:span_var(--rows)]`}
-      >
-        <div className="flex items-center justify-between gap-3">
-          <h2 id="rules-title" className="text-lg font-bold">
-            {t("content.rulesTitle")}
-          </h2>
-          <span
-            aria-live="polite"
-            className={`rounded-full px-3 py-1 text-[13px] font-semibold ${evaluation.ok ? "bg-brand-50 text-brand-700" : "bg-chip text-ink-2"}`}
-          >
-            {evaluation.ok ? t("content.allMet") : t("content.metOf", { met: satisfied, total: counted })}
-          </span>
-        </div>
-        <p className="text-[12px] leading-5 text-muted">{t("content.rulesLive")}</p>
-        <ul className="flex flex-col divide-y divide-hair">
-          {evaluation.rules.map((r) => (
-            <RuleItem key={r.id} r={r} />
-          ))}
-        </ul>
-      </aside>
+        {/* على الجوال قائمة الشروط أسفل الصفحة: ملخص قصير هنا مع رابط إليها */}
+        <a
+          href="#rules"
+          className={`flex min-h-11 items-center justify-between gap-3 rounded-xl px-3.5 text-sm font-semibold lg:hidden ${
+            allMet ? "bg-brand-50 text-brand-700" : "bg-canvas text-ink-2"
+          }`}
+        >
+          {allMet ? t("content.allMet") : t("content.rulesOpen", { n: failing })}
+          <span className="text-[13px] underline underline-offset-4">{t("content.rulesView")}</span>
+        </a>
+      </section>
 
       {/* ---------------- المتغيرات ---------------- */}
       <section aria-labelledby="vars-title" className={`${card} lg:col-start-1`}>
@@ -471,9 +542,9 @@ export function ContentEditor({
             <h2 id="pledge-title" className="text-lg font-bold">
               {t("content.pledgeTitle")}
             </h2>
-            {evaluation.exceptions.length ? (
+            {settled.exceptions.length ? (
               <p className="text-[13px] leading-6 text-ink-2">
-                {t("content.pledgeNeeded", { list: evaluation.exceptions.map((e) => exceptionLabel(t, e)) })}
+                {t("content.pledgeNeeded", { list: settled.exceptions.map((e) => exceptionLabel(t, e)) })}
               </p>
             ) : (
               <p className="text-[13px] leading-6 text-muted">{t("content.pledgeNotNeeded")}</p>
@@ -487,7 +558,7 @@ export function ContentEditor({
             <li className="flex flex-col gap-2">
               <span className="text-sm font-semibold">{t("content.pledgeStep1")}</span>
               <div>
-                <a href={pledgeTemplateHref} className={buttonClass("secondary")}>
+                <a href={pledgeTemplateHref} data-no-guard className={buttonClass("secondary")}>
                   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 3v12M7 10l5 5 5-5M4 19h16" />
                   </svg>
@@ -503,7 +574,7 @@ export function ContentEditor({
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="text-brand-700">
                     <path d="M5 12l5 5L20 7" />
                   </svg>
-                  <a href={pledge.href} dir="auto" className="min-w-0 break-all text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
+                  <a href={pledge.href} data-no-guard dir="auto" className="min-w-0 break-all text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
                     {pledge.fileName}
                   </a>
                   <span dir="ltr" className="text-[12px] text-muted">
@@ -546,6 +617,63 @@ export function ContentEditor({
         </section>
       ) : null}
 
+      {/* ---------------- الشروط ----------------
+          في الصفحة بعد المتغيرات (الجوال وقارئ الشاشة)، وعلى الشاشات الواسعة عمود جانبي ثابت بجانب المحرر. */}
+      <aside
+        id="rules"
+        aria-labelledby="rules-title"
+        className={`${card} scroll-mt-24 gap-3 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1 lg:self-start lg:[grid-row-end:span_var(--rows)]`}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <h2 id="rules-title" className="text-lg font-bold">
+            {t("content.rulesTitle")}
+          </h2>
+          <span
+            aria-hidden="true"
+            className={`rounded-full px-3 py-1 text-[13px] font-semibold ${allMet ? "bg-brand-50 text-brand-700" : "bg-chip text-ink-2"}`}
+          >
+            {allMet ? t("content.allMet") : t("content.metOf", { met: counted - failing, total: counted })}
+          </span>
+          <span aria-live="polite" className="sr-only">
+            {settledMet === counted ? t("content.allMet") : t("content.metOfSr", { met: settledMet, total: counted })}
+          </span>
+        </div>
+
+        {open.length ? (
+          <>
+            <p className="text-[13px] leading-6 text-muted">{t("content.rulesLive")}</p>
+            <ul className="flex flex-col divide-y divide-hair">
+              {open.map((r) => (
+                <RuleItem key={r.id} r={r} />
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="flex items-center gap-2 rounded-xl bg-brand-50 px-3.5 py-3 text-sm font-semibold text-brand-700">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12l5 5L20 7" />
+            </svg>
+            {t("content.allMetLead")}
+          </p>
+        )}
+
+        {passed.length ? (
+          <details className="group border-t border-hair pt-1">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-lg text-sm font-semibold text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
+              {t("content.passedRules", { n: passed.length })}
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="text-muted transition-transform group-open:rotate-180">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </summary>
+            <ul className="flex flex-col divide-y divide-hair">
+              {passed.map((r) => (
+                <RuleItem key={r.id} r={r} />
+              ))}
+            </ul>
+          </details>
+        ) : null}
+      </aside>
+
       {/* ---------------- المعاينة ---------------- */}
       <section aria-labelledby="preview-title" className={`${card} lg:col-start-1`}>
         <h2 id="preview-title" className="text-lg font-bold">
@@ -583,17 +711,16 @@ export function ContentEditor({
       {/* ---------------- الأزرار ---------------- */}
       <div className="flex flex-col gap-3 lg:col-start-1">
         {saveState.error ? <Alert>{saveState.error}</Alert> : null}
-        {draftState.error ? <Alert>{draftState.error}</Alert> : null}
-        {draftState.ok && draftState.message ? <Alert tone="success">{draftState.message}</Alert> : null}
+        {showSavedLater ? <Alert tone="success">{t("req.ok.draftSaved")}</Alert> : null}
         <StepFooter backHref={backHref} backLabel={t("common.previous")}>
-          <button type="button" onClick={saveDraft} disabled={busy} className={buttonClass("secondary")}>
+          <button type="button" onClick={() => void saveDraft()} disabled={busy} className={buttonClass("secondary")}>
             {drafting ? t("common.saving") : t("content.saveLater")}
           </button>
           <button type="button" onClick={next} disabled={busy} className={`${buttonClass("primary")} sm:min-w-32`}>
-            {saving ? t("adminLogin.checking") : t("common.next")}
+            {saving ? t("common.saving") : t("common.next")}
           </button>
         </StepFooter>
-        {!evaluation.ok ? <p className="text-[13px] text-muted">{t("content.remaining", { n: failing })}</p> : null}
+        {!allMet ? <p className="text-[13px] text-muted">{t("content.remaining", { n: failing })}</p> : null}
       </div>
     </div>
   );

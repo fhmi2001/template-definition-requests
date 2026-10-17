@@ -9,6 +9,11 @@ const dateOnly = Object.fromEntries(
   (Object.keys(TAGS) as Locale[]).map((l) => [l, new Intl.DateTimeFormat(TAGS[l], { dateStyle: "medium", timeZone: "Asia/Riyadh" })]),
 ) as Record<Locale, Intl.DateTimeFormat>;
 
+const timeOnly = Object.fromEntries(
+  (Object.keys(TAGS) as Locale[]).map((l) => [l, new Intl.DateTimeFormat(TAGS[l], { timeStyle: "short", timeZone: "Asia/Riyadh" })]),
+) as Record<Locale, Intl.DateTimeFormat>;
+
+export const formatTime = (d: Date, locale: Locale) => timeOnly[locale].format(d);
 export const formatDateTime = (d: Date | null | undefined, locale: Locale) => (d ? dateTime[locale].format(d) : "—");
 export const formatDate = (d: Date | null | undefined, locale: Locale) => (d ? dateOnly[locale].format(d) : "—");
 export const formatNumber = (n: number) => n.toLocaleString("en-US");
