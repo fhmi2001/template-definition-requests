@@ -4,7 +4,7 @@ import { hash, verify } from "@node-rs/argon2";
 // إعدادات Argon2id الموصى بها من OWASP (19 MiB، تكراران)
 const OPTIONS = { memoryCost: 19456, timeCost: 2, parallelism: 1 } as const;
 
-export function hashPassword(password: string) {
+function hashPassword(password: string) {
   return hash(password, OPTIONS);
 }
 

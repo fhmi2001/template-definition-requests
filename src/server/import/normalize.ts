@@ -39,7 +39,7 @@ function utcDate(y: number, m: number, d: number) {
   return date.getUTCMonth() === m - 1 ? date : null; // يرفض 31/02 مثلاً
 }
 
-export type ParsedDate = { ok: true; date: Date | null } | { ok: false };
+type ParsedDate = { ok: true; date: Date | null } | { ok: false };
 
 /**
  * يقبل: تاريخ Excel حقيقي، رقم تسلسلي، "2026-10-13"، "2026/10/13"، "13/10/2026".

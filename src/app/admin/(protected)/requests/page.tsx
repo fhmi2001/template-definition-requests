@@ -5,18 +5,19 @@ import { requireAdmin } from "@/server/auth/dal";
 import { getT } from "@/i18n/server";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { REVIEW_STATUSES, REVIEW_STYLE } from "@/lib/review-status";
-import { SENDER_TYPES, senderTypeDisplay } from "@/lib/sender-types";
+import { SENDER_TYPES, senderTypeDisplay, customerTypeLabel } from "@/lib/sender-types";
 import { referenceText } from "@/server/requests";
 import { CUSTOMER_TYPES, PAGE_SIZE, buildWhere, filtersQuery, hasFilters, orderBy, parseFilters } from "@/server/admin-requests";
-import { customerTypeLabel } from "../senders/sender-ui";
+import { FilterChips, Pager } from "@/components/list-controls";
+import { buttonClass } from "@/components/button-styles";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
   return { title: t("rq.title") };
 }
 
-const field = "h-11 w-full min-w-0 rounded-[10px] border border-field bg-white px-3 text-sm";
-const label = "text-[13px] font-semibold text-[#3f4945]";
+const field = "h-11 w-full min-w-0 rounded-xl border border-field bg-white px-3 text-sm";
+const label = "text-[13px] font-semibold text-ink-2";
 
 export default async function RequestsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireAdmin();
@@ -66,7 +67,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         </div>
         <a
           href={`/admin/requests/export.csv${filtersQuery(f, { page: 1 })}`}
-          className="inline-flex min-h-11 items-center gap-2 rounded-[10px] border border-field bg-white px-4 text-sm font-semibold text-ink hover:bg-canvas"
+          className={buttonClass("secondary", "sm")}
         >
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 3v12M7 10l5 5 5-5M4 19h16" />
@@ -75,26 +76,16 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         </a>
       </div>
 
-      <nav aria-label={t("rq.summary")} className="flex flex-wrap gap-2">
-        {(["all", ...REVIEW_STATUSES] as const).map((s) => {
-          const on = f.status === s;
-          return (
-            <Link
-              key={s}
-              href={`/admin/requests${filtersQuery(f, { status: s, page: 1 })}`}
-              aria-current={on ? "page" : undefined}
-              className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] ${
-                on ? "border-brand-600 bg-brand-600 font-semibold text-white" : "border-[#c9cfc9] bg-white text-ink hover:bg-canvas"
-              }`}
-            >
-              {s === "all" ? t("common.all") : t(`rv.${s}`)}
-              <span dir="ltr" className="font-mono">
-                {formatNumber(s === "all" ? all : (counts.get(s) ?? 0))}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
+      <FilterChips
+        label={t("rq.summary")}
+        items={(["all", ...REVIEW_STATUSES] as const).map((s) => ({
+          key: s,
+          href: `/admin/requests${filtersQuery(f, { status: s, page: 1 })}`,
+          label: s === "all" ? t("common.all") : t(`rv.${s}`),
+          count: s === "all" ? all : (counts.get(s) ?? 0),
+          active: f.status === s,
+        }))}
+      />
 
       <form role="search" aria-label={t("rq.f.label")} className="grid grid-cols-1 gap-4 rounded-2xl border border-line bg-white p-5 sm:grid-cols-2 lg:grid-cols-4">
         <div className="flex flex-col gap-1.5 sm:col-span-2">
@@ -177,7 +168,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
           </select>
         </div>
         <div className="flex flex-wrap items-end gap-3 sm:col-span-2 lg:col-span-3">
-          <button type="submit" className="min-h-11 rounded-[10px] bg-brand-600 px-6 text-sm font-semibold text-white hover:bg-brand-700">
+          <button type="submit" className="min-h-11 rounded-xl bg-brand-600 px-6 text-sm font-semibold text-white hover:bg-brand-700">
             {t("rq.f.apply")}
           </button>
           {filtered ? (
@@ -194,7 +185,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
           <table className="w-full min-w-[940px] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-line bg-canvas text-[13px] text-[#3f4945]">
+              <tr className="border-b border-line bg-canvas text-[13px] text-ink-2">
                 <th scope="col" className="px-4 py-3 font-semibold">{t("rq.th.ref")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("rq.th.submitted")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("col.client")}</th>
@@ -209,7 +200,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
             </thead>
             <tbody>
               {requests.map((r) => (
-                <tr key={r.id} className="border-b border-[#eceeeb] align-top last:border-0">
+                <tr key={r.id} className="border-b border-hair align-top last:border-0">
                   <td className="whitespace-nowrap px-4 py-3">
                     <Link href={`/admin/requests/${r.id}`} dir="ltr" className="font-mono font-semibold text-brand-600 underline-offset-4 hover:underline">
                       {referenceText(r.referenceNo)}
@@ -256,27 +247,11 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted">
-        <span>{t("rq.pager", { total: formatNumber(total), page: formatNumber(f.page), pages: formatNumber(pages) })}</span>
-        <div className="flex gap-2">
-          {f.page > 1 ? (
-            <Link
-              href={`/admin/requests${filtersQuery(f, { page: f.page - 1 })}`}
-              className="inline-flex min-h-10 items-center rounded-[10px] border border-field bg-white px-4 text-sm font-semibold text-ink hover:bg-canvas"
-            >
-              {t("common.previous")}
-            </Link>
-          ) : null}
-          {f.page < pages ? (
-            <Link
-              href={`/admin/requests${filtersQuery(f, { page: f.page + 1 })}`}
-              className="inline-flex min-h-10 items-center rounded-[10px] border border-field bg-white px-4 text-sm font-semibold text-ink hover:bg-canvas"
-            >
-              {t("common.next")}
-            </Link>
-          ) : null}
-        </div>
-      </div>
+      <Pager
+        summary={t("rq.pager", { total: formatNumber(total), page: formatNumber(f.page), pages: formatNumber(pages) })}
+        prevHref={f.page > 1 ? `/admin/requests${filtersQuery(f, { page: f.page - 1 })}` : null}
+        nextHref={f.page < pages ? `/admin/requests${filtersQuery(f, { page: f.page + 1 })}` : null}
+      />
     </div>
   );
 }

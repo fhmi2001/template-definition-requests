@@ -6,7 +6,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/server/db";
 import { audit } from "@/server/audit";
 import { requireAdmin } from "@/server/auth/dal";
-import { requestMeta } from "@/server/request";
+import { requestMeta } from "@/server/http-meta";
 import { SenderLinkConflict, checkSendersForClient, linkSenders, senderProblemsMessage } from "@/server/client-senders";
 import { createClientSchema, emailListSchema, fieldErrors, senderNameListSchema, updateClientSchema, uuidSchema } from "@/lib/validation";
 import type { ActionState } from "@/lib/action-state";

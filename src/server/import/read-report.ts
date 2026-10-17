@@ -49,7 +49,7 @@ export type SenderRecord = {
   rowHash: string;
 };
 
-export type ReadResult = {
+type ReadResult = {
   sheetName: string;
   totalRows: number; // كل صفوف البيانات في الملف
   paidRows: number; // صفوف Status = Paid

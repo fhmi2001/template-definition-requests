@@ -6,7 +6,7 @@ export const isReviewStatus = (v: unknown): v is ReviewStatus => REVIEW_STATUSES
 
 /** ألوان شارة الحالة في الواجهة. */
 export const REVIEW_STYLE: Record<ReviewStatus, string> = {
-  RECEIVED: "bg-[#e3eef9] text-[#1d4f86]",
+  RECEIVED: "bg-info-50 text-info-700",
   UNDER_REVIEW: "bg-warn-50 text-warn-700",
   APPROVED: "bg-brand-50 text-brand-600",
   REJECTED: "bg-danger-50 text-danger-700",

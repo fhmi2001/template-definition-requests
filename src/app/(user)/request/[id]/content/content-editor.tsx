@@ -33,23 +33,23 @@ import {
 } from "@/lib/template-rules";
 import { Alert } from "@/components/ui";
 import { TemplatePreview } from "../../template-preview";
-import { backLinkClass } from "../../request-classes";
+import { buttonClass } from "@/components/button-styles";
+import { StepFooter } from "@/components/step-footer";
+import { MessageBubble } from "@/components/message-bubble";
 import { useT } from "@/i18n/client";
 import { msg, type MessageKey } from "@/i18n/translate";
 
 type Pledge = { fileName: string; size: number; href: string } | null;
 
 const card = "flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 sm:p-6";
-const btn =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-5 text-[15px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
 const kb = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`);
 
 const STATUS: Record<RuleStatus, { label: MessageKey; ring: string; icon: React.ReactNode }> = {
   pass: { label: "rs.pass", ring: "bg-brand-600 text-white", icon: <path d="M5 12l5 5L20 7" /> },
   fail: { label: "rs.fail", ring: "bg-danger-600 text-white", icon: <path d="M7 7l10 10M17 7L7 17" /> },
-  pending: { label: "rs.pending", ring: "border-2 border-dashed border-[#9aa59f] text-transparent", icon: null },
+  pending: { label: "rs.pending", ring: "border-2 border-dashed border-field-strong text-transparent", icon: null },
   note: { label: "rs.note", ring: "bg-warn-600 text-white", icon: <path d="M12 7v6M12 17h.01" /> },
-  exception: { label: "rs.exception", ring: "bg-[#1d4f86] text-white", icon: <path d="M12 7v6M12 17h.01" /> },
+  exception: { label: "rs.exception", ring: "bg-info-700 text-white", icon: <path d="M12 7v6M12 17h.01" /> },
 };
 
 /** نص فيه متغيرات: كل متغير معزول باتجاه LTR حتى يظهر #Var1# صحيحاً داخل الجملة العربية. */
@@ -88,11 +88,11 @@ function RuleItem({ r }: { r: RuleResult }) {
           <span className="sr-only"> — {t(s.label)}</span>
         </div>
         {r.status !== "pass" || r.details.length ? (
-          <ul className="flex flex-col gap-0.5 text-[13px] leading-6 text-[#3f4945]">
+          <ul className="flex flex-col gap-0.5 text-[13px] leading-6 text-ink-2">
             {r.status !== "pass" ? (
               <li
                 className={`text-[12px] font-semibold ${
-                  r.status === "fail" ? "text-danger-700" : r.status === "note" ? "text-warn-700" : r.status === "exception" ? "text-[#1d4f86]" : "text-muted"
+                  r.status === "fail" ? "text-danger-700" : r.status === "note" ? "text-warn-700" : r.status === "exception" ? "text-info-700" : "text-muted"
                 }`}
               >
                 {t(s.label)}
@@ -129,6 +129,7 @@ export function ContentEditor({
   backHref,
   signature,
   signatureEditHref,
+  senderName,
 }: {
   draftId: string;
   initialText: string;
@@ -142,6 +143,8 @@ export function ContentEditor({
   /** Client Name: سطر أخير ثابت عند نوع المرسل «توعوي» */
   signature: string | null;
   signatureEditHref: string;
+  /** اسم المرسل فوق المعاينة */
+  senderName: string;
 }) {
   const start = useMemo(() => normalizeTemplate(initialText, initialSpecs), [initialText, initialSpecs]);
   const [text, setText] = useState(start.text);
@@ -266,7 +269,7 @@ export function ContentEditor({
             {t("content.title")}
           </h2>
           <span
-            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] ${government ? "bg-[#e3eef9] text-[#1d4f86]" : "bg-[#e9ece8] text-[#3f4945]"}`}
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] ${government ? "bg-info-50 text-info-700" : "bg-chip text-ink-2"}`}
           >
             <span dir="ltr" className="opacity-75">
               Customer Type
@@ -275,7 +278,7 @@ export function ContentEditor({
           </span>
         </div>
         {government ? (
-          <p className="rounded-[10px] bg-[#eef4fb] px-3.5 py-2.5 text-[13px] leading-6 text-[#1d4f86]">
+          <p className="rounded-xl bg-info-25 px-3.5 py-2.5 text-[13px] leading-6 text-info-700">
             {t("content.govBanner")}
           </p>
         ) : null}
@@ -285,7 +288,7 @@ export function ContentEditor({
             type="button"
             onClick={insertVariable}
             disabled={addDisabled}
-            className={`${btn} border border-brand-600 bg-white text-brand-700 hover:bg-brand-50`}
+            className={buttonClass("outline")}
           >
             <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
               <path d="M12 5v14M5 12h14" />
@@ -316,14 +319,14 @@ export function ContentEditor({
             dir="auto"
             placeholder={t("content.placeholder")}
             aria-describedby={signature ? "content-signature content-count" : "content-count"}
-            className={`w-full border bg-white px-3.5 py-3 text-base leading-8 ${signature ? "rounded-t-[10px]" : "rounded-[10px]"} ${
+            className={`w-full border bg-white px-3.5 py-3 text-base leading-8 ${signature ? "rounded-t-xl" : "rounded-xl"} ${
               length > TEMPLATE_MAX_LENGTH ? "border-danger-600" : "border-field"
             }`}
           />
           {signature ? (
             <div
               id="content-signature"
-              className="-mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-b-[10px] border border-t-0 border-dashed border-field bg-canvas px-3.5 py-2.5"
+              className="-mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-b-xl border border-t-0 border-dashed border-field bg-canvas px-3.5 py-2.5"
             >
               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="flex-none text-muted">
                 <rect x="5" y="11" width="14" height="10" rx="2" />
@@ -359,13 +362,13 @@ export function ContentEditor({
           </h2>
           <span
             aria-live="polite"
-            className={`rounded-full px-3 py-1 text-[13px] font-semibold ${evaluation.ok ? "bg-brand-50 text-brand-700" : "bg-[#e9ece8] text-[#3f4945]"}`}
+            className={`rounded-full px-3 py-1 text-[13px] font-semibold ${evaluation.ok ? "bg-brand-50 text-brand-700" : "bg-chip text-ink-2"}`}
           >
             {evaluation.ok ? t("content.allMet") : t("content.metOf", { met: satisfied, total: counted })}
           </span>
         </div>
         <p className="text-[12px] leading-5 text-muted">{t("content.rulesLive")}</p>
-        <ul className="flex flex-col divide-y divide-[#eceeeb]">
+        <ul className="flex flex-col divide-y divide-hair">
           {evaluation.rules.map((r) => (
             <RuleItem key={r.id} r={r} />
           ))}
@@ -383,7 +386,7 @@ export function ContentEditor({
           </p>
         </div>
         {tokens.length === 0 ? (
-          <p className="rounded-[10px] bg-canvas px-3.5 py-3 text-sm text-muted">{t("content.noVars")}</p>
+          <p className="rounded-xl bg-canvas px-3.5 py-3 text-sm text-muted">{t("content.noVars")}</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {tokens.map((tok, i) => {
@@ -407,7 +410,7 @@ export function ContentEditor({
                     <button
                       type="button"
                       onClick={() => removeVariable(i)}
-                      className="inline-flex min-h-9 items-center rounded-[8px] px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-danger-50"
+                      className="inline-flex min-h-9 items-center rounded-lg px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-danger-50"
                       aria-label={t("content.removeVar", { name: tokenText(i + 1) })}
                     >
                       {t("common.delete")}
@@ -423,7 +426,7 @@ export function ContentEditor({
                         value={spec.type ?? ""}
                         onChange={(e) => setSpec(i, { type: (e.target.value || null) as VariableType | null })}
                         aria-invalid={!spec.type}
-                        className={`h-11 w-full rounded-[10px] border bg-white px-3 text-[15px] ${spec.type ? "border-field" : "border-warn-600"}`}
+                        className={`h-11 w-full rounded-xl border bg-white px-3 text-[15px] ${spec.type ? "border-field" : "border-warn-600"}`}
                       >
                         <option value="">{t("content.chooseType")}</option>
                         {VARIABLE_TYPES.map((v) => (
@@ -448,7 +451,7 @@ export function ContentEditor({
                         value={spec.length ?? ""}
                         onChange={(e) => setSpec(i, { length: e.target.value === "" ? null : Number(e.target.value) })}
                         aria-invalid={!spec.length}
-                        className={`h-11 w-full rounded-[10px] border bg-white px-3 font-mono text-[15px] ${
+                        className={`h-11 w-full rounded-xl border bg-white px-3 font-mono text-[15px] ${
                           spec.length && (government || spec.length <= MAX_VARIABLE_LENGTH) ? "border-field" : "border-warn-600"
                         }`}
                       />
@@ -463,13 +466,13 @@ export function ContentEditor({
 
       {/* ---------------- خطاب التعهد ---------------- */}
       {showPledge ? (
-        <section aria-labelledby="pledge-title" className={`${card} border-[#b9d0ea] lg:col-start-1`}>
+        <section aria-labelledby="pledge-title" className={`${card} border-info-200 lg:col-start-1`}>
           <div className="flex flex-col gap-1">
             <h2 id="pledge-title" className="text-lg font-bold">
               {t("content.pledgeTitle")}
             </h2>
             {evaluation.exceptions.length ? (
-              <p className="text-[13px] leading-6 text-[#3f4945]">
+              <p className="text-[13px] leading-6 text-ink-2">
                 {t("content.pledgeNeeded", { list: evaluation.exceptions.map((e) => exceptionLabel(t, e)) })}
               </p>
             ) : (
@@ -484,7 +487,7 @@ export function ContentEditor({
             <li className="flex flex-col gap-2">
               <span className="text-sm font-semibold">{t("content.pledgeStep1")}</span>
               <div>
-                <a href={pledgeTemplateHref} className={`${btn} border border-field bg-white text-ink hover:bg-canvas`}>
+                <a href={pledgeTemplateHref} className={buttonClass("secondary")}>
                   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 3v12M7 10l5 5 5-5M4 19h16" />
                   </svg>
@@ -496,7 +499,7 @@ export function ContentEditor({
             <li className="flex flex-col gap-2">
               <span className="text-sm font-semibold">{t("content.pledgeStep2")}</span>
               {pledge ? (
-                <div className="flex flex-wrap items-center gap-3 rounded-[10px] bg-brand-50 px-3.5 py-2.5">
+                <div className="flex flex-wrap items-center gap-3 rounded-xl bg-brand-50 px-3.5 py-2.5">
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="text-brand-700">
                     <path d="M5 12l5 5L20 7" />
                   </svg>
@@ -510,7 +513,7 @@ export function ContentEditor({
                     type="button"
                     onClick={() => startTransition(() => removeAction())}
                     disabled={removing}
-                    className="ms-auto inline-flex min-h-9 items-center rounded-[8px] px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-white"
+                    className="ms-auto inline-flex min-h-9 items-center rounded-lg px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-white"
                   >
                     {removing ? t("common.deleting") : t("common.delete")}
                   </button>
@@ -526,13 +529,13 @@ export function ContentEditor({
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
                   onChange={(e) => setPledgeFile(e.target.files?.[0] ?? null)}
-                  className="max-w-full text-sm file:me-3 file:min-h-10 file:rounded-[10px] file:border file:border-field file:bg-white file:px-3.5 file:text-sm file:font-semibold"
+                  className="max-w-full text-sm file:me-3 file:min-h-10 file:rounded-xl file:border file:border-field file:bg-white file:px-3.5 file:text-sm file:font-semibold"
                 />
                 <button
                   type="button"
                   onClick={upload}
                   disabled={!pledgeFile || uploading}
-                  className={`${btn} bg-brand-600 text-white hover:bg-brand-700`}
+                  className={buttonClass("primary")}
                 >
                   {uploading ? t("content.uploading") : pledge ? t("content.replacePledge") : t("content.uploadPledge")}
                 </button>
@@ -548,21 +551,23 @@ export function ContentEditor({
         <h2 id="preview-title" className="text-lg font-bold">
           {t("content.previewTitle")}
         </h2>
-        <div className="rounded-xl bg-canvas px-4 py-3" dir="auto">
-          <TemplatePreview text={text.trim()} specs={specs} signature={signature} />
+        <div className="rounded-xl bg-canvas px-4 py-5">
+          <MessageBubble sender={senderName}>
+            <TemplatePreview text={text.trim()} specs={specs} signature={signature} />
+          </MessageBubble>
         </div>
         {text.trim() ? (
           <div className="flex flex-col gap-2">
             {ratio !== null ? (
               <>
-                <div className="relative h-3 overflow-hidden rounded-full bg-[#dfe7e3]" aria-hidden="true">
+                <div className="relative h-3 overflow-hidden rounded-full bg-line" aria-hidden="true">
                   <div
-                    className={`h-full rounded-full ${ratio >= 0.6 ? "bg-brand-600" : government ? "bg-[#1d4f86]" : "bg-danger-600"}`}
+                    className={`h-full rounded-full ${ratio >= 0.6 ? "bg-brand-600" : government ? "bg-info-700" : "bg-danger-600"}`}
                     style={{ width: `${Math.round(ratio * 100)}%` }}
                   />
                   <div className="absolute inset-y-0 w-0.5 bg-ink/60" style={{ insetInlineStart: "60%" }} />
                 </div>
-                <p className="text-[13px] text-[#3f4945]">
+                <p className="text-[13px] text-ink-2">
                   {t("content.ratioLine", { staticPct: Math.round(ratio * 100), varPct: Math.round((1 - ratio) * 100) })}
                 </p>
               </>
@@ -580,19 +585,14 @@ export function ContentEditor({
         {saveState.error ? <Alert>{saveState.error}</Alert> : null}
         {draftState.error ? <Alert>{draftState.error}</Alert> : null}
         {draftState.ok && draftState.message ? <Alert tone="success">{draftState.message}</Alert> : null}
-        <div className="flex flex-col gap-3 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <Link href={backHref} className={`${backLinkClass} order-2 sm:order-1`}>
-            {t("common.previous")}
-          </Link>
-          <div className="order-1 grid grid-cols-2 gap-3 sm:order-2 sm:flex">
-            <button type="button" onClick={saveDraft} disabled={busy} className={`${btn} border border-field bg-white px-3 text-ink hover:bg-canvas sm:px-5`}>
-              {drafting ? t("common.saving") : t("content.saveLater")}
-            </button>
-            <button type="button" onClick={next} disabled={busy} className={`${btn} bg-brand-600 text-white hover:bg-brand-700 sm:min-w-32`}>
-              {saving ? t("adminLogin.checking") : t("common.next")}
-            </button>
-          </div>
-        </div>
+        <StepFooter backHref={backHref} backLabel={t("common.previous")}>
+          <button type="button" onClick={saveDraft} disabled={busy} className={buttonClass("secondary")}>
+            {drafting ? t("common.saving") : t("content.saveLater")}
+          </button>
+          <button type="button" onClick={next} disabled={busy} className={`${buttonClass("primary")} sm:min-w-32`}>
+            {saving ? t("adminLogin.checking") : t("common.next")}
+          </button>
+        </StepFooter>
         {!evaluation.ok ? <p className="text-[13px] text-muted">{t("content.remaining", { n: failing })}</p> : null}
       </div>
     </div>

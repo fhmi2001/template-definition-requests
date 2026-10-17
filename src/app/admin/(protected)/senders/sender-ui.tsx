@@ -1,15 +1,14 @@
 import { STATUS_KEY, type SenderStatus } from "@/lib/sender-status";
 import { getT } from "@/i18n/server";
-import type { TX } from "@/i18n/translate";
 
 const STATUS_STYLE: Record<SenderStatus, string> = {
   active: "bg-brand-50 text-brand-600",
   expiring: "bg-warn-50 text-warn-700",
-  expired: "bg-[#e9ece8] text-[#3f4945]",
+  expired: "bg-chip text-ink-2",
   missing: "bg-danger-50 text-danger-700",
-  disabled: "bg-[#e9ece8] text-[#3f4945]",
-  manual: "border border-dashed border-[#8a9590] text-[#3f4945]",
-  unknown: "border border-dashed border-[#8a9590] text-[#3f4945]",
+  disabled: "bg-chip text-ink-2",
+  manual: "border border-dashed border-field-strong text-ink-2",
+  unknown: "border border-dashed border-field-strong text-ink-2",
 };
 
 const STATUS_ICON: Partial<Record<SenderStatus, React.ReactNode>> = {
@@ -56,20 +55,3 @@ export async function SenderStatusChip({ status }: { status: SenderStatus }) {
     </span>
   );
 }
-
-/** المفتاح إن كان معروفاً، وإلا القيمة كما جاءت في الإكسل. */
-const known = (tx: TX, key: string, raw: string) => {
-  const r = tx(key);
-  return r === key ? raw : r;
-};
-
-export const senderTypeLabel = (t: { x: TX }, type: string) => known(t.x, `senderType.${type}`, type);
-export const customerTypeLabel = (t: { x: TX }, ct: string | null) => (ct ? known(t.x, `customerType.${ct}`, ct) : "—");
-/** «خاص · Private» بالعربية، و«Private» بالإنجليزية. */
-export const customerTypeDisplay = (t: { x: TX }, ct: string) => {
-  const label = customerTypeLabel(t, ct);
-  return label === ct ? ct : `${label} · ${ct}`;
-};
-
-/** تاريخ من الإكسل كما في الملف: 2027-10-13 */
-export const excelDate = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "—");

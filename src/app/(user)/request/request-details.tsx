@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { AWARENESS, senderTypeDisplay } from "@/lib/sender-types";
+import { AWARENESS, senderTypeDisplay, customerTypeDisplay } from "@/lib/sender-types";
 import { CopyButton } from "@/components/copy-button";
 import { composeMessage, exceptionLabel, tokenText, type VariableSpec, variableTypeLabel } from "@/lib/template-rules";
-import { customerTypeDisplay } from "@/app/admin/(protected)/senders/sender-ui";
 import { getT } from "@/i18n/server";
+import { MessageBubble } from "@/components/message-bubble";
 import { TemplatePreview } from "./template-preview";
 
 function Row({ label, children, ltr }: { label: string; children: React.ReactNode; ltr?: boolean }) {
   return (
-    <div className="flex flex-col gap-1 border-b border-[#eceeeb] py-3 last:border-0 sm:flex-row sm:gap-6">
+    <div className="flex flex-col gap-1 border-b border-hair py-3 last:border-0 sm:flex-row sm:gap-6">
       <dt className="text-[13px] text-muted sm:w-40 sm:flex-none">{label}</dt>
       <dd dir={ltr ? "ltr" : undefined} className={`min-w-0 whitespace-pre-wrap break-words text-[15px] leading-7 ${ltr ? "font-mono" : ""}`}>
         {children}
@@ -31,7 +31,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section aria-labelledby={id} className="flex flex-col gap-1 rounded-2xl border border-line bg-white px-5 py-4 sm:px-6">
+    <section aria-labelledby={id} className="flex flex-col gap-1 rounded-2xl border border-line bg-white px-5 py-5 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id={id} className="text-base font-bold">
           {title}
@@ -42,7 +42,7 @@ function Section({
       {edit?.length ? (
         <div className="flex flex-wrap gap-5 pt-1">
           {edit.map((e) => (
-            <Link key={e.href} href={e.href} className="inline-flex min-h-9 items-center text-sm font-semibold text-brand-600 underline-offset-4 hover:underline">
+            <Link key={e.href} href={e.href} className="inline-flex min-h-9 items-center text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
               {e.label}
             </Link>
           ))}
@@ -52,7 +52,7 @@ function Section({
   );
 }
 
-export type RequestView = {
+type RequestView = {
   senderName: string;
   senderClientName: string | null;
   senderType: string | null;
@@ -111,14 +111,16 @@ export async function RequestDetails({
         edit={edit ? [{ href: edit.content, label: t("details.editContent") }] : undefined}
         action={copyable ? <CopyButton text={composeMessage((r.content ?? "").replace(/\s+$/, ""), r.signature)} /> : undefined}
       >
-        <div className="my-2 rounded-xl bg-canvas px-4 py-3" dir="auto">
-          <TemplatePreview text={(r.content ?? "").replace(/\s+$/, "")} specs={r.specs} signature={r.signature} />
+        <div className="my-2 rounded-xl bg-canvas px-4 py-5">
+          <MessageBubble sender={r.senderName}>
+            <TemplatePreview text={(r.content ?? "").replace(/\s+$/, "")} specs={r.specs} signature={r.signature} />
+          </MessageBubble>
         </div>
         {r.specs.length ? (
           <div className="overflow-x-auto rounded-xl border border-line">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-2.5 font-semibold">{t("details.variable")}</th>
                   <th scope="col" className="px-4 py-2.5 font-semibold">{t("details.type")}</th>
                   <th scope="col" className="px-4 py-2.5 font-semibold">{t("content.maxLen")}</th>
@@ -126,7 +128,7 @@ export async function RequestDetails({
               </thead>
               <tbody>
                 {r.specs.map((s, i) => (
-                  <tr key={i} className="border-b border-[#eceeeb] last:border-0">
+                  <tr key={i} className="border-b border-hair last:border-0">
                     <td dir="ltr" className="px-4 py-2.5 font-mono">{tokenText(i + 1)}</td>
                     <td className="px-4 py-2.5">{variableTypeLabel(t, s.type)}</td>
                     <td dir="ltr" className="px-4 py-2.5 font-mono">{s.length ?? "—"}</td>

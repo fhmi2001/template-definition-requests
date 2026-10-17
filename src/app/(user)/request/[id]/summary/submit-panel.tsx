@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { StepFooter } from "@/components/step-footer";
 import { useActionState } from "react";
 import { submitRequestAction } from "@/actions/requests";
 import { initialState } from "@/lib/action-state";
-import { Alert } from "@/components/ui";
-import { ConfirmButton } from "@/app/admin/(protected)/clients/client-forms";
-import { backLinkClass } from "../../request-classes";
+import { Alert, ConfirmButton } from "@/components/ui";
 import { useT } from "@/i18n/client";
 
 /** زر التقديم: يتحقق الخادم من كل المراحل مرة أخيرة قبل التقديم. */
@@ -25,10 +24,7 @@ export function SubmitPanel({ draftId, canSubmit, backHref }: { draftId: string;
           ) : null}
         </Alert>
       ) : null}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
-        <Link href={backHref} className={backLinkClass}>
-          {t("common.previous")}
-        </Link>
+      <StepFooter backHref={backHref} backLabel={t("common.previous")}>
         <ConfirmButton
           variant="primary"
           className="min-w-40"
@@ -38,7 +34,7 @@ export function SubmitPanel({ draftId, canSubmit, backHref }: { draftId: string;
         >
           {t("summary.submit")}
         </ConfirmButton>
-      </div>
+      </StepFooter>
     </form>
   );
 }

@@ -11,7 +11,7 @@ export const PREVIEW_TTL_MS = 24 * 60 * 60 * 1000;
 
 export type StoredResult = Plan & { fileIssues: FileIssue[] };
 
-export type ApplyOutcome = { ok: true; plan: Plan } | { ok: false; error: MessageKey };
+type ApplyOutcome = { ok: true; plan: Plan } | { ok: false; error: MessageKey };
 
 class ApplyRefused extends Error {
   constructor(readonly key: MessageKey) {

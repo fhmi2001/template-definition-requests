@@ -8,7 +8,7 @@ import { uuidSchema } from "@/lib/validation";
 export const CUSTOMER_TYPES = ["Private", "Government", "Charity"] as const;
 export const PAGE_SIZE = 50;
 
-export type RequestFilters = {
+type RequestFilters = {
   q: string;
   status: ReviewStatus | "all";
   client: string | null;

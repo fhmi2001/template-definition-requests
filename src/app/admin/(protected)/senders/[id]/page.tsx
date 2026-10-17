@@ -6,12 +6,12 @@ import { deleteSenderAction, toggleSenderAction } from "@/actions/senders";
 import { db } from "@/server/db";
 import { requireAdmin } from "@/server/auth/dal";
 import { uuidSchema } from "@/lib/validation";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, excelDate } from "@/lib/format";
 import { senderStatus } from "@/lib/sender-status";
-import { Alert } from "@/components/ui";
-import { ConfirmButton } from "../../clients/client-forms";
+import { Alert, ConfirmButton } from "@/components/ui";
 import { EditSenderForm } from "../sender-forms";
-import { SenderStatusChip, customerTypeLabel, excelDate, senderTypeLabel } from "../sender-ui";
+import { SenderStatusChip } from "../sender-ui";
+import { customerTypeLabel, senderTypeLabel } from "@/lib/sender-types";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function Row({ label, children, ltr }: { label: string; children: React.ReactNode; ltr?: boolean }) {
   return (
-    <div className="flex flex-col gap-1 border-b border-[#eceeeb] py-3 sm:flex-row sm:gap-4">
+    <div className="flex flex-col gap-1 border-b border-hair py-3 sm:flex-row sm:gap-4">
       <dt className="text-[13px] text-muted sm:w-48 sm:flex-none">{label}</dt>
       <dd dir={ltr ? "ltr" : undefined} className={`min-w-0 break-words text-sm ${ltr ? "font-mono" : ""}`}>
         {children ?? <span className="text-muted">—</span>}
@@ -64,7 +64,7 @@ export default async function SenderDetailPage({ params }: { params: Promise<{ i
             </h1>
             <div className="flex flex-wrap items-center gap-2">
               <SenderStatusChip status={status} />
-              <span className="rounded-md bg-[#e9ece8] px-2 py-0.5 text-xs font-semibold text-[#3f4945]">
+              <span className="rounded-md bg-chip px-2 py-0.5 text-xs font-semibold text-ink-2">
                 {linked ? t("senderDetail.fromExcel") : t("senderDetail.manual")}
               </span>
             </div>
@@ -145,7 +145,7 @@ export default async function SenderDetailPage({ params }: { params: Promise<{ i
         <EditSenderForm senderId={s.id} name={s.name} description={s.description} linkedToExcel={linked} />
       </section>
 
-      <section aria-labelledby="danger-title" className="flex flex-col gap-3 rounded-2xl border border-[#efc9c5] bg-white p-6">
+      <section aria-labelledby="danger-title" className="flex flex-col gap-3 rounded-2xl border border-danger-200 bg-white p-6">
         <h2 id="danger-title" className="text-lg font-bold text-danger-700">
           {t("senderDetail.delete")}
         </h2>

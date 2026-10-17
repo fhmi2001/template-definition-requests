@@ -6,8 +6,8 @@ import { requireUser } from "@/server/auth/dal";
 import { checkDraftComplete, draftSpecs, getPledge, loadDraftForPage, requestPath } from "@/server/requests";
 import { messageSignature, normalizeTemplate } from "@/lib/template-rules";
 import { Alert } from "@/components/ui";
-import { RequestSteps, UserShell } from "@/components/user-shell";
-import { SenderGone } from "../../request-ui";
+import { UserShell } from "@/components/user-shell";
+import { SenderGone, StepHeader } from "../../request-ui";
 import { RequestDetails } from "../../request-details";
 import { SubmitPanel } from "./submit-panel";
 
@@ -29,13 +29,7 @@ export default async function RequestSummaryPage({ params }: { params: Promise<{
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <div className="flex flex-col gap-4">
-        <RequestSteps current={5} draftId={draft.id} />
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-[28px] font-bold">{t("summary.title")}</h1>
-          <p className="text-[15px] leading-7 text-muted">{t("summary.intro")}</p>
-        </div>
-      </div>
+      <StepHeader current={5} draftId={draft.id} title={t("summary.title")} intro={t("summary.intro")} />
 
       {!sender ? (
         <SenderGone changeHref={requestPath.sender(draft.id)} />

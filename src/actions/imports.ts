@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/server/db";
 import { audit } from "@/server/audit";
 import { requireAdmin } from "@/server/auth/dal";
-import { requestMeta } from "@/server/request";
+import { requestMeta } from "@/server/http-meta";
 import { runImport } from "@/server/import/run-import";
 import type { ActionState } from "@/lib/action-state";
 import { MAX_IMPORT_BYTES } from "@/lib/import-limits";

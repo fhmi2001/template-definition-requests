@@ -72,7 +72,7 @@ export default async function ImportsPage() {
           <h2 id="rules-title" className="text-lg font-bold">
             {t("imports.rulesTitle")}
           </h2>
-          <ul className="flex list-disc flex-col gap-2.5 ps-5 text-sm leading-6 text-[#3f4945]">
+          <ul className="flex list-disc flex-col gap-2.5 ps-5 text-sm leading-6 text-ink-2">
             {RULES.map((r, i) => (
               <li key={i}>{rich(t(r))}</li>
             ))}
@@ -81,7 +81,7 @@ export default async function ImportsPage() {
             <summary className="cursor-pointer font-semibold text-brand-600">{t("imports.readColumns", { n: READ_COLUMNS.length })}</summary>
             <div dir="ltr" className={`mt-3 flex flex-wrap gap-1.5 ${locale === "ar" ? "justify-end" : ""}`}>
               {READ_COLUMNS.map((c) => (
-                <span key={c} className="rounded-md bg-[#e9ece8] px-2 py-0.5 font-mono text-xs">
+                <span key={c} className="rounded-md bg-chip px-2 py-0.5 font-mono text-xs">
                   {c}
                 </span>
               ))}
@@ -101,7 +101,7 @@ export default async function ImportsPage() {
           <div className="overflow-x-auto rounded-2xl border border-line bg-white">
             <table className="w-full min-w-[920px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.file")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.date")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("imports.th.by")}</th>
@@ -117,7 +117,7 @@ export default async function ImportsPage() {
                 {batches.map((b) => {
                   const done = b.status === "COMPLETED" || b.status === "COMPLETED_WITH_ERRORS";
                   return (
-                    <tr key={b.id} className="border-b border-[#eceeeb] last:border-0">
+                    <tr key={b.id} className="border-b border-hair last:border-0">
                       <td dir="ltr" className="max-w-[260px] truncate px-4 py-3 font-mono text-[13px]" title={b.fileName}>
                         {b.fileName}
                       </td>

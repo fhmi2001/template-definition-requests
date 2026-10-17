@@ -6,6 +6,7 @@ import { db } from "@/server/db";
 import { requireAdmin } from "@/server/auth/dal";
 import { formatDate, formatNumber } from "@/lib/format";
 import { CreateClientForm } from "./client-forms";
+import { buttonClass } from "@/components/button-styles";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -54,7 +55,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
         </div>
         <Link
           href="/admin/clients/import"
-          className="inline-flex min-h-11 items-center rounded-[10px] border border-field bg-white px-5 text-[15px] font-semibold text-ink hover:bg-canvas"
+          className={buttonClass("secondary")}
         >
           {t("clients.importBtn")}
         </Link>
@@ -97,9 +98,9 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
               type="search"
               defaultValue={q}
               placeholder={t("clients.searchPlaceholder")}
-              className="h-11 min-w-0 flex-1 rounded-[10px] border border-field bg-white px-3.5 text-sm"
+              className="h-11 min-w-0 flex-1 rounded-xl border border-field bg-white px-3.5 text-sm"
             />
-            <button type="submit" className="min-h-11 rounded-[10px] border border-field bg-white px-4 text-sm font-semibold hover:bg-canvas">
+            <button type="submit" className="min-h-11 rounded-xl border border-field bg-white px-4 text-sm font-semibold hover:bg-canvas">
               {t("common.search")}
             </button>
           </form>
@@ -113,7 +114,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
           <div className="overflow-x-auto rounded-2xl border border-line bg-white">
             <table className="w-full min-w-[920px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.client")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("clients.emails")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.senders")}</th>
@@ -126,7 +127,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
               </thead>
               <tbody>
                 {clients.map((c) => (
-                  <tr key={c.id} className="border-b border-[#eceeeb] align-top last:border-0">
+                  <tr key={c.id} className="border-b border-hair align-top last:border-0">
                     <td className="px-4 py-3.5">
                       <div className="font-semibold">{c.name}</div>
                       {c.notes ? <div className="mt-1 text-[13px] text-muted">{c.notes}</div> : null}
@@ -138,7 +139,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
                             key={u.id}
                             dir="ltr"
                             className={`rounded-md px-2 py-0.5 font-mono text-[12.5px] ${
-                              u.isActive ? "bg-[#e9ece8] text-ink" : "bg-transparent text-subtle line-through"
+                              u.isActive ? "bg-chip text-ink" : "bg-transparent text-subtle line-through"
                             }`}
                             title={u.isActive ? undefined : t("state.disabledM")}
                           >
@@ -154,7 +155,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
                       ) : (
                         <ul className="flex flex-wrap gap-1.5">
                           {c.senders.map((x) => (
-                            <li key={x.id} dir="ltr" className="rounded-md bg-[#e9ece8] px-2 py-0.5 font-mono text-[12.5px]">
+                            <li key={x.id} dir="ltr" className="rounded-md bg-chip px-2 py-0.5 font-mono text-[12.5px]">
                               {x.name}
                             </li>
                           ))}
@@ -168,7 +169,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
                       {c.isActive ? (
                         <span className="inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand-600">{t("state.activeM")}</span>
                       ) : (
-                        <span className="inline-flex rounded-full bg-[#e9ece8] px-2.5 py-1 text-[13px] font-semibold text-[#3f4945]">{t("state.disabledM")}</span>
+                        <span className="inline-flex rounded-full bg-chip px-2.5 py-1 text-[13px] font-semibold text-ink-2">{t("state.disabledM")}</span>
                       )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5 text-[13px] text-muted">{formatDate(c.createdAt, locale)}</td>

@@ -27,7 +27,7 @@ export const adminLoginSchema = z.object({
 });
 
 /** يفكك نصاً فيه إيميلات مفصولة بسطر جديد أو فاصلة أو مسافة، ويزيل المكرر. */
-export function splitEmails(raw: string) {
+function splitEmails(raw: string) {
   return Array.from(
     new Set(
       raw
@@ -54,7 +54,7 @@ export const clientNameSchema = z
   .min(2, { error: "v.clientName.short" })
   .max(200, { error: "v.clientName.long" });
 
-export const clientNotesSchema = z
+const clientNotesSchema = z
   .string()
   .trim()
   .max(500, { error: "v.notes.long" })
@@ -91,7 +91,7 @@ export function fieldErrors(error: z.ZodError, t: (keyOrText: string) => string)
 /** مفتاح ترجمة: يُعرض عبر t() */
 export const SENDER_NAME_RULE = "v.senderName.rule";
 
-export const senderNameSchema = z
+const senderNameSchema = z
   .string({ error: "v.senderName.required" })
   .trim()
   .min(1, { error: "v.senderName.required" })
@@ -123,7 +123,7 @@ export const senderNameKey = (v: string) => cleanSenderName(v).toLowerCase();
  * أسماء مرسلين مفصولة بسطر جديد أو فاصلة (المسافة جزء من الاسم مثل «Gulf Motors»).
  * يزيل المكرر بغض النظر عن حالة الأحرف.
  */
-export function splitSenderNames(raw: string) {
+function splitSenderNames(raw: string) {
   const seen = new Set<string>();
   const out: string[] = [];
   for (const part of raw.split(/[\r\n,;،|]+/)) {

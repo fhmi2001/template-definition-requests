@@ -126,12 +126,12 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
             </h2>
             <ol className="flex flex-col">
               {r.statusChanges.map((c) => (
-                <li key={c.id} className="flex flex-col gap-1 border-t border-[#eceeeb] py-3 first:border-0 first:pt-0">
+                <li key={c.id} className="flex flex-col gap-1 border-t border-hair py-3 first:border-0 first:pt-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${REVIEW_STYLE[c.toStatus]}`}>{t(`rv.${c.toStatus}`)}</span>
                     <span className="text-[12px] text-muted">{formatDateTime(c.createdAt, locale)}</span>
                   </div>
-                  <div className="text-[13px] leading-6 text-[#3f4945]">
+                  <div className="text-[13px] leading-6 text-ink-2">
                     {c.fromStatus ? t("rq.h.changed", { from: t(`rv.${c.fromStatus}`), to: t(`rv.${c.toStatus}`) }) : t("rq.h.received")}
                     {c.admin ? (
                       <>

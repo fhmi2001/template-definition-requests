@@ -8,6 +8,7 @@ import { PREVIEW_TTL_MS, type StoredResult } from "@/server/client-import/apply"
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { ClientsUploadForm } from "./upload-form";
 import type { MessageKey } from "@/i18n/translate";
+import { buttonClass } from "@/components/button-styles";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -24,8 +25,8 @@ async function StatusBadge({ status, expired }: { status: "PREVIEW" | "APPLIED" 
   const { t } = await getT();
   const map: Record<typeof status, [MessageKey, string]> = {
     APPLIED: ["ci.st.applied", "bg-brand-50 text-brand-600"],
-    CANCELLED: ["ci.st.cancelled", "bg-[#e9ece8] text-[#3f4945]"],
-    PREVIEW: expired ? ["ci.st.expired", "bg-[#e9ece8] text-[#3f4945]"] : ["ci.st.pending", "bg-warn-50 text-warn-700"],
+    CANCELLED: ["ci.st.cancelled", "bg-chip text-ink-2"],
+    PREVIEW: expired ? ["ci.st.expired", "bg-chip text-ink-2"] : ["ci.st.pending", "bg-warn-50 text-warn-700"],
   };
   const [label, cls] = map[status];
   return <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] font-semibold ${cls}`}>{t(label)}</span>;
@@ -65,7 +66,7 @@ export default async function ClientsImportPage() {
           </h2>
           <a
             href="/admin/clients/import/template.xlsx"
-            className="inline-flex min-h-11 items-center gap-2 rounded-[10px] border border-field bg-white px-4 text-sm font-semibold text-ink hover:bg-canvas"
+            className={buttonClass("secondary", "sm")}
           >
             <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 3v12" />
@@ -78,7 +79,7 @@ export default async function ClientsImportPage() {
         <div className="overflow-x-auto rounded-xl border border-line">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+              <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                 <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.column")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.required")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("clients.notes")}</th>
@@ -86,7 +87,7 @@ export default async function ClientsImportPage() {
             </thead>
             <tbody>
               {COLUMNS.map((c) => (
-                <tr key={c.key} className="border-b border-[#eceeeb] align-top last:border-0">
+                <tr key={c.key} className="border-b border-hair align-top last:border-0">
                   <td className="px-4 py-3">
                     <div dir="ltr" className="font-mono font-medium">
                       {HEADER_ALIASES[c.key][0]}
@@ -94,7 +95,7 @@ export default async function ClientsImportPage() {
                     <div className="mt-0.5 text-[13px] text-muted">{t("ci.or")} {HEADER_ALIASES[c.key].find((a) => /[؀-ۿ]/.test(a))}</div>
                   </td>
                   <td className="px-4 py-3">{c.required ? t("common.yes") : <span className="text-muted">{t("ci.optional")}</span>}</td>
-                  <td className="px-4 py-3 leading-6 text-[#3f4945]">{t(c.note)}</td>
+                  <td className="px-4 py-3 leading-6 text-ink-2">{t(c.note)}</td>
                 </tr>
               ))}
             </tbody>
@@ -123,7 +124,7 @@ export default async function ClientsImportPage() {
           <div className="overflow-x-auto rounded-2xl border border-line bg-white">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.file")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.date")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.rows")}</th>
@@ -135,7 +136,7 @@ export default async function ClientsImportPage() {
                 {recent.map((r) => {
                   const totals = (r.result as StoredResult | null)?.totals;
                   return (
-                    <tr key={r.id} className="border-b border-[#eceeeb] last:border-0">
+                    <tr key={r.id} className="border-b border-hair last:border-0">
                       <td className="px-4 py-3">
                         <Link href={`/admin/clients/import/${r.id}`} dir="ltr" className="break-all font-mono text-[13px] text-brand-600 underline-offset-4 hover:underline">
                           {r.fileName}
@@ -145,7 +146,7 @@ export default async function ClientsImportPage() {
                         {formatDateTime(r.createdAt, locale)} · <span dir="ltr">{r.uploadedBy.username}</span>
                       </td>
                       <td dir="ltr" className="px-4 py-3 font-mono">{formatNumber(r.totalRows)}</td>
-                      <td className="px-4 py-3 text-[13px] text-[#3f4945]">
+                      <td className="px-4 py-3 text-[13px] text-ink-2">
                         {totals ? t("ci.resultLine", { created: formatNumber(totals.create), updated: formatNumber(totals.update) }) : "—"}
                       </td>
                       <td className="px-4 py-3">

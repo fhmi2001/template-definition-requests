@@ -5,9 +5,8 @@ import type { ReviewStatus } from "@/generated/prisma/enums";
 import { changeRequestStatusAction, resendStatusEmailAction } from "@/actions/request-review";
 import { initialState } from "@/lib/action-state";
 import { REJECTION_REASON_MAX, REVIEW_STATUSES, REVIEW_STYLE } from "@/lib/review-status";
-import { Alert, SubmitButton } from "@/components/ui";
+import { Alert, SubmitButton, ConfirmButton } from "@/components/ui";
 import { useT } from "@/i18n/client";
-import { ConfirmButton } from "../../clients/client-forms";
 
 /** تغيير حالة الطلب: أربع حالات، وسبب إلزامي عند الرفض. */
 export function StatusForm({ requestId, current }: { requestId: string; current: ReviewStatus | null }) {
@@ -36,7 +35,7 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
       {state.ok && state.message ? <Alert tone="success">{state.message}</Alert> : null}
 
       <fieldset className="flex flex-col gap-2" aria-describedby={state.fields?.status ? "status-error" : undefined}>
-        <legend className="mb-1 text-[13px] font-semibold text-[#3f4945]">{t("rq.d.newStatus")}</legend>
+        <legend className="mb-1 text-[13px] font-semibold text-ink-2">{t("rq.d.newStatus")}</legend>
         <div className="grid grid-cols-2 gap-2">
           {REVIEW_STATUSES.map((s) => {
             const isCurrent = s === current;
@@ -44,12 +43,12 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
             return (
               <label
                 key={s}
-                className={`flex min-h-12 items-center gap-2.5 rounded-xl border-2 px-3 py-2 text-sm transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#8cc4b3] ${
+                className={`flex min-h-12 items-center gap-2.5 rounded-xl border-2 px-3 py-2 text-sm transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-300 ${
                   isCurrent
                     ? "cursor-not-allowed border-dashed border-line bg-canvas text-muted"
                     : on
                       ? "cursor-pointer border-brand-600 bg-brand-50"
-                      : "cursor-pointer border-line bg-white hover:border-[#9aa59f]"
+                      : "cursor-pointer border-line bg-white hover:border-field-strong"
                 }`}
               >
                 <input
@@ -63,7 +62,7 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
                 />
                 <span
                   aria-hidden="true"
-                  className={`flex size-4 flex-none items-center justify-center rounded-full border-2 ${on ? "border-brand-600" : "border-[#8a9590]"}`}
+                  className={`flex size-4 flex-none items-center justify-center rounded-full border-2 ${on ? "border-brand-600" : "border-field-strong"}`}
                 >
                   {on ? <span className="size-2 rounded-full bg-brand-600" /> : null}
                 </span>
@@ -84,7 +83,7 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
 
       {rejecting ? (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="reason" className="text-[13px] font-semibold text-[#3f4945]">
+          <label htmlFor="reason" className="text-[13px] font-semibold text-ink-2">
             {t("rq.d.reason")} <span className="text-danger-600">*</span>
           </label>
           <textarea
@@ -98,7 +97,7 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
             onChange={(e) => setReasonLength(Array.from(e.target.value).length)}
             aria-invalid={!!reasonError}
             aria-describedby={reasonError ? "reason-error reason-hint" : "reason-hint"}
-            className={`w-full rounded-[10px] border bg-white px-3.5 py-2.5 text-[15px] leading-7 ${reasonError ? "border-danger-600" : "border-field"}`}
+            className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[15px] leading-7 ${reasonError ? "border-danger-600" : "border-field"}`}
           />
           {reasonError ? (
             <p id="reason-error" role="alert" className="text-[13px] text-danger-600">

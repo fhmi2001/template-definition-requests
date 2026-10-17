@@ -31,7 +31,7 @@ export function AdminLoginForm() {
       </Field>
 
       <Field id="password" label={t("adminLogin.password")} error={state.fields?.password}>
-        <div className="flex overflow-hidden rounded-[10px] border border-field bg-white focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-[#8cc4b3] focus-within:outline-solid">
+        <div className="flex overflow-hidden rounded-xl border border-field bg-white focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-brand-300 focus-within:outline-solid">
           <input
             id="password"
             name="password"
@@ -46,7 +46,7 @@ export function AdminLoginForm() {
             onClick={() => setShowPw((v) => !v)}
             aria-label={showPw ? t("adminLogin.hidePw") : t("adminLogin.showPw")}
             aria-pressed={showPw}
-            className="flex w-12 flex-none items-center justify-center border-s border-line bg-canvas text-[#3f4945]"
+            className="flex w-12 flex-none items-center justify-center border-s border-line bg-canvas text-ink-2"
           >
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />

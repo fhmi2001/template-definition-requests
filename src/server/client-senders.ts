@@ -12,7 +12,7 @@ import { senderNameKey } from "@/lib/validation";
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
-export const availableSenderSelect = {
+const availableSenderSelect = {
   id: true,
   name: true,
   clientName: true,
@@ -49,7 +49,7 @@ export async function linkedSendersForAdmin(clientId: string) {
   });
 }
 
-export type SenderLookup = {
+type SenderLookup = {
   id: string;
   name: string;
   nameKey: string;

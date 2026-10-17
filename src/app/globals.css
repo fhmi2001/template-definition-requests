@@ -4,24 +4,49 @@
   --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-canvas: #f4f5f2;
+  /* محايدات مأخوذة من رمادي شعار Deewan (#2D2D2D) */
+  --color-canvas: #f4f6f5;
+  --color-canvas-2: #f9faf9;
   --color-surface: #ffffff;
-  --color-ink: #16201c;
-  --color-muted: #4a5551;
-  --color-subtle: #5c6662;
-  --color-line: #dde1dc;
-  --color-field: #b9c1bc;
+  --color-ink: #2d2d2d;
+  --color-ink-2: #3f4542;
+  --color-muted: #59605c;
+  --color-subtle: #6b726e;
+  --color-line: #e2e6e3;
+  --color-line-strong: #cdd3cf;
+  --color-hair: #eef0ef;
+  --color-chip: #eceeed;
+  --color-field: #c3cac6;
+  --color-field-strong: #8e9792;
 
-  --color-brand-50: #e3efea;
-  --color-brand-600: #0b5d4b;
-  --color-brand-700: #08463a;
-  --color-night: #10241e;
-  --color-night-2: #1e3c33;
+  /* أخضر الشعار #35A169؛ الدرجات الأغمق للنصوص والأزرار (تباين كافٍ مع الأبيض) */
+  --color-brand-25: #f4fbf7;
+  --color-brand-50: #e8f5ed;
+  --color-brand-100: #d2ecdc;
+  --color-brand-200: #b4dfc5;
+  --color-brand-300: #7cc79e;
+  --color-brand-400: #35a169;
+  --color-brand-600: #22804e;
+  --color-brand-700: #1a6a3f;
+  --color-brand-800: #134f2f;
+
+  --color-night: #262928;
+  --color-night-2: #323634;
+  --color-night-line: #434845;
+  --color-night-fg: #dadfdc;
+  --color-night-muted: #a5ada9;
+
+  --color-info-25: #f1f6fc;
+  --color-info-50: #e3eef9;
+  --color-info-200: #b9d0ea;
+  --color-info-700: #1d4f86;
 
   --color-danger-50: #fbe7e5;
+  --color-danger-200: #efc9c5;
   --color-danger-600: #a8221a;
   --color-danger-700: #8e1c15;
   --color-warn-50: #fbf0dc;
+  --color-warn-600: #a86400;
   --color-warn-700: #7a4700;
 }
 
@@ -32,7 +57,7 @@ body {
 }
 
 :focus-visible {
-  outline: 3px solid #8cc4b3;
+  outline: 3px solid var(--color-brand-300);
   outline-offset: 2px;
 }
 

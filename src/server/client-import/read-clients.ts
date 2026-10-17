@@ -31,7 +31,7 @@ export type ParsedClient = {
   emails: Item[];
   senders: Item[]; // أسماء المرسلين كما كُتبت في الملف
 };
-export type ParsedFile = {
+type ParsedFile = {
   sheetName: string;
   totalRows: number;
   clients: ParsedClient[];

@@ -1,15 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useState } from "react";
 import { saveSenderTypeAction } from "@/actions/requests";
 import { initialState, type ActionState } from "@/lib/action-state";
 import { AWARENESS } from "@/lib/sender-types";
 import { Alert, Field, SubmitButton, inputClass } from "@/components/ui";
-import { backLinkClass, footerClass } from "../../request-classes";
+import { StepFooter } from "@/components/step-footer";
 import { useT } from "@/i18n/client";
 
-export type TypeOption = { value: string; label: string; sub: string | null };
+type TypeOption = { value: string; label: string; sub: string | null };
 
 /** اختيار نوع مرسل واحد؛ عند «توعوي · Awareness» يظهر حقل Client Name الإلزامي. */
 export function TypeForm({
@@ -34,7 +33,7 @@ export function TypeForm({
   const typeError = state !== seenState ? state.fields?.senderType : undefined;
 
   return (
-    <form action={action} className="flex flex-col gap-6 rounded-2xl border border-line bg-white p-5 sm:p-6" noValidate>
+    <form action={action} className="flex flex-col gap-7 rounded-2xl border border-line bg-white p-5 sm:p-8" noValidate>
       {/* القيمة المرسلة من الحالة: React يعيد ضبط أزرار الاختيار بعد كل رد خطأ، والحقل المخفي لا يتأثر */}
       <input type="hidden" name="senderType" value={type ?? ""} />
       {state.error ? <Alert>{state.error}</Alert> : null}
@@ -49,8 +48,12 @@ export function TypeForm({
             return (
               <label
                 key={o.value}
-                className={`flex min-h-16 cursor-pointer items-center gap-3 rounded-xl border-2 px-4 py-3 transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#8cc4b3] ${
-                  on ? "border-brand-600 bg-brand-50" : typeError ? "border-danger-600/50 bg-white hover:border-[#9aa59f]" : "border-line bg-white hover:border-[#9aa59f]"
+                className={`flex min-h-[72px] cursor-pointer items-center gap-3.5 rounded-xl border px-4 py-3 transition-[border-color,background-color,box-shadow] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-300 ${
+                  on
+                    ? "border-brand-600 bg-brand-25 shadow-[inset_0_0_0_1px_var(--color-brand-600)]"
+                    : typeError
+                      ? "border-danger-600/50 bg-white hover:border-field-strong"
+                      : "border-line-strong bg-white hover:border-field-strong"
                 }`}
               >
                 <input
@@ -66,7 +69,7 @@ export function TypeForm({
                 />
                 <span
                   aria-hidden="true"
-                  className={`flex size-5 flex-none items-center justify-center rounded-full border-2 ${on ? "border-brand-600" : "border-[#8a9590]"}`}
+                  className={`flex size-5 flex-none items-center justify-center rounded-full border-2 ${on ? "border-brand-600" : "border-field-strong"}`}
                 >
                   {on ? <span className="size-2.5 rounded-full bg-brand-600" /> : null}
                 </span>
@@ -112,14 +115,11 @@ export function TypeForm({
         </div>
       ) : null}
 
-      <div className={footerClass}>
-        <Link href={backHref} className={backLinkClass}>
-          {t("common.previous")}
-        </Link>
+      <StepFooter backHref={backHref} backLabel={t("common.previous")}>
         <SubmitButton pendingText={t("common.saving")} className="min-w-32">
           {t("common.next")}
         </SubmitButton>
-      </div>
+      </StepFooter>
     </form>
   );
 }

@@ -12,3 +12,5 @@ const dateOnly = Object.fromEntries(
 export const formatDateTime = (d: Date | null | undefined, locale: Locale) => (d ? dateTime[locale].format(d) : "—");
 export const formatDate = (d: Date | null | undefined, locale: Locale) => (d ? dateOnly[locale].format(d) : "—");
 export const formatNumber = (n: number) => n.toLocaleString("en-US");
+/** تاريخ من الإكسل كما في الملف: 2027-10-13 */
+export const excelDate = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "—");

@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { db } from "@/server/db";
-import { requestMeta } from "@/server/request";
+import { requestMeta } from "@/server/http-meta";
 import { audit } from "@/server/audit";
 import { verifyPassword } from "@/server/auth/password";
 import { hitRateLimit, waitText } from "@/server/auth/rate-limit";

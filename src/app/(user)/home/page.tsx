@@ -2,14 +2,15 @@ import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
 import { requireUser } from "@/server/auth/dal";
 import { availableSendersForClient } from "@/server/client-senders";
-import Link from "next/link";
+import { LinkButton } from "@/components/link-button";
 import { db } from "@/server/db";
 import { getDraft, requestPath } from "@/server/requests";
 import { formatDateTime } from "@/lib/format";
 import { todayRiyadh } from "@/lib/sender-status";
-import { RequestSteps, UserShell } from "@/components/user-shell";
-import { senderTypeLabel } from "@/app/admin/(protected)/senders/sender-ui";
+import { UserShell } from "@/components/user-shell";
+import { StepHeader } from "@/app/(user)/request/request-ui";
 import { SenderPicker, type PickableSender } from "./sender-picker";
+import { senderTypeLabel } from "@/lib/sender-types";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -48,31 +49,22 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <div className="flex flex-col gap-4">
-        <RequestSteps current={1} draftId={draft?.id} />
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-[28px] font-bold">{t("home.title")}</h1>
-          <p className="text-[15px] leading-7 text-muted">{t("home.intro")}</p>
-        </div>
-      </div>
+      <StepHeader current={1} draftId={draft?.id} title={t("home.title")} intro={t("home.intro")} />
 
       {unfinished ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#c9dfd6] bg-white px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-25 px-5 py-4">
           <p className="text-[15px] leading-7">
             {t("home.unfinished")} <span dir="ltr" className="font-mono font-semibold">{unfinished.senderName}</span> · {unfinished.templateName}
             <span className="text-[13px] text-muted"> · {t("home.lastEdit", { date: formatDateTime(unfinished.updatedAt, locale) })}</span>
           </p>
-          <Link
-            href={requestPath.content(unfinished.id)}
-            className="inline-flex min-h-10 items-center rounded-[10px] border border-brand-600 bg-white px-4 text-sm font-semibold text-brand-700 hover:bg-brand-50"
-          >
+          <LinkButton href={requestPath.content(unfinished.id)} variant="outline" size="sm">
             {t("home.resume")}
-          </Link>
+          </LinkButton>
         </div>
       ) : null}
 
       {senders.length === 0 ? (
-        <section className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-white px-6 py-12 text-center">
+        <section className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line-strong bg-white px-6 py-14 text-center">
           <h2 className="text-lg font-bold">{t("home.noSenders")}</h2>
           <p className="max-w-[520px] text-[15px] leading-7 text-muted">{t("home.noSendersHint")}</p>
         </section>

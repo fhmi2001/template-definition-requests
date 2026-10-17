@@ -10,7 +10,7 @@ const schema = z.object({
   EMAIL_FROM: z.string().min(3).default("Template Definition Requests <onboarding@resend.dev>"),
 });
 
-export type Env = z.infer<typeof schema>;
+type Env = z.infer<typeof schema>;
 
 let cached: Env | null = null;
 

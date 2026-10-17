@@ -1,8 +1,21 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Alert } from "@/components/ui";
+import { LinkButton } from "@/components/link-button";
+import { PageHeader, RequestSteps } from "@/components/user-shell";
 import { getT } from "@/i18n/server";
 
-/** بطاقة صغيرة باسم المرسل المختار (وما اختير بعده) مع رابط للتغيير. */
+/** رأس كل مرحلة: شريط المراحل ثم العنوان والوصف. */
+export function StepHeader({ current, draftId, title, intro }: { current: number; draftId?: string; title: string; intro: string }) {
+  return (
+    <div className="flex flex-col gap-7">
+      <RequestSteps current={current} draftId={draftId} />
+      <PageHeader title={title} intro={intro} />
+    </div>
+  );
+}
+
+/** شريط ما اختاره العميل في المراحل السابقة، مع رابط لتغيير اسم المرسل. */
 export async function ChosenSender({
   name,
   clientName,
@@ -16,34 +29,42 @@ export async function ChosenSender({
 }) {
   const { t } = await getT();
   return (
-    <section aria-label={t("chosen.aria")} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-white px-5 py-4">
-      <dl className="flex flex-wrap gap-x-8 gap-y-3">
-        <div className="flex flex-col gap-0.5">
-          <dt className="text-[12px] text-muted">{t("col.senderName")}</dt>
-          <dd dir="ltr" className="font-mono text-base font-medium">
-            {name}
-          </dd>
+    <section
+      aria-label={t("chosen.aria")}
+      className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border border-line bg-white px-5 py-3.5"
+    >
+      <dl className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <div className="flex items-center gap-2.5">
+          <span aria-hidden="true" className="flex size-8 flex-none items-center justify-center rounded-full bg-brand-400 text-[13px] font-bold text-white">
+            {name.trim().charAt(0).toUpperCase()}
+          </span>
+          <div className="flex flex-col">
+            <dt className="text-[11px] text-muted">{t("col.senderName")}</dt>
+            <dd dir="ltr" className="font-mono text-[15px] font-semibold leading-tight">
+              {name}
+            </dd>
+          </div>
         </div>
-        {clientName ? (
-          <div className="flex flex-col gap-0.5">
-            <dt className="text-[12px] text-muted">{t("col.clientName")}</dt>
-            <dd className="text-[15px]">{clientName}</dd>
-          </div>
-        ) : null}
+        {clientName ? <Item label={t("col.clientName")}>{clientName}</Item> : null}
         {extra?.map((e) => (
-          <div key={e.label} className="flex flex-col gap-0.5">
-            <dt className="text-[12px] text-muted">{e.label}</dt>
-            <dd className="text-[15px]">{e.value}</dd>
-          </div>
+          <Item key={e.label} label={e.label}>
+            {e.value}
+          </Item>
         ))}
       </dl>
-      <Link
-        href={changeHref}
-        className="inline-flex min-h-10 items-center rounded-[10px] border border-field bg-white px-3.5 text-sm font-semibold hover:bg-canvas"
-      >
+      <Link href={changeHref} className="inline-flex min-h-10 items-center text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
         {t("chosen.change")}
       </Link>
     </section>
+  );
+}
+
+function Item({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col sm:border-s sm:border-hair sm:ps-6">
+      <dt className="text-[11px] text-muted">{label}</dt>
+      <dd className="text-[14px] font-medium leading-tight">{children}</dd>
+    </div>
   );
 }
 
@@ -54,9 +75,7 @@ export async function SenderGone({ changeHref }: { changeHref: string }) {
     <div className="flex flex-col gap-4">
       <Alert>{t("gone.message")}</Alert>
       <div>
-        <Link href={changeHref} className="font-semibold text-brand-600 underline-offset-4 hover:underline">
-          {t("gone.back")}
-        </Link>
+        <LinkButton href={changeHref}>{t("gone.back")}</LinkButton>
       </div>
     </div>
   );

@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useState } from "react";
 import { saveTemplateAction } from "@/actions/requests";
 import { initialState } from "@/lib/action-state";
 import { Alert, Field, SubmitButton, inputClass } from "@/components/ui";
-import { backLinkClass, footerClass } from "../../request-classes";
+import { StepFooter } from "@/components/step-footer";
 import { useT } from "@/i18n/client";
 
 const DESCRIPTION_MAX = 1000;
@@ -29,7 +28,7 @@ export function TemplateForm({
   const t = useT();
 
   return (
-    <form action={action} className="flex flex-col gap-6 rounded-2xl border border-line bg-white p-5 sm:p-6" noValidate>
+    <form action={action} className="flex flex-col gap-7 rounded-2xl border border-line bg-white p-5 sm:p-8" noValidate>
       {state.error ? <Alert>{state.error}</Alert> : null}
 
       <div className="max-w-[560px]">
@@ -60,7 +59,7 @@ export function TemplateForm({
             onChange={(e) => setDescription(e.target.value)}
             aria-invalid={!!state.fields?.templateDescription}
             aria-describedby="template-description-count"
-            className={`w-full rounded-[10px] border bg-white px-3.5 py-2.5 text-base leading-7 ${
+            className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-base leading-7 ${
               state.fields?.templateDescription || over ? "border-danger-600" : "border-field"
             }`}
           />
@@ -72,14 +71,11 @@ export function TemplateForm({
         </p>
       </div>
 
-      <div className={footerClass}>
-        <Link href={backHref} className={backLinkClass}>
-          {t("common.previous")}
-        </Link>
+      <StepFooter backHref={backHref} backLabel={t("common.previous")}>
         <SubmitButton pendingText={t("common.saving")} className="min-w-32">
           {t("common.next")}
         </SubmitButton>
-      </div>
+      </StepFooter>
     </form>
   );
 }

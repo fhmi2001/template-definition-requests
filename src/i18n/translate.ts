@@ -4,7 +4,7 @@ import { ar, type MessageKey } from "./messages/ar";
 import { en } from "./messages/en";
 
 export type { MessageKey } from "./messages/ar";
-export type { ParamValue, Params } from "./types";
+export type { Params } from "./types";
 
 /** رسالة جاهزة للترجمة لاحقاً (تُستخدم في وحدات مشتركة بين المتصفح والخادم). */
 export type Msg = { k: MessageKey; p?: Params };
@@ -15,7 +15,7 @@ const DICTS: Record<Locale, Record<string, Entry>> = { ar, en };
  * يترجم مفتاحاً. إن لم يكن المفتاح معروفاً يُعاد النص كما هو
  * (مثلاً رسائل قديمة محفوظة في قاعدة البيانات بالعربية).
  */
-export function translate(locale: Locale, key: string, params?: Params): string {
+function translate(locale: Locale, key: string, params?: Params): string {
   const entry = DICTS[locale][key] ?? DICTS.ar[key];
   if (entry === undefined) return key;
   if (typeof entry === "function") return entry(params ?? {});
@@ -53,7 +53,7 @@ export function encodeMsg(key: MessageKey, params?: Params): string {
   return params && Object.keys(params).length ? `${key}|${JSON.stringify(params)}` : key;
 }
 
-export function decodeMsg(stored: string): { key: string; params?: Params } {
+function decodeMsg(stored: string): { key: string; params?: Params } {
   const i = stored.indexOf("|");
   if (i > 0 && /^[a-zA-Z0-9_.]+$/.test(stored.slice(0, i))) {
     try {

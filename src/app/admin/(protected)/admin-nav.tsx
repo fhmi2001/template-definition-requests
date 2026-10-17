@@ -20,9 +20,9 @@ export function AdminNav() {
       {items.map((item) => {
         if (!item.ready) {
           return (
-            <span key={item.href} className="flex min-h-11 items-center justify-between gap-2 rounded-[10px] px-3 text-sm text-[#8fa69d]">
+            <span key={item.href} className="flex min-h-11 items-center justify-between gap-2 rounded-xl px-3 text-sm text-night-muted">
               {t(item.label)}
-              <span className="rounded-full bg-[#1e3c33] px-2 py-0.5 text-[11px]">{t("nav.soon")}</span>
+              <span className="rounded-full bg-night-2 px-2 py-0.5 text-[11px]">{t("nav.soon")}</span>
             </span>
           );
         }
@@ -32,8 +32,8 @@ export function AdminNav() {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`flex min-h-11 items-center rounded-[10px] px-3 text-sm ${
-              active ? "bg-night-2 font-semibold text-white" : "text-[#cfe3db] hover:bg-night-2"
+            className={`flex min-h-11 items-center rounded-xl px-3 text-sm ${
+              active ? "bg-night-2 font-semibold text-white" : "text-night-fg hover:bg-night-2"
             }`}
           >
             {t(item.label)}

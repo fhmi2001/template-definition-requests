@@ -7,7 +7,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/server/db";
 import { audit } from "@/server/audit";
 import { requireAdmin } from "@/server/auth/dal";
-import { requestMeta } from "@/server/request";
+import { requestMeta } from "@/server/http-meta";
 import { ClientFileError, readClientsFile } from "@/server/client-import/read-clients";
 import { applyClientImport } from "@/server/client-import/apply";
 import type { ActionState } from "@/lib/action-state";

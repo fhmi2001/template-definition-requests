@@ -3,11 +3,10 @@ import { getT } from "@/i18n/server";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/server/auth/dal";
 import { draftSpecs, getPledge, loadDraftForPage, requestPath } from "@/server/requests";
-import { AWARENESS, senderTypeDisplay } from "@/lib/sender-types";
+import { AWARENESS, senderTypeDisplay, customerTypeDisplay } from "@/lib/sender-types";
 import { isGovernment, messageSignature } from "@/lib/template-rules";
-import { RequestSteps, UserShell } from "@/components/user-shell";
-import { customerTypeDisplay } from "@/app/admin/(protected)/senders/sender-ui";
-import { ChosenSender, SenderGone } from "../../request-ui";
+import { UserShell } from "@/components/user-shell";
+import { ChosenSender, SenderGone, StepHeader } from "../../request-ui";
 import { ContentEditor } from "./content-editor";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,15 +33,7 @@ export default async function RequestContentPage({ params }: { params: Promise<{
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <div className="flex flex-col gap-4">
-        <RequestSteps current={4} draftId={draft.id} />
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-[28px] font-bold">{t("content.title")}</h1>
-          <p className="text-[15px] leading-7 text-muted">
-            {t("content.intro")}
-          </p>
-        </div>
-      </div>
+      <StepHeader current={4} draftId={draft.id} title={t("content.title")} intro={t("content.intro")} />
 
       {!sender ? (
         <SenderGone changeHref={requestPath.sender(draft.id)} />
@@ -61,6 +52,7 @@ export default async function RequestContentPage({ params }: { params: Promise<{
             backHref={requestPath.template(draft.id)}
             signature={messageSignature(draft.senderType, draft.awarenessClientName)}
             signatureEditHref={requestPath.type(draft.id)}
+            senderName={sender.name}
           />
         </>
       )}

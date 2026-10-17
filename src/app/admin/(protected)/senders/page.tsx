@@ -4,11 +4,14 @@ import Link from "next/link";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/server/db";
 import { requireAdmin } from "@/server/auth/dal";
-import { formatDateTime, formatNumber } from "@/lib/format";
+import { formatDateTime, formatNumber, excelDate } from "@/lib/format";
 import { EXPIRING_DAYS, addDays, senderStatus, todayRiyadh } from "@/lib/sender-status";
 import { CreateSenderForm } from "./sender-forms";
-import { SenderStatusChip, customerTypeLabel, excelDate, senderTypeLabel } from "./sender-ui";
+import { SenderStatusChip } from "./sender-ui";
 import type { T } from "@/i18n/translate";
+import { customerTypeLabel, senderTypeLabel } from "@/lib/sender-types";
+import { FilterChips, Pager } from "@/components/list-controls";
+import { buttonClass } from "@/components/button-styles";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -138,7 +141,7 @@ export default async function SendersPage({
             {t("senders.statusNote")}
           </p>
         </div>
-        <Link href="/admin/imports" className="inline-flex min-h-11 items-center rounded-[10px] bg-brand-600 px-5 text-[15px] font-semibold text-white hover:bg-brand-700">
+        <Link href="/admin/imports" className={buttonClass("primary")}>
           {t("senders.updateFromExcel")}
         </Link>
       </div>
@@ -160,23 +163,10 @@ export default async function SendersPage({
           {t("senders.list")}
         </h2>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <nav aria-label={t("senders.filterLabel")} className="flex flex-wrap gap-2">
-            {FILTERS.map((f, i) => (
-              <Link
-                key={f}
-                href={pageHref({ q, status: f })}
-                aria-current={status === f ? "page" : undefined}
-                className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] ${
-                  status === f ? "border-brand-600 bg-brand-600 font-semibold text-white" : "border-[#c9cfc9] bg-white text-ink hover:bg-canvas"
-                }`}
-              >
-                {filterLabel(t, f)}
-                <span dir="ltr" className="font-mono">
-                  {formatNumber(counts[i])}
-                </span>
-              </Link>
-            ))}
-          </nav>
+          <FilterChips
+            label={t("senders.filterLabel")}
+            items={FILTERS.map((f, i) => ({ key: f, href: pageHref({ q, status: f }), label: filterLabel(t, f), count: counts[i], active: status === f }))}
+          />
           <form role="search" className="flex flex-[0_1_360px] gap-2">
             {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
             <label htmlFor="q" className="sr-only">
@@ -188,9 +178,9 @@ export default async function SendersPage({
               type="search"
               defaultValue={q}
               placeholder={t("senders.searchPlaceholder")}
-              className="h-11 min-w-0 flex-1 rounded-[10px] border border-field bg-white px-3.5 text-sm"
+              className="h-11 min-w-0 flex-1 rounded-xl border border-field bg-white px-3.5 text-sm"
             />
-            <button type="submit" className="min-h-11 rounded-[10px] border border-field bg-white px-4 text-sm font-semibold hover:bg-canvas">
+            <button type="submit" className="min-h-11 rounded-xl border border-field bg-white px-4 text-sm font-semibold hover:bg-canvas">
               {t("common.search")}
             </button>
           </form>
@@ -204,7 +194,7 @@ export default async function SendersPage({
           <div className="overflow-x-auto rounded-2xl border border-line bg-white">
             <table className="w-full min-w-[960px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.sender")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.client")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.senderType")}</th>
@@ -215,7 +205,7 @@ export default async function SendersPage({
               </thead>
               <tbody>
                 {senders.map((s) => (
-                  <tr key={s.id} className="border-b border-[#eceeeb] align-top last:border-0">
+                  <tr key={s.id} className="border-b border-hair align-top last:border-0">
                     <td className="px-4 py-3">
                       <div dir="ltr" className="font-mono font-medium">{s.name}</div>
                       {s.description ? <div className="mt-1 text-[13px] text-muted">{s.description}</div> : null}
@@ -237,7 +227,7 @@ export default async function SendersPage({
                       <div className="flex flex-wrap gap-1">
                         {s.senderTypes.length
                           ? s.senderTypes.map((x) => (
-                              <span key={x} className="rounded-md bg-[#e9ece8] px-1.5 py-0.5 text-xs">
+                              <span key={x} className="rounded-md bg-chip px-1.5 py-0.5 text-xs">
                                 {senderTypeLabel(t, x)}
                               </span>
                             ))
@@ -258,23 +248,11 @@ export default async function SendersPage({
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-muted">
-          <span>
-            {t("senders.pager", { total: formatNumber(total), page: formatNumber(page), pages: formatNumber(pages) })}
-          </span>
-          <div className="flex gap-2">
-            {page > 1 ? (
-              <Link href={pageHref({ q, status, page: page - 1 })} className="inline-flex min-h-10 items-center rounded-[10px] border border-field bg-white px-4 text-sm font-semibold text-ink hover:bg-canvas">
-                {t("common.previous")}
-              </Link>
-            ) : null}
-            {page < pages ? (
-              <Link href={pageHref({ q, status, page: page + 1 })} className="inline-flex min-h-10 items-center rounded-[10px] border border-field bg-white px-4 text-sm font-semibold text-ink hover:bg-canvas">
-                {t("common.next")}
-              </Link>
-            ) : null}
-          </div>
-        </div>
+        <Pager
+          summary={t("senders.pager", { total: formatNumber(total), page: formatNumber(page), pages: formatNumber(pages) })}
+          prevHref={page > 1 ? pageHref({ q, status, page: page - 1 }) : null}
+          nextHref={page < pages ? pageHref({ q, status, page: page + 1 }) : null}
+        />
       </section>
     </div>
   );

@@ -44,7 +44,7 @@ export function CopyButton({ text, label }: { text: string; label?: string }) {
       type="button"
       onClick={async () => setState((await copy(text)) ? "done" : "error")}
       aria-label={label ?? t("copy.label")}
-      className={`inline-flex min-h-9 items-center gap-1.5 rounded-[8px] border px-3 text-[13px] font-semibold transition-colors ${
+      className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold transition-colors ${
         state === "done" ? "border-brand-600 bg-brand-50 text-brand-700" : "border-field bg-white text-ink hover:bg-canvas"
       }`}
     >

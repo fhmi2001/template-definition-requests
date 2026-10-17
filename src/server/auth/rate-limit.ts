@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "@/server/db";
 
-export type RateLimitResult = { allowed: boolean; retryAfterSec: number };
+type RateLimitResult = { allowed: boolean; retryAfterSec: number };
 
 /**
  * عدّاد بنافذة زمنية ثابتة محفوظ في قاعدة البيانات، فيعمل حتى مع عدة خوادم.

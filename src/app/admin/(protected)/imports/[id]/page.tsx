@@ -11,6 +11,8 @@ import { Alert } from "@/components/ui";
 import { ImportStatusChip } from "../status-chip";
 import { AutoRefresh } from "./auto-refresh";
 import { translateStored } from "@/i18n/translate";
+import { FilterChips } from "@/components/list-controls";
+import { buttonClass } from "@/components/button-styles";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -123,7 +125,7 @@ export default async function ImportReportPage({
       {done ? (
         <>
           <section aria-label={t("ir.fileSummary")} className="flex flex-col gap-3">
-            <h2 className="text-base font-bold text-[#3f4945]">{t("ci.th.file")}</h2>
+            <h2 className="text-base font-bold text-ink-2">{t("ci.th.file")}</h2>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
               <Tile label={t("ir.tile.allRows")} value={batch.totalRows} />
               <Tile label={t("imports.th.paid")} value={batch.paidRows} note={t("ir.tile.ignored", { n: formatNumber(batch.totalRows - batch.paidRows) })} />
@@ -134,7 +136,7 @@ export default async function ImportReportPage({
           </section>
 
           <section aria-label={t("ir.result")} className="flex flex-col gap-3">
-            <h2 className="text-base font-bold text-[#3f4945]">{t("senders.title")}</h2>
+            <h2 className="text-base font-bold text-ink-2">{t("senders.title")}</h2>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
               <Tile label={t("ir.tile.new")} value={batch.insertedCount} tone="brand" />
               <Tile label={t("ir.tile.updated")} value={batch.updatedCount} />
@@ -164,23 +166,16 @@ export default async function ImportReportPage({
               <h2 id="issues-title" className="text-lg font-bold">
                 {t("ir.rowNotes")}
               </h2>
-              <nav aria-label={t("ir.filterNotes")} className="flex flex-wrap gap-2">
-                {tabs.map((tab) => (
-                  <Link
-                    key={tab.key}
-                    href={tab.key === "all" ? `/admin/imports/${id}` : `/admin/imports/${id}?f=${tab.key}`}
-                    aria-current={filter === tab.key ? "page" : undefined}
-                    className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] ${
-                      filter === tab.key ? "border-brand-600 bg-brand-600 font-semibold text-white" : "border-[#c9cfc9] bg-white text-ink"
-                    }`}
-                  >
-                    {tab.label}
-                    <span dir="ltr" className="font-mono">
-                      {formatNumber(tab.count)}
-                    </span>
-                  </Link>
-                ))}
-              </nav>
+              <FilterChips
+                label={t("ir.filterNotes")}
+                items={tabs.map((tab) => ({
+                  key: tab.key,
+                  href: tab.key === "all" ? `/admin/imports/${id}` : `/admin/imports/${id}?f=${tab.key}`,
+                  label: tab.label,
+                  count: tab.count,
+                  active: filter === tab.key,
+                }))}
+              />
             </div>
 
             {issues.length === 0 ? (
@@ -192,7 +187,7 @@ export default async function ImportReportPage({
                 <div className="overflow-x-auto rounded-2xl border border-line bg-white">
                   <table className="w-full min-w-[900px] border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                      <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                         <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.row")}</th>
                         <th scope="col" className="px-4 py-3 font-semibold">Request Id</th>
                         <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.column")}</th>
@@ -203,7 +198,7 @@ export default async function ImportReportPage({
                     </thead>
                     <tbody>
                       {issues.map((i) => (
-                        <tr key={String(i.id)} className="border-b border-[#eceeeb] last:border-0">
+                        <tr key={String(i.id)} className="border-b border-hair last:border-0">
                           <td dir="ltr" className="px-4 py-2.5 font-mono">{i.rowNumber || "—"}</td>
                           <td dir="ltr" className="px-4 py-2.5 font-mono text-[13px]">{i.requestId ?? "—"}</td>
                           <td dir="ltr" className="px-4 py-2.5 font-mono text-[13px]">{i.column ?? "—"}</td>
@@ -214,7 +209,7 @@ export default async function ImportReportPage({
                               <span className="rounded-full bg-warn-50 px-2.5 py-0.5 text-xs font-semibold text-warn-700">{t("ir.sev.warning")}</span>
                             )}
                           </td>
-                          <td className="px-4 py-2.5 leading-6 text-[#3f4945]">{translateStored(locale, i.message)}</td>
+                          <td className="px-4 py-2.5 leading-6 text-ink-2">{translateStored(locale, i.message)}</td>
                           <td className="break-all px-4 py-2.5 font-mono text-[13px]">{i.rawValue ?? "—"}</td>
                         </tr>
                       ))}
@@ -227,7 +222,7 @@ export default async function ImportReportPage({
                   </span>
                   <a
                     href={`/admin/imports/${id}/issues.csv`}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-[10px] border border-field bg-white px-4 text-sm font-semibold text-ink hover:bg-canvas"
+                    className={buttonClass("secondary", "sm")}
                   >
                     {t("ir.downloadCsv")}
                   </a>

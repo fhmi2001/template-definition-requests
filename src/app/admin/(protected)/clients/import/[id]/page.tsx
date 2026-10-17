@@ -12,6 +12,7 @@ import { formatDateTime, formatNumber } from "@/lib/format";
 import { Alert } from "@/components/ui";
 import { ImportDecision } from "./decision";
 import { translateStored, type MessageKey, type T } from "@/i18n/translate";
+import { FilterChips } from "@/components/list-controls";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -25,8 +26,8 @@ type Filter = (typeof FILTERS)[number];
 
 const STATUS_TEXT: Record<PlanStatus, { preview: MessageKey; done: MessageKey; cls: string }> = {
   create: { preview: "ci.ps.create", done: "ci.ps.created", cls: "bg-brand-50 text-brand-600" },
-  update: { preview: "ci.ps.update", done: "ci.ps.updated", cls: "bg-[#e3eef9] text-[#1d4f86]" },
-  unchanged: { preview: "ci.ps.unchanged", done: "ci.ps.unchanged", cls: "bg-[#e9ece8] text-[#3f4945]" },
+  update: { preview: "ci.ps.update", done: "ci.ps.updated", cls: "bg-info-50 text-info-700" },
+  unchanged: { preview: "ci.ps.unchanged", done: "ci.ps.unchanged", cls: "bg-chip text-ink-2" },
   rejected: { preview: "ci.ps.rejected", done: "ci.ps.rejected", cls: "bg-danger-50 text-danger-700" },
 };
 
@@ -52,7 +53,7 @@ async function ClientRow({ c, done }: { c: PlanClient; done: boolean }) {
   const st = STATUS_TEXT[c.status];
   const showAdds = c.status === "create" || c.status === "update";
   return (
-    <tr className="border-b border-[#eceeeb] align-top last:border-0">
+    <tr className="border-b border-hair align-top last:border-0">
       <td className="px-4 py-3">
         <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] font-semibold ${st.cls}`}>{t(done ? st.done : st.preview)}</span>
       </td>
@@ -214,7 +215,7 @@ export default async function ClientImportPreviewPage({
       {plan && totals ? (
         <>
           {!done ? (
-            <section aria-label={t("ci.decision")} className="flex flex-col gap-3 rounded-2xl border border-[#c9dfd6] bg-white p-5">
+            <section aria-label={t("ci.decision")} className="flex flex-col gap-3 rounded-2xl border border-brand-200 bg-white p-5">
               <p className="text-[15px] leading-7">
                 {canApply ? (
                   <>
@@ -242,23 +243,16 @@ export default async function ClientImportPreviewPage({
               <h2 id="clients-title" className="text-lg font-bold">
                 {t("ci.clientsInFile")}
               </h2>
-              <nav aria-label={t("ci.filter")} className="flex flex-wrap gap-2">
-                {FILTERS.map((k) => (
-                  <Link
-                    key={k}
-                    href={k === "all" ? `/admin/clients/import/${id}` : `/admin/clients/import/${id}?f=${k}`}
-                    aria-current={filter === k ? "page" : undefined}
-                    className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] ${
-                      filter === k ? "border-brand-600 bg-brand-600 font-semibold text-white" : "border-[#c9cfc9] bg-white text-ink hover:bg-canvas"
-                    }`}
-                  >
-                    {tabLabel[k]}
-                    <span dir="ltr" className="font-mono">
-                      {formatNumber(tabCount(k))}
-                    </span>
-                  </Link>
-                ))}
-              </nav>
+              <FilterChips
+                label={t("ci.filter")}
+                items={FILTERS.map((k) => ({
+                  key: k,
+                  href: k === "all" ? `/admin/clients/import/${id}` : `/admin/clients/import/${id}?f=${k}`,
+                  label: tabLabel[k],
+                  count: tabCount(k),
+                  active: filter === k,
+                }))}
+              />
             </div>
             {clients.length === 0 ? (
               <div className="rounded-2xl border border-line bg-white px-6 py-10 text-center text-sm text-muted">{t("ci.noneInTab")}</div>
@@ -266,7 +260,7 @@ export default async function ClientImportPreviewPage({
               <div className="overflow-x-auto rounded-2xl border border-line bg-white">
                 <table className="w-full min-w-[900px] border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                    <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                       <th scope="col" className="px-4 py-3 font-semibold">{t("col.status")}</th>
                       <th scope="col" className="px-4 py-3 font-semibold">{t("col.client")}</th>
                       <th scope="col" className="px-4 py-3 font-semibold">{t(done ? "ci.th.addedEmails" : "ci.th.newEmails")}</th>
@@ -297,7 +291,7 @@ export default async function ClientImportPreviewPage({
               <div className="overflow-x-auto rounded-2xl border border-line bg-white">
                 <table className="w-full min-w-[820px] border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                    <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                       <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.row")}</th>
                       <th scope="col" className="px-4 py-3 font-semibold">{t("ci.th.column")}</th>
                       <th scope="col" className="px-4 py-3 font-semibold">{t("details.type")}</th>
@@ -307,7 +301,7 @@ export default async function ClientImportPreviewPage({
                   </thead>
                   <tbody>
                     {issues.slice(0, SHOWN).map((i, n) => (
-                      <tr key={n} className="border-b border-[#eceeeb] last:border-0">
+                      <tr key={n} className="border-b border-hair last:border-0">
                         <td dir="ltr" className="px-4 py-2.5 font-mono">{i.row || "—"}</td>
                         <td dir="ltr" className="whitespace-nowrap px-4 py-2.5 font-mono text-[13px]">{i.column ?? "—"}</td>
                         <td className="px-4 py-2.5">
@@ -317,7 +311,7 @@ export default async function ClientImportPreviewPage({
                             <span className="whitespace-nowrap rounded-full bg-warn-50 px-2.5 py-0.5 text-xs font-semibold text-warn-700">{t("ci.warning")}</span>
                           )}
                         </td>
-                        <td className="px-4 py-2.5 leading-6 text-[#3f4945]">{translateStored(locale, i.message)}</td>
+                        <td className="px-4 py-2.5 leading-6 text-ink-2">{translateStored(locale, i.message)}</td>
                         <td
                           dir={i.value && !ARABIC.test(i.value) ? "ltr" : undefined}
                           className={`px-4 py-2.5 text-[13px] [overflow-wrap:anywhere] ${i.value && !ARABIC.test(i.value) ? "font-mono" : ""}`}

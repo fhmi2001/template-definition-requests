@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { db } from "@/server/db";
-import { requestMeta } from "@/server/request";
+import { requestMeta } from "@/server/http-meta";
 import { hitRateLimit, waitText } from "@/server/auth/rate-limit";
 import {
   OTP_MAX_ATTEMPTS,

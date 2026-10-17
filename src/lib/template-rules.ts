@@ -11,7 +11,7 @@ import type { Msg, T } from "@/i18n/translate";
 
 export const TEMPLATE_MAX_LENGTH = 1000;
 export const MAX_VARIABLES = 2;
-export const MIN_STATIC_RATIO = 0.6;
+const MIN_STATIC_RATIO = 0.6;
 export const MAX_VARIABLE_LENGTH = 30;
 /** حد منطقي لطول المتغير حتى في استثناء الجهات الحكومية. */
 export const VARIABLE_LENGTH_CEILING = 500;
@@ -32,7 +32,7 @@ export const variableTypeLabel = (t: T, type: string | null) => {
 const isVariableType = (t: unknown): t is VariableType => VARIABLE_TYPES.some((v) => v.value === t);
 
 /** استثناءات الجهات الحكومية (الشروط 1 و4 و5) — كل منها يتطلب خطاب تعهد. */
-export const EXCEPTIONS = {
+const EXCEPTIONS = {
   MAX_VARIABLES: "exception.MAX_VARIABLES",
   STATIC_RATIO: "exception.STATIC_RATIO",
   VARIABLE_LENGTH: "exception.VARIABLE_LENGTH",
@@ -51,7 +51,7 @@ export const isGovernment = (customerType: string | null | undefined) => custome
 const TOKEN_RE = /#\s*var\s*(\d{1,3})\s*#|\{\{\s*(\d{1,3})\s*\}\}/gi;
 /** متغير مكتوب بشكل ناقص، مثل #Var1 أو Var1# */
 const BROKEN_TOKEN_RE = /#\s*var\s*\d|var\s*\d{1,3}\s*#/i;
-export type Token = { number: number; start: number; end: number };
+type Token = { number: number; start: number; end: number };
 
 export const tokenText = (n: number) => `#Var${n}#`;
 
@@ -167,7 +167,7 @@ const VAR_OPEN = "\uE000";
 const VAR_CLOSE = "\uE001";
 const VAR_MARK_RE = /\uE000(\d+)\uE001/g;
 
-export type LinkFinding = { url: string; problem: "insecure" | "no-scheme" | "shortener" | "variable-host" | null; host: string };
+type LinkFinding = { url: string; problem: "insecure" | "no-scheme" | "shortener" | "variable-host" | null; host: string };
 
 /** يستخرج الروابط من النص (بما فيها الروابط بلا https:// مثل example.com) ويحكم على كل منها. */
 export function findLinks(text: string): LinkFinding[] {

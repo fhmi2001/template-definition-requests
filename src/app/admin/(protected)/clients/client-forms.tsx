@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { addEmailsAction, createClientAction, linkSendersAction, updateClientAction } from "@/actions/clients";
 import { initialState } from "@/lib/action-state";
 import { Alert, Field, SubmitButton, inputClass } from "@/components/ui";
 import { useT } from "@/i18n/client";
 
 const textareaClass = (err?: boolean) =>
-  `w-full rounded-[10px] border bg-white px-3.5 py-2.5 text-sm leading-6 ${err ? "border-danger-600" : "border-field"}`;
+  `w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm leading-6 ${err ? "border-danger-600" : "border-field"}`;
 
 /** نموذج إضافة عميل جديد مع إيميلاته. */
 export function CreateClientForm() {
@@ -186,36 +186,5 @@ export function LinkSendersForm({ clientId }: { clientId: string }) {
         <SubmitButton pendingText={t("clients.linking")}>{t("clients.link")}</SubmitButton>
       </div>
     </form>
-  );
-}
-
-/** زر داخل form يطلب تأكيداً قبل الإرسال (للحذف والتعطيل). */
-export function ConfirmButton({
-  message,
-  children,
-  className,
-  pendingText,
-  variant = "secondary",
-  disabled,
-}: {
-  message: string;
-  children: ReactNode;
-  className?: string;
-  pendingText?: string;
-  variant?: "primary" | "secondary" | "danger" | "ghost";
-  disabled?: boolean;
-}) {
-  return (
-    <SubmitButton
-      variant={variant}
-      pendingText={pendingText}
-      className={className}
-      disabled={disabled}
-      onClick={(e) => {
-        if (!window.confirm(message)) e.preventDefault();
-      }}
-    >
-      {children}
-    </SubmitButton>
   );
 }

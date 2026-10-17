@@ -13,10 +13,12 @@ import { db } from "@/server/db";
 import { requireAdmin } from "@/server/auth/dal";
 import { linkedSendersForAdmin } from "@/server/client-senders";
 import { uuidSchema } from "@/lib/validation";
-import { formatDateTime, formatNumber } from "@/lib/format";
+import { formatDateTime, formatNumber, excelDate } from "@/lib/format";
 import { senderStatus, todayRiyadh } from "@/lib/sender-status";
-import { AddEmailsForm, ConfirmButton, EditClientForm, LinkSendersForm } from "../client-forms";
-import { SenderStatusChip, excelDate, senderTypeLabel } from "../../senders/sender-ui";
+import { AddEmailsForm, EditClientForm, LinkSendersForm } from "../client-forms";
+import { SenderStatusChip } from "../../senders/sender-ui";
+import { senderTypeLabel } from "@/lib/sender-types";
+import { ConfirmButton } from "@/components/ui";
 
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -69,7 +71,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             {client.isActive ? (
               <span className="rounded-full bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-600">{t("state.activeM")}</span>
             ) : (
-              <span className="rounded-full bg-[#e9ece8] px-3 py-1.5 text-sm font-semibold text-[#3f4945]">{t("state.disabledM")}</span>
+              <span className="rounded-full bg-chip px-3 py-1.5 text-sm font-semibold text-ink-2">{t("state.disabledM")}</span>
             )}
             <form action={toggleClientAction.bind(null, client.id)}>
               {client.isActive ? (
@@ -102,12 +104,12 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         </div>
 
         {client.users.length === 0 ? (
-          <p className="rounded-[10px] bg-warn-50 px-3.5 py-3 text-sm text-warn-700">{t("clientDetail.noEmails")}</p>
+          <p className="rounded-xl bg-warn-50 px-3.5 py-3 text-sm text-warn-700">{t("clientDetail.noEmails")}</p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-line">
             <table className="w-full min-w-[620px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.email")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.status")}</th>
                   <th scope="col" className="px-4 py-3 font-semibold">{t("col.lastLogin")}</th>
@@ -118,7 +120,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               </thead>
               <tbody>
                 {client.users.map((u) => (
-                  <tr key={u.id} className="border-b border-[#eceeeb] last:border-0">
+                  <tr key={u.id} className="border-b border-hair last:border-0">
                     <td dir="ltr" className="px-4 py-3 font-mono text-[13px]">
                       {u.email}
                     </td>
@@ -126,7 +128,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                       {u.isActive ? (
                         <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[13px] font-semibold text-brand-600">{t("state.activeM")}</span>
                       ) : (
-                        <span className="rounded-full bg-[#e9ece8] px-2.5 py-1 text-[13px] font-semibold text-[#3f4945]">{t("state.disabledM")}</span>
+                        <span className="rounded-full bg-chip px-2.5 py-1 text-[13px] font-semibold text-ink-2">{t("state.disabledM")}</span>
                       )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-[13px] text-muted">{formatDateTime(u.lastLoginAt, locale)}</td>
@@ -168,18 +170,18 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         </div>
 
         {senders.length === 0 ? (
-          <p className="rounded-[10px] bg-warn-50 px-3.5 py-3 text-sm text-warn-700">
+          <p className="rounded-xl bg-warn-50 px-3.5 py-3 text-sm text-warn-700">
             {t("clientDetail.noSenders")}
           </p>
         ) : (
           <>
-            <p className="text-sm text-[#3f4945]">
+            <p className="text-sm text-ink-2">
               {t("clientDetail.linkedCount", { n: senders.length, count: formatNumber(senders.length), visible: formatNumber(visible) })}
             </p>
             <div className="overflow-x-auto rounded-xl border border-line">
               <table className="w-full min-w-[820px] border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
+                  <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
                     <th scope="col" className="px-4 py-3 font-semibold">Sender Name</th>
                     <th scope="col" className="px-4 py-3 font-semibold">Client Name</th>
                     <th scope="col" className="px-4 py-3 font-semibold">Sender Type</th>
@@ -192,7 +194,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                 </thead>
                 <tbody>
                   {senders.map((m) => (
-                    <tr key={m.id} className="border-b border-[#eceeeb] last:border-0">
+                    <tr key={m.id} className="border-b border-hair last:border-0">
                       <td className="px-4 py-2.5">
                         <Link href={`/admin/senders/${m.id}`} dir="ltr" className="font-mono font-medium text-brand-600 underline-offset-4 hover:underline">
                           {m.name}
@@ -224,7 +226,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
         <LinkSendersForm clientId={client.id} />
       </section>
 
-      <section aria-labelledby="danger-title" className="flex flex-col gap-3 rounded-2xl border border-[#efc9c5] bg-white p-6">
+      <section aria-labelledby="danger-title" className="flex flex-col gap-3 rounded-2xl border border-danger-200 bg-white p-6">
         <h2 id="danger-title" className="text-lg font-bold text-danger-700">
           {t("clientDetail.delete")}
         </h2>

@@ -6,7 +6,7 @@ import { env, isProduction } from "@/server/env";
 
 export const USER_COOKIE = "tdr_session";
 export const ADMIN_COOKIE = "tdr_admin";
-export const OTP_EMAIL_COOKIE = "tdr_otp_email";
+const OTP_EMAIL_COOKIE = "tdr_otp_email";
 
 const USER_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 أيام
 const ADMIN_TTL_MS = 8 * 60 * 60 * 1000; // 8 ساعات

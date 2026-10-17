@@ -17,8 +17,8 @@ export type PickableSender = {
 const SEARCH_FROM = 10;
 
 /**
- * جدول أسماء المرسلين مع اختيار واحد فقط.
- * نستخدم input من نوع radio (اختيار واحد أصلاً، ويعمل بلوحة المفاتيح) بشكل مربع اختيار.
+ * بطاقات أسماء المرسلين مع اختيار واحد فقط.
+ * كل بطاقة label لـ input من نوع radio (اختيار واحد أصلاً، ويعمل بلوحة المفاتيح).
  */
 export function SenderPicker({
   senders,
@@ -49,108 +49,93 @@ export function SenderPicker({
       {state.error ? <Alert>{state.error}</Alert> : null}
 
       {senders.length >= SEARCH_FROM ? (
-        <div className="flex max-w-[360px] flex-col gap-1.5">
+        <div className="relative max-w-[420px]">
           <label htmlFor="sender-search" className="sr-only">
             {t("picker.searchLabel")}
           </label>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-muted">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.5-3.5" />
+          </svg>
           <input
             id="sender-search"
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t("picker.searchPlaceholder")}
-            className="h-11 w-full rounded-[10px] border border-field bg-white px-3.5 text-sm"
+            className="h-12 w-full rounded-xl border border-field bg-white pe-3.5 ps-11 text-[15px] hover:border-field-strong"
           />
         </div>
       ) : null}
 
       <fieldset className="min-w-0">
         <legend className="sr-only">{t("picker.legend")}</legend>
-        <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-line bg-canvas text-start text-[13px] text-[#3f4945]">
-                <th scope="col" className="w-10 py-3 ps-3 pe-1 font-semibold sm:w-14 sm:px-4">
-                  <span className="sr-only">{t("picker.select")}</span>
-                </th>
-                <th scope="col" className="px-2 py-3 font-semibold sm:px-4">{t("col.senderName")}</th>
-                <th scope="col" className="px-2 py-3 font-semibold sm:px-4">{t("col.clientName")}</th>
-                <th scope="col" className="py-3 pe-3 ps-2 font-semibold sm:px-4">{t("col.senderType")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((s) => {
-                const isOn = s.id === selected;
-                return (
-                  <tr
-                    key={s.id}
-                    onClick={() => setSelected(s.id)}
-                    className={`cursor-pointer border-b border-[#eceeeb] last:border-0 ${isOn ? "bg-brand-50" : "hover:bg-canvas"}`}
-                  >
-                    <td className="py-3 ps-3 pe-1 sm:px-4">
-                      <input
-                        id={`sender-${s.id}`}
-                        type="radio"
-                        name="senderChoice"
-                        value={s.id}
-                        checked={isOn}
-                        onChange={() => setSelected(s.id)}
-                        aria-label={t("picker.selectName", { name: s.name })}
-                        className="peer sr-only"
-                      />
+        {shown.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-line-strong bg-white px-4 py-10 text-center text-sm text-muted">{t("picker.noResults")}</p>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {shown.map((s) => {
+              const isOn = s.id === selected;
+              return (
+                <label
+                  key={s.id}
+                  htmlFor={`sender-${s.id}`}
+                  className={`relative flex min-h-[104px] cursor-pointer flex-col gap-3 rounded-2xl border bg-white p-4 transition-[border-color,box-shadow,background-color] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-300 ${
+                    isOn ? "border-brand-600 bg-brand-25 shadow-[inset_0_0_0_1px_var(--color-brand-600)]" : "border-line hover:border-field-strong"
+                  }`}
+                >
+                  <input
+                    id={`sender-${s.id}`}
+                    type="radio"
+                    name="senderChoice"
+                    value={s.id}
+                    checked={isOn}
+                    onChange={() => setSelected(s.id)}
+                    aria-label={t("picker.selectName", { name: s.name })}
+                    className="sr-only"
+                  />
+                  <span className="flex items-start justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-2.5">
                       <span
                         aria-hidden="true"
-                        className={`flex size-5 items-center justify-center rounded-[5px] border-2 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand-600 ${
-                          isOn ? "border-brand-600 bg-brand-600 text-white" : "border-[#8a9590] bg-white"
-                        }`}
+                        className={`flex size-9 flex-none items-center justify-center rounded-full text-sm font-bold ${isOn ? "bg-brand-600 text-white" : "bg-brand-50 text-brand-700"}`}
                       >
-                        {isOn ? (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M5 12l5 5L20 7" />
-                          </svg>
-                        ) : null}
+                        {s.name.trim().charAt(0).toUpperCase()}
                       </span>
-                    </td>
-                    <td className="px-2 py-3 sm:px-4">
-                      <label htmlFor={`sender-${s.id}`} className="flex cursor-pointer flex-wrap items-center gap-2">
-                        <span dir="ltr" className="font-mono font-medium">
-                          {s.name}
+                      <span dir="ltr" className="truncate font-mono text-[16px] font-semibold">
+                        {s.name}
+                      </span>
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className={`mt-1.5 flex size-5 flex-none items-center justify-center rounded-full border-2 ${isOn ? "border-brand-600 bg-brand-600 text-white" : "border-field-strong bg-white"}`}
+                    >
+                      {isOn ? (
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 12l5 5L20 7" />
+                        </svg>
+                      ) : null}
+                    </span>
+                  </span>
+                  <span className="flex flex-col gap-2">
+                    <span className="text-[14px] leading-6 text-ink-2">{s.clientName ?? <span className="text-muted">—</span>}</span>
+                    <span className="flex flex-wrap gap-1.5">
+                      {s.types.map((ty) => (
+                        <span key={ty} className="rounded-md bg-chip px-2 py-0.5 text-xs text-ink-2">
+                          {ty}
                         </span>
-                        {s.expired ? (
-                          <span className="rounded-full bg-[#e9ece8] px-2 py-0.5 text-xs font-semibold text-[#3f4945]">{t("picker.expired")}</span>
-                        ) : null}
-                      </label>
-                    </td>
-                    <td className="px-2 py-3 leading-6 sm:px-4">{s.clientName ?? <span className="text-muted">—</span>}</td>
-                    <td className="py-3 pe-3 ps-2 sm:px-4">
-                      {s.types.length ? (
-                        <div className="flex flex-wrap gap-1">
-                          {s.types.map((ty) => (
-                            <span key={ty} className="rounded-md bg-[#e9ece8] px-1.5 py-0.5 text-xs">
-                              {ty}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-muted">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-              {shown.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted">
-                    {t("picker.noResults")}
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+                      ))}
+                      {s.expired ? <span className="rounded-md bg-warn-50 px-2 py-0.5 text-xs font-semibold text-warn-700">{t("picker.expired")}</span> : null}
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        )}
       </fieldset>
 
-      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-canvas/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:bg-white">
+      <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white/95 px-4 py-3 backdrop-blur sm:bottom-4 sm:mx-0 sm:rounded-2xl sm:border sm:px-5 sm:shadow-[0_12px_32px_-16px_rgb(0_0_0/0.25)]">
         <p aria-live="polite" className="text-sm text-muted">
           {chosen ? (
             <>

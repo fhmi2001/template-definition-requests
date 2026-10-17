@@ -4,8 +4,7 @@ import { useT } from "@/i18n/client";
 import { useActionState } from "react";
 import { applyClientImportAction, cancelClientImportAction } from "@/actions/client-imports";
 import { initialState } from "@/lib/action-state";
-import { Alert } from "@/components/ui";
-import { ConfirmButton } from "../../client-forms";
+import { Alert, ConfirmButton } from "@/components/ui";
 
 /** أزرار تأكيد الاستيراد أو إلغائه. */
 export function ImportDecision({ importId, confirmMessage, canApply }: { importId: string; confirmMessage: string; canApply: boolean }) {

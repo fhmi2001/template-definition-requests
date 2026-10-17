@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/server/auth/dal";
 import { loadDraftForPage, requestPath } from "@/server/requests";
 import { AWARENESS, senderTypeDisplay } from "@/lib/sender-types";
-import { RequestSteps, UserShell } from "@/components/user-shell";
-import { ChosenSender, SenderGone } from "../../request-ui";
+import { UserShell } from "@/components/user-shell";
+import { ChosenSender, SenderGone, StepHeader } from "../../request-ui";
 import { TemplateForm } from "./template-form";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,13 +25,7 @@ export default async function RequestTemplatePage({ params }: { params: Promise<
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <div className="flex flex-col gap-4">
-        <RequestSteps current={3} draftId={draft.id} />
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-[28px] font-bold">{t("home.title")}</h1>
-          <p className="text-[15px] leading-7 text-muted">{t("template.intro")}</p>
-        </div>
-      </div>
+      <StepHeader current={3} draftId={draft.id} title={t("home.title")} intro={t("template.intro")} />
 
       {!sender ? (
         <SenderGone changeHref={requestPath.sender(draft.id)} />

@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { db } from "@/server/db";
 import { audit } from "@/server/audit";
 import { requireAdmin } from "@/server/auth/dal";
-import { requestMeta } from "@/server/request";
+import { requestMeta } from "@/server/http-meta";
 import { notifyStatusChange } from "@/server/request-review";
 import { getT } from "@/i18n/server";
 import { REJECTION_REASON_MAX, REJECTION_REASON_MIN, isReviewStatus } from "@/lib/review-status";
