@@ -3,7 +3,7 @@ import { getT } from "@/i18n/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/server/auth/dal";
-import { checkDraftComplete, draftSpecs, getPledge, loadDraftForPage, requestPath } from "@/server/requests";
+import { checkDraftComplete, draftSpecs, fromReview, getPledge, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
 import { messageSignature, normalizeTemplate } from "@/lib/template-rules";
 import { Alert } from "@/components/ui";
 import { UserShell } from "@/components/user-shell";
@@ -19,17 +19,17 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RequestSummaryPage({ params }: { params: Promise<{ id: string }> }) {
   const { user, client } = await requireUser();
   const { draft, sender } = await loadDraftForPage(client.id, (await params).id);
-  if (!draft.senderType) redirect(requestPath.type(draft.id));
-  if (!draft.templateName || !draft.templateDescription) redirect(requestPath.template(draft.id));
-  if (!draft.content?.trim()) redirect(requestPath.content(draft.id));
+  // مسودة لم تصل للمراجعة بعد تكمل من حيث توقفت؛ أما ما نقص بعد تعديل من هنا (مثل نوع مُسح بتغيير المرسل) فيُعرض مع رابط لإكماله
+  const done = stepsDone(draft);
+  if (!done[2] && !done[3]) redirect(requestPath.type(draft.id));
 
   const [check, pledge] = await Promise.all([checkDraftComplete(draft, sender), getPledge(draft.id)]);
   const { t } = await getT();
-  const normalized = normalizeTemplate(draft.content, draftSpecs(draft.variables));
+  const normalized = normalizeTemplate(draft.content ?? "", draftSpecs(draft.variables));
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <StepHeader current={5} draftId={draft.id} title={t("summary.title")} intro={t("summary.intro")} />
+      <StepHeader current={5} draftId={draft.id} done={done} title={t("summary.title")} intro={t("summary.intro")} />
 
       {!sender ? (
         <SenderGone changeHref={requestPath.sender(draft.id)} />
@@ -38,8 +38,8 @@ export default async function RequestSummaryPage({ params }: { params: Promise<{
           {!check.ok ? (
             <Alert>
               {t(check.message)}{" "}
-              <Link href={requestPath[check.step](draft.id)} className="font-semibold underline">
-                {t("summary.goToStep")}
+              <Link href={fromReview(requestPath[check.step](draft.id))} className="font-semibold underline">
+                {t("summary.fixStep")}
               </Link>
             </Alert>
           ) : (
@@ -61,10 +61,10 @@ export default async function RequestSummaryPage({ params }: { params: Promise<{
               pledge: pledge ? { fileName: pledge.fileName, href: requestPath.attachment(draft.id, pledge.id) } : null,
             }}
             edit={{
-              sender: requestPath.sender(draft.id),
-              type: requestPath.type(draft.id),
-              template: requestPath.template(draft.id),
-              content: requestPath.content(draft.id),
+              sender: fromReview(requestPath.sender(draft.id)),
+              type: fromReview(requestPath.type(draft.id)),
+              template: fromReview(requestPath.template(draft.id)),
+              content: fromReview(requestPath.content(draft.id)),
             }}
           />
           <SubmitPanel draftId={draft.id} canSubmit={check.ok} backHref={requestPath.content(draft.id)} />

@@ -10,7 +10,7 @@ import { AWARENESS, allowedSenderTypes } from "@/lib/sender-types";
 import { db } from "@/server/db";
 import { requireUser } from "@/server/auth/dal";
 import { findClientSender } from "@/server/client-senders";
-import { checkDraftComplete, getDraft, getDraftWithSender, getOwnRequest, getPledge, requestPath } from "@/server/requests";
+import { checkDraftComplete, fromReview, getDraft, getDraftWithSender, getOwnRequest, getPledge, isFromReview, requestPath } from "@/server/requests";
 import {
   TEMPLATE_MAX_LENGTH,
   charCount,
@@ -50,10 +50,13 @@ export async function chooseSenderAction(_prev: ActionState, formData: FormData)
   if (draft) {
     draftId = draft.id;
     if (draft.senderId !== sender.id) {
-      // اسم مرسل آخر: أنواعه قد تختلف، فنعيد اختيار النوع
+      // اسم مرسل آخر: يبقى النوع المختار إن كان المرسل الجديد يتيحه، وإلا يُعاد اختياره
+      const keepType = !!draft.senderType && allowedSenderTypes(sender.senderTypes).includes(draft.senderType);
       await db.templateRequest.update({
         where: { id: draft.id },
-        data: { senderId: sender.id, senderName: sender.name, senderType: null, awarenessClientName: null },
+        data: keepType
+          ? { senderId: sender.id, senderName: sender.name }
+          : { senderId: sender.id, senderName: sender.name, senderType: null, awarenessClientName: null },
       });
     }
   } else {
@@ -63,7 +66,8 @@ export async function chooseSenderAction(_prev: ActionState, formData: FormData)
     });
     draftId = created.id;
   }
-  redirect(requestPath.type(draftId));
+  // من صفحة المراجعة: العودة إليها مباشرة (وتُظهر النوع إن احتاج إعادة اختيار)
+  redirect(draft && isFromReview(formData.get("from")) ? requestPath.summary(draftId) : requestPath.type(draftId));
 }
 
 /** المرحلة 2: نوع مرسل واحد (من أنواع المرسل المسجّلة)، و Client Name إلزامي عند Awareness. */
@@ -93,7 +97,7 @@ export async function saveSenderTypeAction(draftId: string, _prev: ActionState, 
     where: { id: found.draft.id },
     data: { senderType: values.senderType, awarenessClientName },
   });
-  redirect(requestPath.template(found.draft.id));
+  redirect(isFromReview(formData.get("from")) ? requestPath.summary(found.draft.id) : requestPath.template(found.draft.id));
 }
 
 /** المرحلة 3: اسم القالب ووصفه (إلزاميان). */
@@ -113,7 +117,7 @@ export async function saveTemplateAction(draftId: string, _prev: ActionState, fo
   if (!parsed.success) return { fields: fieldErrors(parsed.error, t.x), values };
 
   await db.templateRequest.update({ where: { id: found.draft.id }, data: parsed.data });
-  redirect(requestPath.content(found.draft.id));
+  redirect(isFromReview(formData.get("from")) ? requestPath.summary(found.draft.id) : requestPath.content(found.draft.id));
 }
 
 // -----------------------------------------------------------------------------
@@ -260,7 +264,7 @@ export async function submitRequestAction(draftId: string, _prev: ActionState): 
   }
 
   const check = await checkDraftComplete(found.draft, found.sender);
-  if (!check.ok) return { error: t("req.err.submitCheck", { message: t(check.message) }), values: { step: requestPath[check.step](found.draft.id) } };
+  if (!check.ok) return { error: t("req.err.submitCheck", { message: t(check.message) }), values: { step: fromReview(requestPath[check.step](found.draft.id)) } };
 
   // التقديم يجعل الطلب «مستلم» ويُسجَّل ذلك في سجل الحالة، ثم يُرسل بريد الاستلام بعد الرد
   const changeId = await db.$transaction(async (tx) => {

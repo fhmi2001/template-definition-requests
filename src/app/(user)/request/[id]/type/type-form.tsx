@@ -17,12 +17,15 @@ export function TypeForm({
   initialType,
   defaultClientName,
   backHref,
+  fromReview = false,
 }: {
   draftId: string;
   options: TypeOption[];
   initialType?: string;
   defaultClientName: string;
   backHref: string;
+  /** فُتحت من صفحة المراجعة: الحفظ يعيد إليها */
+  fromReview?: boolean;
 }) {
   const [state, action] = useActionState(saveSenderTypeAction.bind(null, draftId), initialState);
   const [type, setType] = useState<string | undefined>(initialType);
@@ -36,6 +39,7 @@ export function TypeForm({
     <form action={action} className="flex flex-col gap-7 rounded-2xl border border-line bg-white p-5 sm:p-8" noValidate>
       {/* القيمة المرسلة من الحالة: React يعيد ضبط أزرار الاختيار بعد كل رد خطأ، والحقل المخفي لا يتأثر */}
       <input type="hidden" name="senderType" value={type ?? ""} />
+      {fromReview ? <input type="hidden" name="from" value="review" /> : null}
       {state.error ? <Alert>{state.error}</Alert> : null}
 
       <fieldset className="flex flex-col gap-3" aria-describedby={typeError ? "sender-type-error" : undefined}>
@@ -115,9 +119,9 @@ export function TypeForm({
         </div>
       ) : null}
 
-      <StepFooter backHref={backHref} backLabel={t("common.previous")}>
+      <StepFooter backHref={backHref} backLabel={fromReview ? t("review.back") : t("common.previous")}>
         <SubmitButton pendingText={t("common.saving")} className="min-w-32">
-          {t("common.next")}
+          {fromReview ? t("review.save") : t("common.next")}
         </SubmitButton>
       </StepFooter>
     </form>

@@ -6,10 +6,22 @@ import { PageHeader, RequestSteps } from "@/components/user-shell";
 import { getT } from "@/i18n/server";
 
 /** رأس كل مرحلة: شريط المراحل ثم العنوان والوصف. */
-export function StepHeader({ current, draftId, title, intro }: { current: number; draftId?: string; title: string; intro: string }) {
+export function StepHeader({
+  current,
+  draftId,
+  done,
+  title,
+  intro,
+}: {
+  current: number;
+  draftId?: string;
+  done?: boolean[];
+  title: string;
+  intro: string;
+}) {
   return (
     <div className="flex flex-col gap-7">
-      <RequestSteps current={current} draftId={draftId} />
+      <RequestSteps current={current} draftId={draftId} done={done} />
       <PageHeader title={title} intro={intro} />
     </div>
   );

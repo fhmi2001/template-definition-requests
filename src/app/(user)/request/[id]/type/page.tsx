@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
 import { requireUser } from "@/server/auth/dal";
-import { loadDraftForPage, requestPath } from "@/server/requests";
+import { isFromReview, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
 import { allowedSenderTypes, senderTypeLabel } from "@/lib/sender-types";
 import { UserShell } from "@/components/user-shell";
 import { ChosenSender, SenderGone, StepHeader } from "../../request-ui";
@@ -12,9 +12,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("type.title") };
 }
 
-export default async function RequestTypePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function RequestTypePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
+}) {
   const { user, client } = await requireUser();
   const { draft, sender } = await loadDraftForPage(client.id, (await params).id);
+  const review = isFromReview((await searchParams).from);
   const { t } = await getT();
 
   // الاسم بلغة المستخدم، والقيمة الأصلية تحته إن اختلفت (مثل «توعوي» ثم Awareness)
@@ -29,7 +36,7 @@ export default async function RequestTypePage({ params }: { params: Promise<{ id
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <StepHeader current={2} draftId={draft.id} title={t("home.title")} intro={t("type.intro")} />
+      <StepHeader current={2} draftId={draft.id} done={stepsDone(draft)} title={t("home.title")} intro={t("type.intro")} />
 
       {!sender ? (
         <SenderGone changeHref={requestPath.sender(draft.id)} />
@@ -41,7 +48,8 @@ export default async function RequestTypePage({ params }: { params: Promise<{ id
             options={options}
             initialType={initialType}
             defaultClientName={draft.awarenessClientName ?? sender.clientName ?? client.name}
-            backHref={requestPath.sender(draft.id)}
+            backHref={review ? requestPath.summary(draft.id) : requestPath.sender(draft.id)}
+            fromReview={review}
           />
         </>
       )}

@@ -15,11 +15,14 @@ export function TemplateForm({
   initialName,
   initialDescription,
   backHref,
+  fromReview = false,
 }: {
   draftId: string;
   initialName: string;
   initialDescription: string;
   backHref: string;
+  /** فُتحت من صفحة المراجعة: الحفظ يعيد إليها */
+  fromReview?: boolean;
 }) {
   const [state, action] = useActionState(saveTemplateAction.bind(null, draftId), initialState);
   const [name, setName] = useState(initialName);
@@ -29,6 +32,7 @@ export function TemplateForm({
 
   return (
     <form action={action} className="flex flex-col gap-7 rounded-2xl border border-line bg-white p-5 sm:p-8" noValidate>
+      {fromReview ? <input type="hidden" name="from" value="review" /> : null}
       {state.error ? <Alert>{state.error}</Alert> : null}
 
       <div className="max-w-[560px]">
@@ -71,9 +75,9 @@ export function TemplateForm({
         </p>
       </div>
 
-      <StepFooter backHref={backHref} backLabel={t("common.previous")}>
+      <StepFooter backHref={backHref} backLabel={fromReview ? t("review.back") : t("common.previous")}>
         <SubmitButton pendingText={t("common.saving")} className="min-w-32">
-          {t("common.next")}
+          {fromReview ? t("review.save") : t("common.next")}
         </SubmitButton>
       </StepFooter>
     </form>

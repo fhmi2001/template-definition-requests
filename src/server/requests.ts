@@ -18,6 +18,29 @@ export const requestPath = {
   attachment: (id: string, attachmentId: string) => `/request/${id}/attachments/${attachmentId}`,
 };
 
+/**
+ * رابط مرحلة يُفتح من صفحة المراجعة: الحفظ يعيد العميل إليها مباشرة
+ * بدل المرور بالمراحل التالية واحدة واحدة.
+ */
+export const fromReview = (href: string) => `${href}${href.includes("?") ? "&" : "?"}from=review`;
+export const isFromReview = (value: unknown) => value === "review";
+
+/** المراحل المكتملة بالترتيب (المرسل، النوع، بيانات القالب، النص، المراجعة) لروابط شريط المراحل. */
+export function stepsDone(draft: {
+  senderId: string | null;
+  senderType: string | null;
+  awarenessClientName: string | null;
+  templateName: string | null;
+  templateDescription: string | null;
+  content: string | null;
+}) {
+  const sender = !!draft.senderId;
+  const type = !!draft.senderType && (draft.senderType !== AWARENESS || !!draft.awarenessClientName);
+  const template = !!draft.templateName && !!draft.templateDescription;
+  const content = !!draft.content?.trim();
+  return [sender, type, template, content, sender && type && template && content];
+}
+
 /** رقم الطلب كما يظهر للعميل: TDR-000123 */
 export const referenceText = (n: number | null) => (n ? `TDR-${String(n).padStart(6, "0")}` : "—");
 

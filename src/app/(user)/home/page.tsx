@@ -4,20 +4,20 @@ import { requireUser } from "@/server/auth/dal";
 import { availableSendersForClient } from "@/server/client-senders";
 import { LinkButton } from "@/components/link-button";
 import { db } from "@/server/db";
-import { getDraft, requestPath } from "@/server/requests";
+import { getDraft, isFromReview, requestPath, stepsDone } from "@/server/requests";
 import { formatDateTime } from "@/lib/format";
 import { todayRiyadh } from "@/lib/sender-status";
 import { UserShell } from "@/components/user-shell";
 import { StepHeader } from "@/app/(user)/request/request-ui";
 import { SenderPicker, type PickableSender } from "./sender-picker";
-import { senderTypeLabel } from "@/lib/sender-types";
+import { allowedSenderTypes, senderTypeLabel } from "@/lib/sender-types";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
   return { title: t("home.title") };
 }
 
-export default async function NewRequestPage({ searchParams }: { searchParams: Promise<{ draft?: string }> }) {
+export default async function NewRequestPage({ searchParams }: { searchParams: Promise<{ draft?: string; from?: string }> }) {
   const { user, client } = await requireUser();
   const { t, locale } = await getT();
   const sp = await searchParams;
@@ -43,13 +43,15 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
     clientName: s.clientName,
     types: s.senderTypes.map((x) => senderTypeLabel(t, x)),
     expired: s.senderExpiryDate !== null && s.senderExpiryDate <= today,
+    allowsCurrentType: !draft?.senderType || allowedSenderTypes(s.senderTypes).includes(draft.senderType),
   }));
+  const review = !!draft && isFromReview(sp.from);
   // العودة من مرحلة لاحقة تُبقي الاختيار وتحدّث نفس المسودة، بشرط أن يكون المرسل من قائمة هذا العميل
   const initialSelected = draft && senders.some((s) => s.id === draft.senderId) ? (draft.senderId ?? undefined) : undefined;
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <StepHeader current={1} draftId={draft?.id} title={t("home.title")} intro={t("home.intro")} />
+      <StepHeader current={1} draftId={draft?.id} done={draft ? stepsDone(draft) : undefined} title={t("home.title")} intro={t("home.intro")} />
 
       {unfinished ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-25 px-5 py-4">
@@ -69,7 +71,13 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
           <p className="max-w-[520px] text-[15px] leading-7 text-muted">{t("home.noSendersHint")}</p>
         </section>
       ) : (
-        <SenderPicker senders={senders} initialSelected={initialSelected} draftId={draft?.id} />
+        <SenderPicker
+          senders={senders}
+          initialSelected={initialSelected}
+          draftId={draft?.id}
+          currentTypeLabel={draft?.senderType ? senderTypeLabel(t, draft.senderType) : null}
+          reviewHref={review && draft ? requestPath.summary(draft.id) : null}
+        />
       )}
     </UserShell>
   );

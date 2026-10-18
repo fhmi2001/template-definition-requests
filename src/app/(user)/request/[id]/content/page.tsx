@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/server/auth/dal";
-import { draftSpecs, getPledge, loadDraftForPage, requestPath } from "@/server/requests";
+import { draftSpecs, getPledge, isFromReview, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
 import { AWARENESS, senderTypeDisplay, customerTypeDisplay } from "@/lib/sender-types";
 import { isGovernment, messageSignature } from "@/lib/template-rules";
 import { UserShell } from "@/components/user-shell";
@@ -14,9 +14,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("content.title") };
 }
 
-export default async function RequestContentPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function RequestContentPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
+}) {
   const { user, client } = await requireUser();
   const { draft, sender } = await loadDraftForPage(client.id, (await params).id);
+  const review = isFromReview((await searchParams).from);
   // لا يمكن تخطي المراحل السابقة
   if (!draft.senderType) redirect(requestPath.type(draft.id));
   if (!draft.templateName || !draft.templateDescription) redirect(requestPath.template(draft.id));
@@ -33,7 +40,7 @@ export default async function RequestContentPage({ params }: { params: Promise<{
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <StepHeader current={4} draftId={draft.id} title={t("content.title")} intro={t("content.intro")} />
+      <StepHeader current={4} draftId={draft.id} done={stepsDone(draft)} title={t("content.title")} intro={t("content.intro")} />
 
       {!sender ? (
         <SenderGone changeHref={requestPath.sender(draft.id)} />
@@ -49,7 +56,8 @@ export default async function RequestContentPage({ params }: { params: Promise<{
             government={isGovernment(ct)}
             pledge={pledge ? { fileName: pledge.fileName, size: pledge.size, href: requestPath.attachment(draft.id, pledge.id) } : null}
             pledgeTemplateHref={requestPath.pledgeTemplate(draft.id)}
-            backHref={requestPath.template(draft.id)}
+            backHref={review ? requestPath.summary(draft.id) : requestPath.template(draft.id)}
+            fromReview={review}
             signature={messageSignature(draft.senderType, draft.awarenessClientName)}
             signatureEditHref={requestPath.type(draft.id)}
             senderName={sender.name}

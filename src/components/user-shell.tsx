@@ -117,9 +117,10 @@ const STEPS: MessageKey[] = ["steps.sender", "steps.type", "steps.template", "st
 
 /**
  * مؤشر مراحل الطلب: شريط تقدّم من خمسة أجزاء.
- * current يبدأ من 1. المراحل المكتملة روابط للرجوع إليها عند تمرير draftId.
+ * current يبدأ من 1. كل مرحلة مكتملة (قبل الحالية أو بعدها) رابط إليها عند تمرير draftId.
+ * done: ما اكتمل من المراحل الخمس (stepsDone)؛ بدونه تُعدّ المراحل السابقة فقط مكتملة.
  */
-export async function RequestSteps({ current, draftId }: { current: number; draftId?: string }) {
+export async function RequestSteps({ current, draftId, done }: { current: number; draftId?: string; done?: boolean[] }) {
   const { t } = await getT();
   const hrefs = draftId
     ? [`/home?draft=${draftId}`, `/request/${draftId}/type`, `/request/${draftId}/template`, `/request/${draftId}/content`, `/request/${draftId}/summary`]
@@ -132,7 +133,8 @@ export async function RequestSteps({ current, draftId }: { current: number; draf
       <ol aria-label={t("steps.label")} className="grid grid-cols-5 gap-1.5 sm:gap-3">
         {STEPS.map((label, i) => {
           const n = i + 1;
-          const state = n < current ? "done" : n === current ? "current" : "next";
+          const complete = done ? done[i] : n < current;
+          const state = n === current ? "current" : complete ? "done" : "next";
           const href = state === "done" ? hrefs[i] : undefined;
           const body = (
             <>

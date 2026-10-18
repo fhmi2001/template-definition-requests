@@ -164,6 +164,7 @@ export function ContentEditor({
   pledge,
   pledgeTemplateHref,
   backHref,
+  fromReview = false,
   signature,
   signatureEditHref,
   senderName,
@@ -177,6 +178,8 @@ export function ContentEditor({
   pledge: Pledge;
   pledgeTemplateHref: string;
   backHref: string;
+  /** فُتحت من صفحة المراجعة: «التالي» يصبح «حفظ والعودة إلى المراجعة» */
+  fromReview?: boolean;
   /** Client Name: سطر أخير ثابت عند نوع المرسل «توعوي» */
   signature: string | null;
   signatureEditHref: string;
@@ -712,12 +715,12 @@ export function ContentEditor({
       <div className="flex flex-col gap-3 lg:col-start-1">
         {saveState.error ? <Alert>{saveState.error}</Alert> : null}
         {showSavedLater ? <Alert tone="success">{t("req.ok.draftSaved")}</Alert> : null}
-        <StepFooter backHref={backHref} backLabel={t("common.previous")}>
+        <StepFooter backHref={backHref} backLabel={fromReview ? t("review.back") : t("common.previous")}>
           <button type="button" onClick={() => void saveDraft()} disabled={busy} className={buttonClass("secondary")}>
             {drafting ? t("common.saving") : t("content.saveLater")}
           </button>
           <button type="button" onClick={next} disabled={busy} className={`${buttonClass("primary")} sm:min-w-32`}>
-            {saving ? t("common.saving") : t("common.next")}
+            {saving ? t("common.saving") : fromReview ? t("review.save") : t("common.next")}
           </button>
         </StepFooter>
         {!allMet ? <p className="text-[13px] text-muted">{t("content.remaining", { n: failing })}</p> : null}

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/server/auth/dal";
-import { loadDraftForPage, requestPath } from "@/server/requests";
+import { isFromReview, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
 import { AWARENESS, senderTypeDisplay } from "@/lib/sender-types";
 import { UserShell } from "@/components/user-shell";
 import { ChosenSender, SenderGone, StepHeader } from "../../request-ui";
@@ -13,9 +13,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("template.title") };
 }
 
-export default async function RequestTemplatePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function RequestTemplatePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
+}) {
   const { user, client } = await requireUser();
   const { draft, sender } = await loadDraftForPage(client.id, (await params).id);
+  const review = isFromReview((await searchParams).from);
   // لا يمكن تخطي مرحلة نوع المرسل
   if (!draft.senderType) redirect(requestPath.type(draft.id));
   const { t } = await getT();
@@ -25,7 +32,7 @@ export default async function RequestTemplatePage({ params }: { params: Promise<
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <StepHeader current={3} draftId={draft.id} title={t("home.title")} intro={t("template.intro")} />
+      <StepHeader current={3} draftId={draft.id} done={stepsDone(draft)} title={t("home.title")} intro={t("template.intro")} />
 
       {!sender ? (
         <SenderGone changeHref={requestPath.sender(draft.id)} />
@@ -36,7 +43,8 @@ export default async function RequestTemplatePage({ params }: { params: Promise<
             draftId={draft.id}
             initialName={draft.templateName ?? ""}
             initialDescription={draft.templateDescription ?? ""}
-            backHref={requestPath.type(draft.id)}
+            backHref={review ? requestPath.summary(draft.id) : requestPath.type(draft.id)}
+            fromReview={review}
           />
         </>
       )}

@@ -4,6 +4,7 @@ import { useActionState, useMemo, useState } from "react";
 import { chooseSenderAction } from "@/actions/requests";
 import { initialState } from "@/lib/action-state";
 import { Alert, SubmitButton } from "@/components/ui";
+import { LinkButton } from "@/components/link-button";
 import { useT } from "@/i18n/client";
 
 export type PickableSender = {
@@ -12,6 +13,8 @@ export type PickableSender = {
   clientName: string | null;
   types: string[];
   expired: boolean;
+  /** يتيح نوع المرسل المختار حالياً في المسودة (عند تغيير المرسل) */
+  allowsCurrentType: boolean;
 };
 
 const SEARCH_FROM = 10;
@@ -24,10 +27,16 @@ export function SenderPicker({
   senders,
   initialSelected,
   draftId,
+  currentTypeLabel = null,
+  reviewHref = null,
 }: {
   senders: PickableSender[];
   initialSelected?: string;
   draftId?: string;
+  /** نوع المرسل المختار في المسودة: يُنبَّه العميل إن كان المرسل الجديد لا يتيحه */
+  currentTypeLabel?: string | null;
+  /** فُتحت من صفحة المراجعة: الحفظ يعيد إليها، ورابط للعودة دون تغيير */
+  reviewHref?: string | null;
 }) {
   const [state, action] = useActionState(chooseSenderAction, initialState);
   const [selected, setSelected] = useState<string | undefined>(initialSelected);
@@ -40,10 +49,13 @@ export function SenderPicker({
     return senders.filter((s) => s.name.toLowerCase().includes(term) || (s.clientName ?? "").toLowerCase().includes(term));
   }, [q, senders]);
   const chosen = senders.find((s) => s.id === selected);
+  // مرسل آخر لا يتيح النوع المختار: يُمسح النوع ويُختار من جديد بعد الحفظ
+  const typeWillReset = !!currentTypeLabel && !!chosen && chosen.id !== initialSelected && !chosen.allowsCurrentType;
 
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
       {draftId ? <input type="hidden" name="draftId" value={draftId} /> : null}
+      {reviewHref ? <input type="hidden" name="from" value="review" /> : null}
       {/* القيمة المرسلة من الحالة: React يعيد ضبط أزرار الاختيار بعد كل رد خطأ، والحقل المخفي لا يتأثر */}
       <input type="hidden" name="senderId" value={selected ?? ""} />
       {state.error ? <Alert>{state.error}</Alert> : null}
@@ -151,9 +163,17 @@ export function SenderPicker({
             t("picker.noneChosen")
           )}
         </p>
-        <SubmitButton pendingText={t("adminLogin.checking")} className="min-w-32">
-          {t("common.next")}
-        </SubmitButton>
+        <div className="flex flex-wrap gap-3">
+          {reviewHref ? <LinkButton href={reviewHref}>{t("review.back")}</LinkButton> : null}
+          <SubmitButton pendingText={t("common.saving")} className="min-w-32">
+            {reviewHref ? t("review.save") : t("common.next")}
+          </SubmitButton>
+        </div>
+        {typeWillReset && chosen ? (
+          <p role="status" className="w-full rounded-xl bg-warn-50 px-3.5 py-2.5 text-[13px] leading-6 text-warn-700">
+            {t("picker.typeWillReset", { name: chosen.name, type: currentTypeLabel ?? "" })}
+          </p>
+        ) : null}
       </div>
     </form>
   );
