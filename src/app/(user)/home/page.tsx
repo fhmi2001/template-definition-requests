@@ -22,14 +22,14 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
   const { t, locale } = await getT();
   const sp = await searchParams;
   const [rows, draft] = await Promise.all([availableSendersForClient(client.id), sp.draft ? getDraft(client.id, sp.draft) : null]);
-  // طلب لم يكتمل (وصل لبيانات القالب على الأقل) خلال آخر 30 يوماً: نعرض رابط متابعته فقط
+  // طلب حُفظ بـ«حفظ والعودة لاحقاً» خلال آخر 30 يوماً: نعرض رابط متابعته (غير المحفوظ يُحذف عند الخروج)
   const unfinished = draft
     ? null
     : await db.templateRequest.findFirst({
         where: {
           clientId: client.id,
           status: "DRAFT",
-          templateName: { not: null },
+          keepDraft: true,
           updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
         },
         orderBy: { updatedAt: "desc" },

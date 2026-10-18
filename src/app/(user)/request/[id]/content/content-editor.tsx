@@ -5,6 +5,7 @@ import { startTransition, useActionState, useEffect, useLayoutEffect, useMemo, u
 import {
   removePledgeAction,
   saveContentAction,
+  keepDraftAction,
   saveContentDraftAction,
   uploadPledgeAction,
 } from "@/actions/requests";
@@ -313,7 +314,15 @@ export function ContentEditor({
   const next = () => startTransition(() => saveAction(payload()));
   async function saveDraft() {
     setDrafting(true);
-    const ok = await autosave.flush();
+    // يحفظ آخر التغييرات ثم يعلّم المسودة «للعودة لاحقاً» حتى لا تُحذف عند الخروج
+    let ok = await autosave.flush();
+    if (ok) {
+      try {
+        ok = !(await keepDraftAction(draftId)).error;
+      } catch {
+        ok = false;
+      }
+    }
     setDrafting(false);
     if (ok) setSavedLater(snapshot);
   }

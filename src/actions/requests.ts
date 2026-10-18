@@ -10,7 +10,17 @@ import { AWARENESS, allowedSenderTypes } from "@/lib/sender-types";
 import { db } from "@/server/db";
 import { requireUser } from "@/server/auth/dal";
 import { findClientSender } from "@/server/client-senders";
-import { checkDraftComplete, fromReview, getDraft, getDraftWithSender, getOwnRequest, getPledge, isFromReview, requestPath } from "@/server/requests";
+import {
+  checkDraftComplete,
+  fromReview,
+  getDraft,
+  getDraftWithSender,
+  getOwnRequest,
+  getPledge,
+  isFromReview,
+  purgeAbandonedDrafts,
+  requestPath,
+} from "@/server/requests";
 import {
   TEMPLATE_MAX_LENGTH,
   charCount,
@@ -60,6 +70,8 @@ export async function chooseSenderAction(_prev: ActionState, formData: FormData)
       });
     }
   } else {
+    // طلب جديد: ما تركه العميل دون إكمال يُحذف (عدا ما حُفظ للعودة لاحقاً)
+    await purgeAbandonedDrafts(user.id);
     const created = await db.templateRequest.create({
       data: { clientId: client.id, userId: user.id, senderId: sender.id, senderName: sender.name },
       select: { id: true },
@@ -173,7 +185,17 @@ export async function saveContentAction(draftId: string, _prev: ActionState, for
   redirect(requestPath.summary(found.draft.id));
 }
 
-/** «حفظ والعودة لاحقاً»: يحفظ دون اشتراط تحقق الشروط (مثلاً أثناء تجهيز خطاب التعهد). */
+/** «حفظ والعودة لاحقاً»: يُبقي المسودة فلا تُحذف عند بدء طلب جديد أو الدخول أو الخروج. */
+export async function keepDraftAction(draftId: string): Promise<ActionState> {
+  const { client } = await requireUser();
+  const { t } = await getT();
+  const draft = await getDraft(client.id, draftId);
+  if (!draft) return { error: t("req.err.notFoundOrSubmitted") };
+  await db.templateRequest.update({ where: { id: draft.id }, data: { keepDraft: true } });
+  return { ok: true };
+}
+
+/** يحفظ النص دون اشتراط تحقق الشروط (الحفظ التلقائي، و«حفظ والعودة لاحقاً» قبل keepDraftAction). */
 export async function saveContentDraftAction(draftId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
   const { found } = await loadContentDraft(draftId);
   const { t } = await getT();

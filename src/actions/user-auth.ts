@@ -23,6 +23,8 @@ import { EmailSendError, sendOtpEmail } from "@/server/email/otp-email";
 import { emailSchema, otpCodeSchema } from "@/lib/validation";
 import type { ActionState } from "@/lib/action-state";
 import { getT } from "@/i18n/server";
+import { getUserSession } from "@/server/auth/dal";
+import { purgeAbandonedDrafts } from "@/server/requests";
 
 type IssueResult = { ok: true } | { ok: false; state: ActionState };
 
@@ -173,11 +175,15 @@ export async function verifyOtpAction(_prev: ActionState, formData: FormData): P
 
   await createUserSession(user.id, meta);
   await db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+  // كل دخول يبدأ من جديد: الطلبات غير المكتملة من زيارة سابقة تُحذف
+  await purgeAbandonedDrafts(user.id);
   await clearPendingOtpEmail();
   redirect("/home");
 }
 
 export async function logoutUserAction() {
+  const s = await getUserSession();
+  if (s) await purgeAbandonedDrafts(s.user.id);
   await destroySession("USER");
   redirect("/login");
 }

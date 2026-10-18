@@ -70,7 +70,7 @@ export default async function MyRequestsPage({ searchParams }: { searchParams: P
     db.templateRequest.count({ where }),
     db.templateRequest.groupBy({ by: ["reviewStatus"], where: { ...own, ...search }, _count: true }),
     db.templateRequest.findMany({
-      where: { clientId: client.id, status: "DRAFT", updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+      where: { clientId: client.id, status: "DRAFT", keepDraft: true, updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
       orderBy: { updatedAt: "desc" },
       take: 5,
       select: { id: true, senderName: true, senderType: true, templateName: true, templateDescription: true, content: true, updatedAt: true },

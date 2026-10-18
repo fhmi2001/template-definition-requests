@@ -41,6 +41,17 @@ export function stepsDone(draft: {
   return [sender, type, template, content, sender && type && template && content];
 }
 
+/**
+ * يحذف طلبات هذا المستخدم غير المكتملة، عدا ما حفظه بـ«حفظ والعودة لاحقاً».
+ * يُستدعى عند بدء طلب جديد وعند الدخول والخروج، فيبدأ العميل كل مرة من جديد.
+ * المرفقات (خطاب التعهد) تُحذف معها (onDelete: Cascade).
+ */
+export async function purgeAbandonedDrafts(userId: string, exceptId?: string) {
+  await db.templateRequest.deleteMany({
+    where: { userId, status: "DRAFT", keepDraft: false, ...(exceptId ? { id: { not: exceptId } } : {}) },
+  });
+}
+
 /** رقم الطلب كما يظهر للعميل: TDR-000123 */
 export const referenceText = (n: number | null) => (n ? `TDR-${String(n).padStart(6, "0")}` : "—");
 

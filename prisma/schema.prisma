@@ -306,6 +306,9 @@ model TemplateRequest {
   /// استثناءات الجهة الحكومية المستخدمة: MAX_VARIABLES, STATIC_RATIO, VARIABLE_LENGTH (تتطلب خطاب تعهد)
   exceptions   String[] @default([])
 
+  /// «حفظ والعودة لاحقاً»: المسودة لا تُحذف عند بدء طلب جديد أو الدخول أو الخروج
+  keepDraft Boolean @default(false) @map("keep_draft")
+
   // التقديم
   referenceNo Int?      @unique @map("reference_no") /// رقم الطلب الظاهر للعميل، يُعطى عند التقديم
   submittedAt DateTime? @map("submitted_at")
