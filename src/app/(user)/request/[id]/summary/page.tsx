@@ -10,6 +10,7 @@ import { UserShell } from "@/components/user-shell";
 import { SenderGone, StepHeader } from "../../request-ui";
 import { RequestDetails } from "../../request-details";
 import { SubmitPanel } from "./submit-panel";
+import { DuplicateNotice } from "../../duplicate-notice";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -35,7 +36,16 @@ export default async function RequestSummaryPage({ params }: { params: Promise<{
         <SenderGone changeHref={requestPath.sender(draft.id)} />
       ) : (
         <>
-          {!check.ok ? (
+          {!check.ok && check.duplicate ? (
+            <DuplicateNotice
+              dup={check.duplicate}
+              edit={{
+                sender: fromReview(requestPath.sender(draft.id)),
+                type: fromReview(requestPath.type(draft.id)),
+                content: fromReview(requestPath.content(draft.id)),
+              }}
+            />
+          ) : !check.ok ? (
             <Alert>
               {t(check.message)}{" "}
               <Link href={fromReview(requestPath[check.step](draft.id))} className="font-semibold underline">

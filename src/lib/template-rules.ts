@@ -77,6 +77,17 @@ export const composeMessage = (body: string, signature: string | null | undefine
 export const cleanTemplateText = (s: string) => s.replace(/\r\n?/g, "\n").replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, "");
 export const charCount = (s: string) => Array.from(s).length;
 
+/**
+ * الرسالة كما تُرسل (النص + سطر Client Name للتوعوي) بصيغة موحّدة لمقارنة التكرار:
+ * توحيد نهايات الأسطر، وحذف المسافات في نهاية كل سطر وفي بداية الرسالة ونهايتها. ما عدا ذلك مطابقة حرفية.
+ */
+export const comparableMessage = (body: string, signature: string | null | undefined) =>
+  cleanTemplateText(composeMessage(body, signature))
+    .split("\n")
+    .map((line) => line.replace(/[ \t ]+$/, ""))
+    .join("\n")
+    .trim();
+
 const LRM = "\u200E";
 
 /**

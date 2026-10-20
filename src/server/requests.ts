@@ -5,7 +5,16 @@ import { findClientSender } from "@/server/client-senders";
 import { uuidSchema, awarenessClientNameSchema, templateSchema } from "@/lib/validation";
 import { AWARENESS, allowedSenderTypes } from "@/lib/sender-types";
 import type { MessageKey } from "@/i18n/translate";
-import { evaluateTemplate, messageSignature, normalizeTemplate, sanitizeSpecs, type Evaluation, type VariableSpec } from "@/lib/template-rules";
+import {
+  comparableMessage,
+  evaluateTemplate,
+  messageSignature,
+  normalizeTemplate,
+  sanitizeSpecs,
+  type Evaluation,
+  type VariableSpec,
+} from "@/lib/template-rules";
+import type { ReviewStatus } from "@/generated/prisma/enums";
 
 export const requestPath = {
   sender: (id: string) => `/home?draft=${id}`,
@@ -50,6 +59,66 @@ export async function purgeAbandonedDrafts(userId: string, exceptId?: string) {
   await db.templateRequest.deleteMany({
     where: { userId, status: "DRAFT", keepDraft: false, ...(exceptId ? { id: { not: exceptId } } : {}) },
   });
+}
+
+export type DuplicateRequest = {
+  id: string;
+  referenceNo: number | null;
+  authorityRef: string | null;
+  reviewStatus: ReviewStatus | null;
+  submittedAt: Date | null;
+  templateName: string | null;
+  senderName: string;
+  senderType: string | null;
+  /** الرسالة كما أُرسلت (النص + سطر Client Name) */
+  message: string;
+};
+
+/**
+ * طلب مقدَّم سابق يطابق هذه المسودة في الشروط الأربعة معاً:
+ * حالته ليست «مرفوض»، ونفس اسم المرسل، ونفس نوع المرسل، ونفس نص الرسالة كما تُرسل
+ * (مع سطر Client Name للتوعوي، ومطابقة حرفية بعد توحيد نهايات الأسطر والمسافات الطرفية).
+ * اسم المرسل لا يرتبط إلا بعميل واحد، فالبحث بالاسم يغطي النطاق الصحيح. يعيد الأحدث.
+ */
+export async function findDuplicateRequest(draft: {
+  id: string;
+  senderName: string;
+  senderType: string | null;
+  awarenessClientName: string | null;
+  content: string | null;
+}): Promise<DuplicateRequest | null> {
+  if (!draft.senderType || !draft.content?.trim()) return null;
+  const target = comparableMessage(draft.content, messageSignature(draft.senderType, draft.awarenessClientName));
+  const candidates = await db.templateRequest.findMany({
+    where: {
+      id: { not: draft.id },
+      status: "SUBMITTED",
+      senderName: draft.senderName,
+      senderType: draft.senderType,
+      OR: [{ reviewStatus: null }, { reviewStatus: { not: "REJECTED" } }],
+    },
+    orderBy: { submittedAt: "desc" },
+    select: {
+      id: true,
+      referenceNo: true,
+      authorityRef: true,
+      reviewStatus: true,
+      submittedAt: true,
+      templateName: true,
+      senderName: true,
+      senderType: true,
+      awarenessClientName: true,
+      content: true,
+    },
+  });
+  for (const c of candidates) {
+    const message = comparableMessage(c.content ?? "", messageSignature(c.senderType, c.awarenessClientName));
+    if (message === target) {
+      const { awarenessClientName: _a, content: _c, ...rest } = c;
+      return { ...rest, message };
+    }
+  }
+  return null;
 }
 
 /** رقم الطلب كما يظهر للعميل: TDR-000123 */
@@ -105,7 +174,10 @@ type Sender = NonNullable<Awaited<ReturnType<typeof findClientSender>>>;
 export async function checkDraftComplete(
   draft: Draft,
   sender: Sender | null,
-): Promise<{ ok: true; evaluation: Evaluation } | { ok: false; step: "sender" | "type" | "template" | "content"; message: MessageKey }> {
+): Promise<
+  | { ok: true; evaluation: Evaluation }
+  | { ok: false; step: "sender" | "type" | "template" | "content"; message: MessageKey; duplicate?: DuplicateRequest }
+> {
   if (!sender) return { ok: false, step: "sender", message: "req.check.senderGone" };
   if (!draft.senderType || !allowedSenderTypes(sender.senderTypes).includes(draft.senderType)) {
     return { ok: false, step: "type", message: "req.check.chooseType" };
@@ -125,5 +197,8 @@ export async function checkDraftComplete(
     hasPledge: !!(await getPledge(draft.id)),
   });
   if (!evaluation.ok) return { ok: false, step: "content", message: "req.check.content" };
+  // طلب مقدَّم غير مرفوض بنفس اسم المرسل ونوعه ونص الرسالة: لا يُقدَّم مرة أخرى
+  const duplicate = await findDuplicateRequest(draft);
+  if (duplicate) return { ok: false, step: "content", message: "req.check.duplicate", duplicate };
   return { ok: true, evaluation };
 }
