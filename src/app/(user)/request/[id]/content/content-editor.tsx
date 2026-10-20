@@ -88,16 +88,16 @@ function RuleItem({ r }: { r: RuleResult }) {
         ) : null}
       </span>
       <div className="flex min-w-0 flex-col gap-1">
-        <div className="text-sm font-semibold leading-6">
+        <div className="text-small font-semibold">
           {r.number ? <span className="text-muted">{r.number}. </span> : null}
           {msg(t, r.title)}
           <span className="sr-only"> — {t(s.label)}</span>
         </div>
         {r.status !== "pass" || r.details.length ? (
-          <ul className="flex flex-col gap-0.5 text-[13px] leading-6 text-ink-2">
+          <ul className="flex flex-col gap-0.5 text-meta text-ink-2">
             {r.status !== "pass" ? (
               <li
-                className={`text-[13px] font-semibold ${
+                className={`text-meta font-semibold ${
                   r.status === "fail" ? "text-danger-700" : r.status === "note" ? "text-warn-700" : r.status === "exception" ? "text-info-700" : "text-muted"
                 }`}
               >
@@ -124,7 +124,7 @@ function SaveStatus({ status, onRetry, kept }: { status: AutosaveStatus; onRetry
   if (status.kind === "idle") return <span />;
   if (status.kind === "error") {
     return (
-      <span role="alert" className="flex flex-wrap items-center gap-x-2 text-[13px] font-semibold text-danger-700">
+      <span role="alert" className="flex flex-wrap items-center gap-x-2 text-meta font-semibold text-danger-700">
         {status.message ?? t("autosave.failed")}
         <button type="button" onClick={onRetry} className="min-h-11 sm:min-h-9 rounded-lg px-1.5 underline underline-offset-4 hover:bg-danger-50">
           {t("autosave.retry")}
@@ -133,7 +133,7 @@ function SaveStatus({ status, onRetry, kept }: { status: AutosaveStatus; onRetry
     );
   }
   return (
-    <span className="flex min-h-9 items-center gap-1.5 text-[13px] text-muted">
+    <span className="flex min-h-9 items-center gap-1.5 text-meta text-muted">
       {status.kind === "saved" ? (
         <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" className="text-brand-600">
           <path d="M5 12l5 5L20 7" />
@@ -366,11 +366,11 @@ export function ContentEditor({
       {/* ---------------- المحرر ---------------- */}
       <section aria-labelledby="content-title" className={`${card} lg:col-start-1`}>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="content-title" className="text-lg font-bold">
+          <h2 id="content-title" className="text-title font-bold">
             {t("content.title")}
           </h2>
           <span
-            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] ${government ? "bg-info-50 text-info-700" : "bg-chip text-ink-2"}`}
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-meta ${government ? "bg-info-50 text-info-700" : "bg-chip text-ink-2"}`}
           >
             <span dir="ltr" className="opacity-75">
               Customer Type
@@ -379,7 +379,7 @@ export function ContentEditor({
           </span>
         </div>
         {government ? (
-          <p className="rounded-xl bg-info-25 px-3.5 py-2.5 text-[13px] leading-6 text-info-700">
+          <p className="rounded-xl bg-info-25 px-3.5 py-2.5 text-meta text-info-700">
             {t("content.govBanner")}
           </p>
         ) : null}
@@ -396,7 +396,7 @@ export function ContentEditor({
             </svg>
             {t("content.addVar")}
           </button>
-          <span className="text-[13px] leading-6 text-muted">
+          <span className="text-meta text-muted">
             {addDisabled ? (
               t("content.maxReached")
             ) : (
@@ -421,7 +421,7 @@ export function ContentEditor({
             dir="auto"
             placeholder={t("content.placeholder")}
             aria-describedby={signature ? "content-signature content-count" : "content-count"}
-            className={`w-full border bg-white px-3.5 py-3 text-base leading-8 ${signature ? "rounded-t-xl" : "rounded-xl"} ${
+            className={`w-full border bg-white px-3.5 py-3 text-body leading-8 ${signature ? "rounded-t-xl" : "rounded-xl"} ${
               length > TEMPLATE_MAX_LENGTH ? "border-danger-600" : "border-field"
             }`}
           />
@@ -434,10 +434,10 @@ export function ContentEditor({
                 <rect x="5" y="11" width="14" height="10" rx="2" />
                 <path d="M8 11V7a4 4 0 0 1 8 0v4" />
               </svg>
-              <span className="text-base font-semibold" data-testid="signature-line">
+              <span className="text-body font-semibold" data-testid="signature-line">
                 {signature}
               </span>
-              <span className="text-[13px] text-muted">
+              <span className="text-meta text-muted">
                 {t("content.signatureNote")}{" "}
                 <Link href={signatureEditHref} className="font-semibold text-brand-600 underline-offset-4 hover:underline">
                   {t("content.editName")}
@@ -447,7 +447,7 @@ export function ContentEditor({
           ) : null}
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
             <SaveStatus status={autosave.status} onRetry={() => void autosave.flush()} kept={kept} />
-            <p id="content-count" className="ms-auto flex flex-wrap items-baseline justify-end gap-x-2 text-[13px] text-muted">
+            <p id="content-count" className="ms-auto flex tabular-nums flex-wrap items-baseline justify-end gap-x-2 text-meta text-muted">
               <span dir="ltr" className={length > TEMPLATE_MAX_LENGTH ? "font-semibold text-danger-600" : undefined}>
                 {length} / {TEMPLATE_MAX_LENGTH}
               </span>
@@ -467,27 +467,27 @@ export function ContentEditor({
         {/* على الجوال قائمة الشروط أسفل الصفحة: ملخص قصير هنا مع رابط إليها */}
         <a
           href="#rules"
-          className={`flex min-h-11 items-center justify-between gap-3 rounded-xl px-3.5 text-sm font-semibold lg:hidden ${
+          className={`flex min-h-11 items-center justify-between gap-3 rounded-xl px-3.5 text-small font-semibold lg:hidden ${
             allMet ? "bg-brand-50 text-brand-700" : "bg-canvas text-ink-2"
           }`}
         >
           {allMet ? t("content.allMet") : t("content.rulesOpen", { n: failing })}
-          <span className="text-[13px] underline underline-offset-4">{t("content.rulesView")}</span>
+          <span className="text-meta underline underline-offset-4">{t("content.rulesView")}</span>
         </a>
       </section>
 
       {/* ---------------- المتغيرات ---------------- */}
       <section aria-labelledby="vars-title" className={`${card} lg:col-start-1`}>
         <div className="flex flex-col gap-1">
-          <h2 id="vars-title" className="text-lg font-bold">
+          <h2 id="vars-title" className="text-title font-bold">
             {t("content.varsTitle")}
           </h2>
-          <p className="text-[13px] leading-6 text-muted">
+          <p className="text-meta text-muted">
             {government ? t("content.varsIntro") : t("content.varsIntroMax", { max: MAX_VARIABLE_LENGTH })}
           </p>
         </div>
         {tokens.length === 0 ? (
-          <p className="rounded-xl bg-canvas px-3.5 py-3 text-sm text-muted">{t("content.noVars")}</p>
+          <p className="rounded-xl bg-canvas px-3.5 py-3 text-small text-muted">{t("content.noVars")}</p>
         ) : (
           <ul className="flex flex-col gap-3">
             {tokens.map((tok, i) => {
@@ -499,10 +499,10 @@ export function ContentEditor({
                 <li key={i} className="flex flex-col gap-3 rounded-xl border border-line p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">
-                      <span dir="ltr" className="rounded-md bg-brand-50 px-2 py-0.5 font-mono text-sm font-semibold text-brand-700">
+                      <span dir="ltr" className="rounded-md bg-brand-50 px-2 py-0.5 font-mono text-small font-semibold text-brand-700">
                         {tokenText(i + 1)}
                       </span>
-                      <span className="truncate text-[13px] text-muted">
+                      <span className="truncate text-meta text-muted">
                         <WithTokens text={ctx.before} />
                         <span className="font-semibold text-ink">■</span>
                         <WithTokens text={ctx.after} />
@@ -511,7 +511,7 @@ export function ContentEditor({
                     <button
                       type="button"
                       onClick={() => removeVariable(i)}
-                      className="inline-flex min-h-11 sm:min-h-9 items-center rounded-lg px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-danger-50"
+                      className="inline-flex min-h-11 sm:min-h-9 items-center rounded-lg px-2.5 text-meta font-semibold text-danger-700 hover:bg-danger-50"
                       aria-label={t("content.removeVar", { name: tokenText(i + 1) })}
                     >
                       {t("common.delete")}
@@ -519,7 +519,7 @@ export function ContentEditor({
                   </div>
                   <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_160px]">
                     <div className="flex flex-col gap-1.5">
-                      <label htmlFor={typeId} className="text-[13px] font-semibold">
+                      <label htmlFor={typeId} className="text-small font-semibold">
                         {t("content.varType")}
                       </label>
                       <select
@@ -527,7 +527,7 @@ export function ContentEditor({
                         value={spec.type ?? ""}
                         onChange={(e) => setSpec(i, { type: (e.target.value || null) as VariableType | null })}
                         aria-invalid={!spec.type}
-                        className={`h-11 w-full rounded-xl border bg-white px-3 text-[15px] ${spec.type ? "border-field" : "border-warn-600"}`}
+                        className={`h-11 w-full rounded-xl border bg-white px-3 text-body ${spec.type ? "border-field" : "border-warn-600"}`}
                       >
                         <option value="">{t("content.chooseType")}</option>
                         {VARIABLE_TYPES.map((v) => (
@@ -538,7 +538,7 @@ export function ContentEditor({
                       </select>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label htmlFor={lenId} className="text-[13px] font-semibold">
+                      <label htmlFor={lenId} className="text-small font-semibold">
                         {t("content.maxLen")}
                       </label>
                       <input
@@ -552,7 +552,7 @@ export function ContentEditor({
                         value={spec.length ?? ""}
                         onChange={(e) => setSpec(i, { length: e.target.value === "" ? null : Number(e.target.value) })}
                         aria-invalid={!spec.length}
-                        className={`h-11 w-full rounded-xl border bg-white px-3 font-mono text-[15px] ${
+                        className={`h-11 w-full rounded-xl border bg-white px-3 font-mono text-id ${
                           spec.length && (government || spec.length <= MAX_VARIABLE_LENGTH) ? "border-field" : "border-warn-600"
                         }`}
                       />
@@ -569,15 +569,15 @@ export function ContentEditor({
       {showPledge ? (
         <section aria-labelledby="pledge-title" className={`${card} border-info-200 lg:col-start-1`}>
           <div className="flex flex-col gap-1">
-            <h2 id="pledge-title" className="text-lg font-bold">
+            <h2 id="pledge-title" className="text-title font-bold">
               {t("content.pledgeTitle")}
             </h2>
             {settled.exceptions.length ? (
-              <p className="text-[13px] leading-6 text-ink-2">
+              <p className="text-meta text-ink-2">
                 {t("content.pledgeNeeded", { list: settled.exceptions.map((e) => exceptionLabel(t, e)) })}
               </p>
             ) : (
-              <p className="text-[13px] leading-6 text-muted">{t("content.pledgeNotNeeded")}</p>
+              <p className="text-meta text-muted">{t("content.pledgeNotNeeded")}</p>
             )}
           </div>
 
@@ -586,7 +586,7 @@ export function ContentEditor({
 
           <ol className="flex flex-col gap-4">
             <li className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">{t("content.pledgeStep1")}</span>
+              <span className="text-small font-semibold">{t("content.pledgeStep1")}</span>
               <div>
                 <a href={pledgeTemplateHref} data-no-guard className={buttonClass("secondary")}>
                   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -595,26 +595,26 @@ export function ContentEditor({
                   {t("content.pledgeDownload")}
                 </a>
               </div>
-              <span className="text-[13px] text-muted">{t("content.pledgePrefilled")}</span>
+              <span className="text-meta text-muted">{t("content.pledgePrefilled")}</span>
             </li>
             <li className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">{t("content.pledgeStep2")}</span>
+              <span className="text-small font-semibold">{t("content.pledgeStep2")}</span>
               {pledge ? (
                 <div className="flex flex-wrap items-center gap-3 rounded-xl bg-brand-50 px-3.5 py-2.5">
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="text-brand-700">
                     <path d="M5 12l5 5L20 7" />
                   </svg>
-                  <a href={pledge.href} data-no-guard dir="auto" className="min-w-0 break-all text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
+                  <a href={pledge.href} data-no-guard dir="auto" className="min-w-0 break-all text-small font-semibold text-brand-700 underline-offset-4 hover:underline">
                     {pledge.fileName}
                   </a>
-                  <span dir="ltr" className="text-[13px] text-muted">
+                  <span dir="ltr" className="text-meta text-muted">
                     {kb(pledge.size)}
                   </span>
                   <button
                     type="button"
                     onClick={() => startTransition(() => removeAction())}
                     disabled={removing}
-                    className="ms-auto inline-flex min-h-11 sm:min-h-9 items-center rounded-lg px-2.5 text-[13px] font-semibold text-danger-700 hover:bg-white"
+                    className="ms-auto inline-flex min-h-11 sm:min-h-9 items-center rounded-lg px-2.5 text-meta font-semibold text-danger-700 hover:bg-white"
                   >
                     {removing ? t("common.deleting") : t("common.delete")}
                   </button>
@@ -630,7 +630,7 @@ export function ContentEditor({
                   type="file"
                   accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
                   onChange={(e) => setPledgeFile(e.target.files?.[0] ?? null)}
-                  className="max-w-full text-sm file:me-3 file:min-h-10 file:rounded-xl file:border file:border-field file:bg-white file:px-3.5 file:text-sm file:font-semibold"
+                  className="max-w-full text-small file:me-3 file:min-h-10 file:rounded-xl file:border file:border-field file:bg-white file:px-3.5 file:text-small file:font-semibold"
                 />
                 <button
                   type="button"
@@ -641,7 +641,7 @@ export function ContentEditor({
                   {uploading ? t("content.uploading") : pledge ? t("content.replacePledge") : t("content.uploadPledge")}
                 </button>
               </div>
-              <span className="text-[13px] text-muted">{t("content.pledgeFormats")}</span>
+              <span className="text-meta text-muted">{t("content.pledgeFormats")}</span>
             </li>
           </ol>
         </section>
@@ -655,12 +655,12 @@ export function ContentEditor({
         className={`${card} scroll-mt-24 gap-3 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1 lg:self-start lg:[grid-row-end:span_var(--rows)]`}
       >
         <div className="flex items-center justify-between gap-3">
-          <h2 id="rules-title" className="text-lg font-bold">
+          <h2 id="rules-title" className="text-title font-bold">
             {t("content.rulesTitle")}
           </h2>
           <span
             aria-hidden="true"
-            className={`rounded-full px-3 py-1 text-[13px] font-semibold ${allMet ? "bg-brand-50 text-brand-700" : "bg-chip text-ink-2"}`}
+            className={`rounded-full px-3 py-1 text-meta font-semibold ${allMet ? "bg-brand-50 text-brand-700" : "bg-chip text-ink-2"}`}
           >
             {allMet ? t("content.allMet") : t("content.metOf", { met: counted - failing, total: counted })}
           </span>
@@ -671,7 +671,7 @@ export function ContentEditor({
 
         {open.length ? (
           <>
-            <p className="text-[13px] leading-6 text-muted">{t("content.rulesLive")}</p>
+            <p className="text-meta text-muted">{t("content.rulesLive")}</p>
             <ul className="flex flex-col divide-y divide-hair">
               {open.map((r) => (
                 <RuleItem key={r.id} r={r} />
@@ -679,7 +679,7 @@ export function ContentEditor({
             </ul>
           </>
         ) : (
-          <p className="flex items-center gap-2 rounded-xl bg-brand-50 px-3.5 py-3 text-sm font-semibold text-brand-700">
+          <p className="flex items-center gap-2 rounded-xl bg-brand-50 px-3.5 py-3 text-small font-semibold text-brand-700">
             <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12l5 5L20 7" />
             </svg>
@@ -689,7 +689,7 @@ export function ContentEditor({
 
         {passed.length ? (
           <details className="group border-t border-hair pt-1">
-            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-lg text-sm font-semibold text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-lg text-small font-semibold text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
               {t("content.passedRules", { n: passed.length })}
               <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="text-muted transition-transform group-open:rotate-180">
                 <path d="M6 9l6 6 6-6" />
@@ -706,7 +706,7 @@ export function ContentEditor({
 
       {/* ---------------- المعاينة ---------------- */}
       <section aria-labelledby="preview-title" className={`${card} lg:col-start-1`}>
-        <h2 id="preview-title" className="text-lg font-bold">
+        <h2 id="preview-title" className="text-title font-bold">
           {t("content.previewTitle")}
         </h2>
         <div className="rounded-xl bg-canvas px-4 py-5">
@@ -725,12 +725,12 @@ export function ContentEditor({
                   />
                   <div className="absolute inset-y-0 w-0.5 bg-ink/60" style={{ insetInlineStart: "60%" }} />
                 </div>
-                <p className="text-[13px] text-ink-2">
+                <p className="text-meta text-ink-2">
                   {t("content.ratioLine", { staticPct: Math.round(ratio * 100), varPct: Math.round((1 - ratio) * 100) })}
                 </p>
               </>
             ) : null}
-            <p className="text-[13px] text-muted">
+            <p className="text-meta text-muted">
               {t("content.staticLen", { n: stats.staticLength })}
               {maxLength !== null && stats.variableCount ? t("content.maxMsgLen", { n: maxLength }) : ""}
             </p>
@@ -750,9 +750,9 @@ export function ContentEditor({
             {saving ? t("common.saving") : fromReview ? t("review.save") : t("common.next")}
           </button>
         </StepFooter>
-        {!allMet ? <p className="text-[13px] text-muted">{t("content.remaining", { n: failing })}</p> : null}
+        {!allMet ? <p className="text-meta text-muted">{t("content.remaining", { n: failing })}</p> : null}
         {/* غير المحفوظ للعودة لاحقاً يُحذف عند تسجيل الخروج أو بدء طلب جديد */}
-        <p className={`flex items-start gap-2 text-[13px] leading-6 ${kept ? "text-brand-700" : "text-muted"}`}>
+        <p className={`flex items-start gap-2 text-meta ${kept ? "text-brand-700" : "text-muted"}`}>
           <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mt-1 flex-none">
             {kept ? <path d="M5 12l5 5L20 7" /> : <><circle cx="12" cy="12" r="9" /><path d="M12 8v4M12 16h.01" /></>}
           </svg>

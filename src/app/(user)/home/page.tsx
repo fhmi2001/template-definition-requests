@@ -55,9 +55,9 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
 
       {unfinished ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-25 px-5 py-4">
-          <p className="text-[15px] leading-7">
-            {t("home.unfinished")} <span dir="ltr" className="font-mono font-semibold">{unfinished.senderName}</span> · {unfinished.templateName}
-            <span className="text-[13px] text-muted"> · {t("home.lastEdit", { date: formatDateTime(unfinished.updatedAt, locale) })}</span>
+          <p className="text-body">
+            {t("home.unfinished")} <span dir="ltr" className="font-mono text-id font-semibold">{unfinished.senderName}</span> · <bdi>{unfinished.templateName}</bdi>
+            <span className="block text-meta tabular-nums text-muted">{t("home.lastEdit", { date: formatDateTime(unfinished.updatedAt, locale) })}</span>
           </p>
           <LinkButton href={requestPath.content(unfinished.id)} variant="outline" size="sm">
             {t("home.resume")}
@@ -67,8 +67,8 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
 
       {senders.length === 0 ? (
         <section className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line-strong bg-white px-6 py-14 text-center">
-          <h2 className="text-lg font-bold">{t("home.noSenders")}</h2>
-          <p className="max-w-[520px] text-[15px] leading-7 text-muted">{t("home.noSendersHint")}</p>
+          <h2 className="text-title font-bold">{t("home.noSenders")}</h2>
+          <p className="max-w-[520px] text-body text-muted">{t("home.noSendersHint")}</p>
         </section>
       ) : (
         <SenderPicker

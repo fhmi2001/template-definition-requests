@@ -20,9 +20,9 @@ export default async function LoginPage() {
     >
       <div className="flex flex-col gap-7">
         <div className="flex flex-col gap-2.5">
-          <span className="text-[13px] font-semibold text-brand-600">{t("login.step1")}</span>
-          <h1 className="text-[28px] font-bold leading-snug">{t("login.title")}</h1>
-          <p className="text-[15px] leading-7 text-muted">{t("login.intro")}</p>
+          <span className="text-meta font-semibold text-brand-600">{t("login.step1")}</span>
+          <h1 className="text-page font-bold">{t("login.title")}</h1>
+          <p className="text-body text-muted">{t("login.intro")}</p>
         </div>
         <LoginForm />
       </div>

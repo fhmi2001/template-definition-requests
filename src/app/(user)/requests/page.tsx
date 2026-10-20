@@ -94,7 +94,7 @@ export default async function MyRequestsPage({ searchParams }: { searchParams: P
 
       {drafts.length ? (
         <section aria-labelledby="drafts-title" className="flex flex-col gap-3">
-          <h2 id="drafts-title" className="text-base font-bold">
+          <h2 id="drafts-title" className="text-title font-bold">
             {t("my.drafts")}
           </h2>
           <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -104,12 +104,17 @@ export default async function MyRequestsPage({ searchParams }: { searchParams: P
                 <li key={d.id} className="flex items-center justify-between gap-4 rounded-2xl border border-dashed border-line-strong bg-white px-5 py-4">
                   <div className="flex min-w-0 flex-col gap-1">
                     <span className="flex min-w-0 items-center gap-2">
-                      <span dir="ltr" className="truncate font-mono text-[15px] font-semibold">
+                      <span dir="ltr" className="truncate font-mono text-id font-semibold">
                         {d.senderName}
                       </span>
-                      {d.templateName ? <span className="truncate text-[14px] text-ink-2">· {d.templateName}</span> : null}
+                      {d.templateName ? (
+                        <>
+                          <span aria-hidden="true" className="text-muted">·</span>
+                          <span dir="auto" className="truncate text-small text-ink-2">{d.templateName}</span>
+                        </>
+                      ) : null}
                     </span>
-                    <span className="text-[13px] text-muted">
+                    <span className="text-meta tabular-nums text-muted">
                       {t("my.draftStep", { step: t(step.key) })} · {t("my.updated", { date: formatDateTime(d.updatedAt, locale) })}
                     </span>
                   </div>
@@ -125,8 +130,8 @@ export default async function MyRequestsPage({ searchParams }: { searchParams: P
 
       {nothingYet ? (
         <section className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-line-strong bg-white px-6 py-14 text-center">
-          <h2 className="text-lg font-bold">{t("my.empty.title")}</h2>
-          <p className="max-w-[460px] text-[15px] leading-7 text-muted">{t("my.empty.body")}</p>
+          <h2 className="text-title font-bold">{t("my.empty.title")}</h2>
+          <p className="max-w-[460px] text-body text-muted">{t("my.empty.body")}</p>
           <LinkButton href="/home" variant="primary" className="mt-2">
             {t("unav.new")}
           </LinkButton>
@@ -156,13 +161,13 @@ export default async function MyRequestsPage({ searchParams }: { searchParams: P
                 type="search"
                 defaultValue={q}
                 placeholder={t("my.search")}
-                className="h-11 w-full rounded-xl border border-field bg-white pe-3.5 ps-11 text-sm hover:border-field-strong"
+                className="h-11 w-full rounded-xl border border-field bg-white pe-3.5 ps-11 text-small hover:border-field-strong"
               />
             </form>
           </div>
 
           {rows.length === 0 ? (
-            <p className="rounded-2xl border border-line bg-white px-4 py-10 text-center text-sm text-muted">{t("my.noResults")}</p>
+            <p className="rounded-2xl border border-line bg-white px-4 py-10 text-center text-small text-muted">{t("my.noResults")}</p>
           ) : (
             <ul className="flex flex-col overflow-hidden rounded-2xl border border-line bg-white">
               {rows.map((r) => (
@@ -171,23 +176,23 @@ export default async function MyRequestsPage({ searchParams }: { searchParams: P
                     href={requestPath.submitted(r.id)}
                     className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-5 py-4 transition-colors hover:bg-canvas-2 md:grid-cols-[150px_minmax(0,1fr)_200px_auto]"
                   >
-                    <span dir="ltr" className="font-mono text-[14px] font-semibold text-ink md:order-none">
+                    <span dir="ltr" className="font-mono text-id font-semibold text-ink md:order-none">
                       {referenceText(r.referenceNo)}
                     </span>
                     {r.reviewStatus ? (
-                      <span className={`justify-self-end rounded-full px-3 py-1 text-[13px] font-semibold md:order-last ${REVIEW_STYLE[r.reviewStatus]}`}>
+                      <span className={`justify-self-end rounded-full px-3 py-1 text-meta font-semibold md:order-last ${REVIEW_STYLE[r.reviewStatus]}`}>
                         {t(`rv.${r.reviewStatus}`)}
                       </span>
                     ) : (
                       <span className="md:order-last" />
                     )}
                     <span className="col-span-2 flex min-w-0 items-center gap-2 md:col-span-1">
-                      <span className="truncate text-[15px] font-medium">{r.templateName}</span>
-                      <span dir="ltr" className="flex-none rounded-md bg-chip px-1.5 py-0.5 font-mono text-[13px] text-ink-2">
+                      <span dir="auto" className="truncate text-body font-medium">{r.templateName}</span>
+                      <span dir="ltr" className="flex-none rounded-md bg-chip px-1.5 py-0.5 font-mono text-meta text-ink-2">
                         {r.senderName}
                       </span>
                     </span>
-                    <span className="col-span-2 text-[13px] text-muted md:col-span-1">{formatDateTime(r.submittedAt, locale)}</span>
+                    <span className="col-span-2 text-meta tabular-nums text-muted md:col-span-1">{formatDateTime(r.submittedAt, locale)}</span>
                   </Link>
                 </li>
               ))}

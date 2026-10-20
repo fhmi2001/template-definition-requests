@@ -127,7 +127,7 @@ export function RecentChangeNote({ id, status, labels, wasLabel }: { id: string;
   return (
     <span ref={ref} className="block">
       {from ? (
-        <span className="motion-note mt-1 block whitespace-nowrap text-[13px] text-muted">{wasLabel.replace("{status}", labels[from])}</span>
+        <span className="motion-note mt-1 block whitespace-nowrap text-meta text-muted">{wasLabel.replace("{status}", labels[from])}</span>
       ) : null}
     </span>
   );
@@ -170,7 +170,7 @@ export function TrackerNews({
 
   if (!seen) return <p ref={ref} hidden />;
   return (
-    <p ref={ref} role="status" className={`rounded-xl px-3.5 py-2.5 text-[13px] font-semibold ${status === "REJECTED" ? "bg-danger-50 text-danger-700" : "bg-brand-50 text-brand-700"}`}>
+    <p ref={ref} role="status" className={`rounded-xl px-3.5 py-2.5 text-meta font-semibold ${status === "REJECTED" ? "bg-danger-50 text-danger-700" : "bg-brand-50 text-brand-700"}`}>
       {template.replace("{from}", labels[seen]).replace("{to}", labels[status])}
     </p>
   );

@@ -58,16 +58,16 @@ export function Field({
   }
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-sm font-semibold">
+      <label htmlFor={id} className="text-small font-semibold">
         {label}
       </label>
       {control}
       {error ? (
-        <p id={`${id}-error`} role="alert" className="text-[13px] leading-relaxed text-danger-600">
+        <p id={`${id}-error`} role="alert" className="text-meta text-danger-600">
           {error}
         </p>
       ) : hint ? (
-        <p id={`${id}-hint`} className="text-[13px] leading-relaxed text-muted">{hint}</p>
+        <p id={`${id}-hint`} className="text-meta text-muted">{hint}</p>
       ) : null}
     </div>
   );
@@ -82,7 +82,7 @@ export function Alert({ tone = "error", children }: { tone?: "error" | "warning"
     success: "bg-brand-50 text-brand-700",
   } as const;
   return (
-    <div role={tone === "success" || tone === "info" ? "status" : "alert"} className={cx("rounded-xl px-4 py-3 text-sm leading-relaxed", styles[tone])}>
+    <div role={tone === "success" || tone === "info" ? "status" : "alert"} className={cx("rounded-xl px-4 py-3 text-small", styles[tone])}>
       {children}
     </div>
   );
@@ -138,7 +138,7 @@ export function ConfirmButton({
         aria-labelledby={messageId}
         className="m-auto w-[min(92vw,440px)] rounded-2xl border border-line bg-white p-6 text-ink shadow-[0_24px_48px_-24px_rgb(0_0_0/0.5)] backdrop:bg-night/50"
       >
-        <p id={messageId} className="text-[15px] leading-7">
+        <p id={messageId} className="text-body">
           {message}
         </p>
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

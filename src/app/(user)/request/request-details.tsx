@@ -9,8 +9,8 @@ import { TemplatePreview } from "./template-preview";
 function Row({ label, children, ltr }: { label: string; children: React.ReactNode; ltr?: boolean }) {
   return (
     <div className="flex flex-col gap-1 border-b border-hair py-3 last:border-0 sm:flex-row sm:gap-6">
-      <dt className="text-[13px] text-muted sm:w-40 sm:flex-none">{label}</dt>
-      <dd dir={ltr ? "ltr" : undefined} className={`min-w-0 whitespace-pre-wrap break-words text-[15px] leading-7 ${ltr ? "font-mono" : ""}`}>
+      <dt className="text-meta text-muted sm:w-40 sm:flex-none">{label}</dt>
+      <dd dir={ltr ? "ltr" : undefined} className={`min-w-0 whitespace-pre-wrap break-words text-body ${ltr ? "font-mono" : ""}`}>
         {children}
       </dd>
     </div>
@@ -33,7 +33,7 @@ function Section({
   return (
     <section aria-labelledby={id} className="flex flex-col gap-1 rounded-2xl border border-line bg-white px-5 py-5 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id={id} className="text-base font-bold">
+        <h2 id={id} className="text-title font-bold">
           {title}
         </h2>
         {action}
@@ -42,7 +42,7 @@ function Section({
       {edit?.length ? (
         <div className="flex flex-wrap gap-5 pt-1">
           {edit.map((e) => (
-            <Link key={e.href} href={e.href} className="inline-flex min-h-11 sm:min-h-9 items-center text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
+            <Link key={e.href} href={e.href} className="inline-flex min-h-11 sm:min-h-9 items-center text-small font-semibold text-brand-700 underline-offset-4 hover:underline">
               {e.label}
             </Link>
           ))}
@@ -130,10 +130,10 @@ export async function RequestDetails({
         </div>
         {r.specs.length ? (
           <div className="overflow-x-auto rounded-xl border border-line">
-            <table className="w-full border-collapse text-sm">
+            <table className="w-full border-collapse text-small">
               <caption className="sr-only">{t("content.varsTitle")}</caption>
               <thead>
-                <tr className="border-b border-line bg-canvas text-start text-[13px] text-ink-2">
+                <tr className="border-b border-line bg-canvas text-start text-meta text-ink-2">
                   <th scope="col" className="px-4 py-2.5 font-semibold">{t("details.variable")}</th>
                   <th scope="col" className="px-4 py-2.5 font-semibold">{t("details.type")}</th>
                   <th scope="col" className="px-4 py-2.5 font-semibold">{t("content.maxLen")}</th>
@@ -151,7 +151,7 @@ export async function RequestDetails({
             </table>
           </div>
         ) : (
-          <p className="text-sm text-muted">{t("details.noVars")}</p>
+          <p className="text-small text-muted">{t("details.noVars")}</p>
         )}
         {r.exceptions.length ? (
           <dl className="mt-2 flex flex-col">

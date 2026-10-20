@@ -21,7 +21,7 @@ export function BrandLogo({
       />
       {product ? (
         <span
-          className={`hidden min-w-0 border-s ps-3 text-[13px] font-medium leading-tight sm:block ${
+          className={`hidden min-w-0 border-s ps-3 text-meta font-medium leading-snug sm:block ${
             tone === "dark" ? "border-night-line text-night-fg" : "border-line-strong text-muted"
           }`}
         >

@@ -47,12 +47,12 @@ export async function ChosenSender({
     >
       <dl className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <div className="flex items-center gap-2.5">
-          <span aria-hidden="true" className="flex size-8 flex-none items-center justify-center rounded-full bg-brand-600 text-[13px] font-bold text-white">
+          <span aria-hidden="true" className="flex size-8 flex-none items-center justify-center rounded-full bg-brand-600 text-meta font-bold text-white">
             {name.trim().charAt(0).toUpperCase()}
           </span>
           <div className="flex flex-col">
-            <dt className="text-[13px] text-muted">{t("col.senderName")}</dt>
-            <dd dir="ltr" className="font-mono text-[15px] font-semibold leading-tight">
+            <dt className="text-meta text-muted">{t("col.senderName")}</dt>
+            <dd dir="ltr" className="font-mono text-id font-semibold leading-tight">
               {name}
             </dd>
           </div>
@@ -64,7 +64,7 @@ export async function ChosenSender({
           </Item>
         ))}
       </dl>
-      <Link href={changeHref} className="inline-flex min-h-10 items-center text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
+      <Link href={changeHref} className="inline-flex min-h-10 items-center text-small font-semibold text-brand-700 underline-offset-4 hover:underline">
         {t("chosen.change")}
       </Link>
     </section>
@@ -74,8 +74,8 @@ export async function ChosenSender({
 function Item({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col sm:border-s sm:border-hair sm:ps-6">
-      <dt className="text-[13px] text-muted">{label}</dt>
-      <dd className="text-[14px] font-medium leading-tight">{children}</dd>
+      <dt className="text-meta text-muted">{label}</dt>
+      <dd className="text-small font-medium">{children}</dd>
     </div>
   );
 }

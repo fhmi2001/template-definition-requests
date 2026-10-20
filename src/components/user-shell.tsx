@@ -23,23 +23,23 @@ async function AccountMenu({ email, clientName }: { email: string; clientName: s
         aria-label={`${clientName} – ${t("unav.account")}`}
         className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl px-1.5 hover:bg-canvas [&::-webkit-details-marker]:hidden"
       >
-        <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-brand-50 text-sm font-bold text-brand-700 ring-1 ring-brand-200">
+        <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-brand-50 text-small font-bold text-brand-700 ring-1 ring-brand-200">
           {clientName.trim().charAt(0)}
         </span>
-        <span className="hidden max-w-[180px] truncate text-sm font-semibold md:block">{clientName}</span>
+        <span className="hidden max-w-[180px] truncate text-small font-semibold md:block">{clientName}</span>
         <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="text-muted transition-transform group-open:rotate-180">
           <path d="M6 9l6 6 6-6" />
         </svg>
       </summary>
       <div className="absolute end-0 top-full z-30 mt-2 flex w-72 flex-col gap-3 rounded-2xl border border-line bg-white p-4 shadow-[0_16px_40px_-12px_rgb(0_0_0/0.18)]">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[15px] font-semibold">{clientName}</span>
-          <span dir="ltr" className="truncate text-[13px] text-muted">
+          <span className="text-body font-semibold">{clientName}</span>
+          <span dir="ltr" className="truncate text-meta text-muted">
             {email}
           </span>
         </div>
         <form action={logoutUserAction} className="border-t border-hair pt-3">
-          <button type="submit" className="flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-sm font-semibold text-danger-700 hover:bg-danger-50">
+          <button type="submit" className="flex min-h-10 w-full items-center gap-2 rounded-lg px-2 text-small font-semibold text-danger-700 hover:bg-danger-50">
             <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rtl:-scale-x-100">
               <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3" />
             </svg>
@@ -80,7 +80,7 @@ export async function UserShell({
                   key={n.key}
                   href={n.href}
                   aria-current={on ? "page" : undefined}
-                  className={`relative inline-flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-sm font-semibold transition-colors sm:flex-none ${
+                  className={`relative inline-flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 text-small font-semibold transition-colors sm:flex-none ${
                     on ? "bg-brand-50 text-brand-700" : "text-muted hover:bg-canvas hover:text-ink"
                   }`}
                 >
@@ -105,8 +105,8 @@ export function PageHeader({ title, intro, children }: { title: ReactNode; intro
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="flex max-w-[720px] flex-col gap-2">
-        <h1 className="text-[28px] font-bold leading-tight sm:text-[32px]">{title}</h1>
-        {intro ? <p className="text-[15px] leading-7 text-muted">{intro}</p> : null}
+        <h1 className="text-page font-bold sm:text-display">{title}</h1>
+        {intro ? <p className="text-body text-muted">{intro}</p> : null}
       </div>
       {children}
     </div>
@@ -127,7 +127,7 @@ export async function RequestSteps({ current, draftId, done }: { current: number
     : [];
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[13px] font-semibold text-brand-700 sm:hidden">
+      <p className="text-meta font-semibold text-brand-700 sm:hidden">
         {t("steps.of", { n: Math.min(current, STEPS.length), total: STEPS.length })} · {t(STEPS[Math.min(current, STEPS.length) - 1])}
       </p>
       <ol aria-label={t("steps.label")} className="grid grid-cols-5 gap-1.5 sm:gap-3">
@@ -142,9 +142,9 @@ export async function RequestSteps({ current, draftId, done }: { current: number
                 aria-hidden="true"
                 className={`h-1.5 w-full rounded-full ${state === "next" ? "bg-line" : state === "current" ? "bg-brand-400" : "bg-brand-600"}`}
               />
-              <span className="hidden items-center gap-1.5 text-[13px] sm:flex">
+              <span className="hidden items-center gap-1.5 text-meta sm:flex">
                 <span
-                  className={`flex size-5 flex-none items-center justify-center rounded-full text-[13px] font-semibold ${
+                  className={`flex size-5 flex-none items-center justify-center rounded-full text-meta font-semibold ${
                     state === "next" ? "bg-chip text-muted" : "bg-brand-600 text-white"
                   }`}
                 >

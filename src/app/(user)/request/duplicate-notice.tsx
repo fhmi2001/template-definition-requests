@@ -28,50 +28,50 @@ export async function DuplicateNotice({
       className="flex flex-col gap-5 rounded-2xl border border-danger-200 bg-danger-50 p-5 sm:p-6"
     >
       <div className="flex flex-col gap-2">
-        <h2 id="dup-title" className="text-lg font-bold text-danger-700">
+        <h2 id="dup-title" className="text-title font-bold text-danger-700">
           {t("dup.title")}
         </h2>
-        <p className="text-[15px] leading-7 text-ink-2">{t("dup.body")}</p>
+        <p className="text-body text-ink-2">{t("dup.body")}</p>
       </div>
 
       <div className="flex flex-col gap-4 rounded-xl bg-white p-4 sm:p-5">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="text-[13px] text-muted">{t("dup.previous")}</span>
+          <span className="text-meta text-muted">{t("dup.previous")}</span>
           <Link
             href={requestPath.submitted(dup.id)}
             dir="ltr"
-            className="font-mono text-[15px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+            className="font-mono text-id font-semibold text-brand-700 underline-offset-4 hover:underline"
           >
             {ref}
           </Link>
           {dup.reviewStatus ? (
-            <span className={`rounded-full px-2.5 py-1 text-[13px] font-semibold ${REVIEW_STYLE[dup.reviewStatus]}`}>
+            <span className={`rounded-full px-2.5 py-1 text-meta font-semibold ${REVIEW_STYLE[dup.reviewStatus]}`}>
               {t(`rv.${dup.reviewStatus}`)}
             </span>
           ) : null}
         </div>
 
-        <dl className="grid gap-x-6 gap-y-3 text-[14px] sm:grid-cols-2">
+        <dl className="grid gap-x-6 gap-y-3 text-small sm:grid-cols-2">
           {dup.authorityRef ? (
             <div className="flex flex-col gap-0.5">
-              <dt className="text-[13px] text-muted">{t("authorityRef.label")}</dt>
-              <dd dir="ltr" className="font-mono font-semibold [text-align:match-parent]">
+              <dt className="text-meta text-muted">{t("authorityRef.label")}</dt>
+              <dd dir="ltr" className="font-mono font-semibold align-page">
                 {dup.authorityRef}
               </dd>
             </div>
           ) : null}
           <div className="flex flex-col gap-0.5">
-            <dt className="text-[13px] text-muted">{t("mail.f.submittedAt")}</dt>
+            <dt className="text-meta text-muted">{t("mail.f.submittedAt")}</dt>
             <dd>{formatDateTime(dup.submittedAt, locale)}</dd>
           </div>
           <div className="flex flex-col gap-0.5">
-            <dt className="text-[13px] text-muted">{t("template.name")}</dt>
-            <dd dir="auto" className="[text-align:match-parent]">
+            <dt className="text-meta text-muted">{t("template.name")}</dt>
+            <dd dir="auto" className="align-page">
               {dup.templateName ?? "—"}
             </dd>
           </div>
           <div className="flex flex-col gap-0.5">
-            <dt className="text-[13px] text-muted">{t("col.senderType")}</dt>
+            <dt className="text-meta text-muted">{t("col.senderType")}</dt>
             <dd>{dup.senderType ? senderTypeDisplay(t, dup.senderType) : "—"}</dd>
           </div>
         </dl>
@@ -84,7 +84,7 @@ export async function DuplicateNotice({
       </div>
 
       <div className="flex flex-col gap-3">
-        <p className="text-[14px] font-semibold text-ink-2">{t("dup.changeOne")}</p>
+        <p className="text-small font-semibold text-ink-2">{t("dup.changeOne")}</p>
         <div className="flex flex-wrap gap-3">
           <LinkButton href={edit.content} variant="primary">
             {t("details.editContent")}

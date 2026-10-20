@@ -19,7 +19,7 @@ export function LanguageSwitcher({ dark = false, compact = false, className = ""
       lang={next}
       // الاسم المسموع يبدأ بالنص الظاهر (EN / ع) لمستخدمي التحكم الصوتي (WCAG 2.5.3)
       aria-label={compact ? `${abbr} – ${t("lang.switchLabel")}` : t("lang.switchLabel")}
-      className={`inline-flex min-h-11 items-center sm:min-h-10 gap-1.5 rounded-xl border px-3 text-sm font-semibold transition-colors disabled:opacity-60 ${
+      className={`inline-flex min-h-11 items-center sm:min-h-10 gap-1.5 rounded-xl border px-3 text-small font-semibold transition-colors disabled:opacity-60 ${
         dark ? "border-night-line text-night-fg hover:bg-night-2" : "border-line-strong bg-white text-ink hover:bg-canvas"
       } ${className}`}
     >

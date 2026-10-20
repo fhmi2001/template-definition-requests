@@ -43,10 +43,10 @@ export default async function RequestSubmittedPage({ params }: { params: Promise
               </svg>
             </span>
             <div className="flex flex-col gap-1">
-              <h1 className="text-[28px] font-bold leading-tight sm:text-[32px]">{t("submitted.heading")}</h1>
-              <p className="text-[14px] text-muted">
+              <h1 className="text-page font-bold sm:text-display">{t("submitted.heading")}</h1>
+              <p className="text-small text-muted">
                 {t("submitted.ref")}{" "}
-                <span dir="ltr" className="font-mono text-[15px] font-semibold text-ink">
+                <span dir="ltr" className="font-mono text-id font-semibold text-ink">
                   {ref}
                 </span>
                 {request.submittedAt ? <> · {formatDateTime(request.submittedAt, locale)}</> : null}
@@ -54,9 +54,9 @@ export default async function RequestSubmittedPage({ params }: { params: Promise
             </div>
           </div>
           {request.reviewStatus ? (
-            <p className="flex items-center gap-2 text-[14px]">
+            <p className="flex items-center gap-2 text-small">
               <span className="text-muted">{t("submitted.status")}</span>
-              <span data-testid="review-status" className={`rounded-full px-3 py-1 text-[13px] font-semibold ${REVIEW_STYLE[request.reviewStatus]}`}>
+              <span data-testid="review-status" className={`rounded-full px-3 py-1 text-meta font-semibold ${REVIEW_STYLE[request.reviewStatus]}`}>
                 {t(`rv.${request.reviewStatus}`)}
               </span>
             </p>
@@ -68,8 +68,8 @@ export default async function RequestSubmittedPage({ params }: { params: Promise
         <div className="flex min-w-0 flex-col gap-4">
           {request.reviewStatus === "REJECTED" && request.rejectionReason ? (
             <div role="note" className="rounded-2xl border border-danger-200 bg-danger-50 px-5 py-4 text-danger-700">
-              <div className="text-[13px] font-semibold">{t("mail.reason")}</div>
-              <p dir="auto" className="mt-1 whitespace-pre-wrap text-[15px] leading-7 [text-align:match-parent]">
+              <div className="text-meta font-semibold">{t("mail.reason")}</div>
+              <p dir="auto" className="mt-1 whitespace-pre-wrap text-body align-page">
                 {request.rejectionReason}
               </p>
             </div>
@@ -93,7 +93,7 @@ export default async function RequestSubmittedPage({ params }: { params: Promise
         </div>
         <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
           {request.reviewStatus ? <StatusTracker requestId={request.id} status={request.reviewStatus} changes={changes} locale={locale} authorityRef={request.authorityRef} /> : null}
-          <p className="px-1 text-[13px] leading-6 text-muted">{t("submitted.keep")}</p>
+          <p className="px-1 text-meta text-muted">{t("submitted.keep")}</p>
           <div className="flex flex-wrap gap-3 px-1">
             <LinkButton href="/requests" size="sm">
               {t("submitted.back")}

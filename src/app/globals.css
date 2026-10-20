@@ -4,6 +4,27 @@
   --font-sans: var(--font-plex-sans), "IBM Plex Sans Arabic", system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
 
+  /*
+   * أدوار الخط: الاسم يصف الوظيفة لا القيمة. سطور العربية تحتاج ارتفاعاً لا يقل عن 1.35
+   * حتى لا تُقص الحركات والنقاط في العناوين.
+   */
+  --text-display: 2rem; /* عنوان لوحة الدخول، وعنوان الصفحة من sm */
+  --text-display--line-height: 1.35;
+  --text-page: 1.75rem; /* عنوان الصفحة h1 على الجوال */
+  --text-page--line-height: 1.35;
+  --text-title: 1.125rem; /* عناوين البطاقات والأقسام h2 */
+  --text-title--line-height: 1.5;
+  --text-body: 1rem; /* النص المقروء: المقدمات، شرح النموذج، نص الرسالة */
+  --text-body--line-height: 1.75;
+  --text-control: 0.9375rem; /* الأزرار */
+  --text-control--line-height: 1.5;
+  --text-id: 0.9375rem; /* المعرّفات بالخط الأحادي: اسم المرسل، رقم الطلب */
+  --text-id--line-height: 1.5;
+  --text-small: 0.875rem; /* تسميات الحقول، خلايا الجداول، القيم في الملخصات */
+  --text-small--line-height: 1.7;
+  --text-meta: 0.8125rem; /* التلميحات، التواريخ، الشارات، العدّادات */
+  --text-meta--line-height: 1.75;
+
   /* محايدات مأخوذة من رمادي شعار Deewan (#2D2D2D) */
   --color-canvas: #f4f6f5;
   --color-canvas-2: #f9faf9;
@@ -50,6 +71,13 @@
   --color-warn-700: #7a4700;
 }
 
+/* اللاتينية أقصر ارتفاعاً من العربية: سطور أضيق قليلاً في الإنجليزية */
+html:lang(en) {
+  --text-body--line-height: 1.6;
+  --text-small--line-height: 1.55;
+  --text-meta--line-height: 1.55;
+}
+
 html,
 body {
   background: var(--color-canvas);
@@ -65,6 +93,19 @@ body {
   outline-color: var(--color-brand-300);
 }
 
+::selection {
+  background: var(--color-brand-100);
+  color: var(--color-ink);
+}
+
+/* العناوين تتوازن على أسطرها، والفقرات لا تترك كلمة يتيمة في سطرها الأخير */
+:where(h1, h2, h3) {
+  text-wrap: balance;
+}
+:where(p, li, dd) {
+  text-wrap: pretty;
+}
+
 input::placeholder,
 textarea::placeholder {
   color: var(--color-subtle);
@@ -73,9 +114,14 @@ textarea::placeholder {
 /*
  * نصوص من اليسار لليمين داخل الصفحة (بريد، أسماء مرسلين، أرقام) تُحاذى مع اتجاه الصفحة:
  * يميناً في العربية ويساراً في الإنجليزية. :where يجعلها قابلة للتجاوز بأي class.
+ * المحاذاة مكتوبة صراحة لأن Chrome لا يدعم text-align: match-parent فيُسقطها.
+ * .align-page للنصوص ذات dir="auto" (سبب الرفض مثلاً) حتى تتبع اتجاه الصفحة لا اتجاه لغتها.
  */
-:where([dir="ltr"]:not(html)) {
-  text-align: match-parent;
+:where(html[dir="rtl"] :is([dir="ltr"], .align-page)) {
+  text-align: right;
+}
+:where(html[dir="ltr"] .align-page) {
+  text-align: left;
 }
 
 /* عناوين الجداول تبدأ من جهة بداية السطر في اللغتين (Chrome يوسّطها افتراضياً). */

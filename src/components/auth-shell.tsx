@@ -26,8 +26,8 @@ function IntroPanel() {
 
       <div className="flex max-w-[460px] flex-col gap-8">
         <div className="flex flex-col gap-3">
-          <h2 className="text-[32px] font-bold leading-[1.35] text-ink">{t("auth.panel.title")}</h2>
-          <p className="text-base leading-8 text-muted">{t("auth.panel.lead")}</p>
+          <h2 className="text-display font-bold text-ink">{t("auth.panel.title")}</h2>
+          <p className="text-body leading-8 text-muted">{t("auth.panel.lead")}</p>
         </div>
 
         <MessageBubble sender="Deewan" meta={t("auth.panel.sampleMeta")}>
@@ -36,8 +36,8 @@ function IntroPanel() {
 
         <ol className="flex flex-col gap-3">
           {steps.map((s, i) => (
-            <li key={s} className="flex items-center gap-3 text-[15px] text-ink-2">
-              <span className="flex size-7 flex-none items-center justify-center rounded-full bg-white font-mono text-[13px] font-semibold text-brand-700 ring-1 ring-brand-200">
+            <li key={s} className="flex items-center gap-3 text-body text-ink-2">
+              <span className="flex size-7 flex-none items-center justify-center rounded-full bg-white font-mono text-meta font-semibold text-brand-700 ring-1 ring-brand-200">
                 {i + 1}
               </span>
               {s}
@@ -46,7 +46,7 @@ function IntroPanel() {
         </ol>
       </div>
 
-      <p className="text-[13px] text-subtle">{t("auth.panel.footer")}</p>
+      <p className="text-meta text-subtle">{t("auth.panel.footer")}</p>
     </aside>
   );
 }
@@ -69,7 +69,7 @@ export function AuthShell({ children, footer, dark = false }: { children: ReactN
         <main className="flex flex-1 items-center justify-center px-4 pb-16 pt-6">
           <div className="w-full max-w-[440px] rounded-2xl bg-white px-6 py-10 shadow-[0_24px_48px_-24px_rgb(0_0_0/0.5)] sm:px-8">{children}</div>
         </main>
-        {footer ? <footer data-surface="dark" className="flex flex-wrap items-center justify-between gap-3 px-6 pb-24 pt-5 text-[13px] text-night-fg sm:px-8 sm:pb-5">{footer}</footer> : null}
+        {footer ? <footer data-surface="dark" className="flex flex-wrap items-center justify-between gap-3 px-6 pb-24 pt-5 text-meta text-night-fg sm:px-8 sm:pb-5">{footer}</footer> : null}
       </div>
     );
   }
@@ -88,7 +88,7 @@ export function AuthShell({ children, footer, dark = false }: { children: ReactN
           <div className="w-full max-w-[420px]">{children}</div>
         </main>
         {footer ? (
-          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 pb-24 pt-5 text-[13px] text-muted sm:px-8 sm:pb-5">{footer}</footer>
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 pb-24 pt-5 text-meta text-muted sm:px-8 sm:pb-5">{footer}</footer>
         ) : null}
       </div>
     </div>

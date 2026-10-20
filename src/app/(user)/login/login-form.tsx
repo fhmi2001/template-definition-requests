@@ -32,10 +32,10 @@ export function LoginForm() {
       </Field>
 
       <div className="flex flex-col gap-3.5">
-        <SubmitButton pendingText={t("login.sending")} className="h-12 text-base">
+        <SubmitButton pendingText={t("login.sending")} className="h-12 text-body">
           {t("login.send")}
         </SubmitButton>
-        <p className="text-[13px] leading-6 text-muted">{t("login.hint")}</p>
+        <p className="text-meta text-muted">{t("login.hint")}</p>
       </div>
     </form>
   );

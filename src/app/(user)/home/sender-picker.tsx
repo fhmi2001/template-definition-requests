@@ -67,7 +67,7 @@ export function SenderPicker({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t("picker.searchPlaceholder")}
-            className="h-12 w-full rounded-xl border border-field bg-white pe-3.5 ps-11 text-[15px] hover:border-field-strong"
+            className="h-12 w-full rounded-xl border border-field bg-white pe-3.5 ps-11 text-body hover:border-field-strong"
           />
         </div>
       ) : null}
@@ -75,7 +75,7 @@ export function SenderPicker({
       <fieldset className="min-w-0">
         <legend className="sr-only">{t("picker.legend")}</legend>
         {shown.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-line-strong bg-white px-4 py-10 text-center text-sm text-muted">{t("picker.noResults")}</p>
+          <p className="rounded-2xl border border-dashed border-line-strong bg-white px-4 py-10 text-center text-small text-muted">{t("picker.noResults")}</p>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((s) => {
@@ -103,11 +103,11 @@ export function SenderPicker({
                     <span className="flex min-w-0 items-center gap-2.5">
                       <span
                         aria-hidden="true"
-                        className={`flex size-9 flex-none items-center justify-center rounded-full text-sm font-bold ${isOn ? "bg-brand-600 text-white" : "bg-brand-50 text-brand-700"}`}
+                        className={`flex size-9 flex-none items-center justify-center rounded-full text-small font-bold ${isOn ? "bg-brand-600 text-white" : "bg-brand-50 text-brand-700"}`}
                       >
                         {s.name.trim().charAt(0).toUpperCase()}
                       </span>
-                      <span id={`sender-${s.id}-name`} dir="ltr" className="truncate font-mono text-[15px] font-semibold">
+                      <span id={`sender-${s.id}-name`} dir="ltr" className="truncate font-mono text-id font-semibold">
                         {s.name}
                       </span>
                     </span>
@@ -124,9 +124,9 @@ export function SenderPicker({
                   </span>
                   {/* اسم العميل وحالة الانتهاء: تُقرأ مع اسم المرسل */}
                   <span id={`sender-${s.id}-details`} className="flex flex-col gap-2">
-                    <span className="text-[14px] leading-6 text-ink-2">{s.clientName ?? <span className="text-muted">—</span>}</span>
+                    <span className="text-small text-ink-2">{s.clientName ?? <span className="text-muted">—</span>}</span>
                     <span className="flex flex-wrap gap-1.5">
-                      {s.expired ? <span className="rounded-md bg-warn-50 px-2 py-0.5 text-[13px] font-semibold text-warn-700">{t("picker.expired")}</span> : null}
+                      {s.expired ? <span className="rounded-md bg-warn-50 px-2 py-0.5 text-meta font-semibold text-warn-700">{t("picker.expired")}</span> : null}
                     </span>
                   </span>
                 </label>
@@ -138,7 +138,7 @@ export function SenderPicker({
 
       {/* شريط الاختيار ثابت أسفل القائمة (لا يطفو فوق البطاقات أثناء التمرير) */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-4 py-3 sm:px-5">
-        <p aria-live="polite" className="text-sm text-muted">
+        <p aria-live="polite" className="text-small text-muted">
           {chosen ? (
             <>
               {t("picker.chosen")}{" "}

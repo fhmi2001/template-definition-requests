@@ -58,7 +58,7 @@ export function TypeForm({
       <fieldset className="flex flex-col gap-3" aria-describedby={typeError ? "sender-type-error" : undefined}>
         <legend className="sr-only">{t("type.legend")}</legend>
         {typeError ? (
-          <p id="sender-type-error" role="alert" className="rounded-xl bg-danger-50 px-4 py-3 text-sm font-semibold text-danger-700">
+          <p id="sender-type-error" role="alert" className="rounded-xl bg-danger-50 px-4 py-3 text-small font-semibold text-danger-700">
             {typeError}
           </p>
         ) : null}
@@ -107,14 +107,14 @@ export function TypeForm({
                   </span>
                   <span className="flex min-w-0 flex-col gap-1">
                     <span className="flex flex-wrap items-baseline gap-x-2">
-                      <span className={`text-base font-bold ${on ? "text-brand-800" : "text-ink"}`}>{o.label}</span>
+                      <span className={`text-body font-bold ${on ? "text-brand-800" : "text-ink"}`}>{o.label}</span>
                       {o.sub ? (
-                        <span dir="ltr" className="text-[13px] text-muted">
+                        <span dir="ltr" className="text-meta text-muted">
                           {o.sub}
                         </span>
                       ) : null}
                     </span>
-                    <span id={descId} className="text-[14px] leading-6 text-ink-2">
+                    <span id={descId} className="text-small text-ink-2">
                       {o.purpose}
                     </span>
                   </span>
@@ -123,7 +123,7 @@ export function TypeForm({
                   {o.examples.map((ex, i) => (
                     <span
                       key={ex}
-                      className={`rounded-md px-2 py-0.5 text-[13px] leading-6 ${on ? "bg-white text-ink-2 ring-1 ring-inset ring-brand-200" : "bg-chip text-ink-2"}`}
+                      className={`rounded-md px-2 py-0.5 text-meta ${on ? "bg-white text-ink-2 ring-1 ring-inset ring-brand-200" : "bg-chip text-ink-2"}`}
                     >
                       {ex}
                       {i < o.examples.length - 1 ? <span className="sr-only">{t("common.listSep")}</span> : null}
@@ -131,7 +131,7 @@ export function TypeForm({
                   ))}
                 </span>
                 {o.blocked ? (
-                  <span id={blockedId} className="mt-auto flex items-start gap-2 border-t border-warn-50 bg-warn-50 px-5 py-3 text-[13px] font-semibold leading-5 text-warn-700 rounded-b-2xl">
+                  <span id={blockedId} className="mt-auto flex items-start gap-2 border-t border-warn-50 bg-warn-50 px-5 py-3 text-meta font-semibold leading-5 text-warn-700 rounded-b-2xl">
                     <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mt-px flex-none">
                       <circle cx="12" cy="12" r="9" />
                       <path d="M5.6 5.6l12.8 12.8" />
@@ -140,7 +140,7 @@ export function TypeForm({
                   </span>
                 ) : (
                 <span
-                  className={`mt-auto flex items-center gap-2 border-t px-5 py-3 ps-14 text-[13px] leading-5 ${
+                  className={`mt-auto flex items-center gap-2 border-t px-5 py-3 ps-14 text-meta leading-5 ${
                     on ? "border-brand-200 text-brand-800" : "border-hair text-muted"
                   }`}
                 >

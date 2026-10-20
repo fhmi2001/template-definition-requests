@@ -11,8 +11,8 @@ const BASE =
   "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-[background-color,border-color,color,box-shadow] duration-150 disabled:cursor-not-allowed disabled:opacity-55";
 
 const SIZES: Record<ButtonSize, string> = {
-  md: "min-h-11 px-5 text-[15px]",
-  sm: "min-h-10 px-4 text-sm",
+  md: "min-h-11 px-5 text-control",
+  sm: "min-h-10 px-4 text-small",
 };
 
 const VARIANTS: Record<ButtonVariant, string> = {
@@ -30,7 +30,7 @@ export function buttonClass(variant: ButtonVariant = "primary", size: ButtonSize
 /** حقل إدخال نصي بنفس الارتفاع والحدود في كل الصفحات. */
 export function inputClass(hasError?: boolean) {
   return cx(
-    "h-12 w-full rounded-xl border bg-white px-3.5 text-base text-ink transition-colors hover:border-field-strong",
+    "h-12 w-full rounded-xl border bg-white px-3.5 text-body text-ink transition-colors hover:border-field-strong",
     hasError ? "border-danger-600" : "border-field",
   );
 }

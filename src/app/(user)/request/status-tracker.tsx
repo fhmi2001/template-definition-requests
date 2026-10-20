@@ -41,13 +41,13 @@ export async function StatusTracker({
   return (
     <section aria-labelledby="track-title" className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="track-title" className="text-base font-bold">
+        <h2 id="track-title" className="text-title font-bold">
           {t("track.title")}
         </h2>
         {authorityRef ? (
-          <span className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-chip px-3 py-1.5 text-[13px] text-ink-2">
+          <span className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-chip px-3 py-1.5 text-meta text-ink-2">
             {t("authorityRef.label")}
-            <span dir="ltr" className="font-mono text-[15px] font-semibold text-ink">
+            <span dir="ltr" className="font-mono text-id font-semibold text-ink">
               {authorityRef}
             </span>
           </span>
@@ -83,8 +83,8 @@ export async function StatusTracker({
                 ) : null}
               </span>
               <div className="flex flex-col gap-0.5 pt-0.5">
-                <span className={`text-[15px] ${done ? "font-semibold text-ink" : "text-muted"}`}>{s.label}</span>
-                <span className="text-[13px] text-muted">{done && s.date ? formatDateTime(s.date, locale) : done ? "" : t("track.notYet")}</span>
+                <span className={`text-body ${done ? "font-semibold text-ink" : "text-muted"}`}>{s.label}</span>
+                <span className="text-meta tabular-nums text-muted">{done && s.date ? formatDateTime(s.date, locale) : done ? "" : t("track.notYet")}</span>
               </div>
             </li>
           );

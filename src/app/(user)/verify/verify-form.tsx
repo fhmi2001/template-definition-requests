@@ -80,7 +80,7 @@ export function VerifyForm({
           label={
             <span className="flex w-full items-baseline justify-between gap-2">
               <span>{t("verify.codeLabel")}</span>
-              <span className="text-[13px] font-normal text-muted">
+              <span className="text-meta font-normal text-muted">
                 {t("verify.expiresIn")}{" "}
                 <span dir="ltr" className="font-mono font-medium text-ink">
                   {mm}:{ss}
@@ -104,20 +104,20 @@ export function VerifyForm({
             required
             autoFocus
             aria-invalid={state.fields?.code ? true : undefined}
-            className={`${inputClass(!!state.fields?.code)} h-16 text-center font-mono text-[32px] tracking-[16px]`}
+            className={`${inputClass(!!state.fields?.code)} h-16 text-center font-mono text-[32px] tracking-[0.5em]`}
           />
         </Field>
-        <SubmitButton pendingText={t("verify.checking")} className="h-12 text-base">
+        <SubmitButton pendingText={t("verify.checking")} className="h-12 text-body">
           {t("verify.submit")}
         </SubmitButton>
       </form>
 
-      <form action={resend} className="flex min-h-11 items-center justify-center gap-1.5 text-sm text-muted">
+      <form action={resend} className="flex min-h-11 items-center justify-center gap-1.5 text-small text-muted">
         <span>{t("verify.notReceived")}</span>
         {cooldown > 0 ? (
           <span aria-live="off">{t("verify.resendIn", { n: cooldown })}</span>
         ) : (
-          <SubmitButton variant="ghost" pendingText={t("login.sending")} className="min-h-11 px-2 text-sm text-brand-600 underline">
+          <SubmitButton variant="ghost" pendingText={t("login.sending")} className="min-h-11 px-2 text-small text-brand-600 underline">
             {t("verify.resend")}
           </SubmitButton>
         )}

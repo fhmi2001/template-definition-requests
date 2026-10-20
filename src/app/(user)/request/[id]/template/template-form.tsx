@@ -63,12 +63,12 @@ export function TemplateForm({
             onChange={(e) => setDescription(e.target.value)}
             aria-invalid={!!state.fields?.templateDescription}
             aria-describedby="template-description-count"
-            className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-base leading-7 ${
+            className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-body ${
               state.fields?.templateDescription || over ? "border-danger-600" : "border-field"
             }`}
           />
         </Field>
-        <p id="template-description-count" className={`text-end text-[13px] ${over ? "font-semibold text-danger-600" : "text-muted"}`}>
+        <p id="template-description-count" className={`text-end text-meta tabular-nums ${over ? "font-semibold text-danger-600" : "text-muted"}`}>
           <span dir="ltr">
             {description.length} / {DESCRIPTION_MAX}
           </span>

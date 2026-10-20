@@ -20,21 +20,21 @@ export function MessageBubble({
     <figure className={`flex flex-col gap-2 ${className}`}>
       {sender ? (
         <figcaption className="flex items-center gap-2">
-          <span aria-hidden="true" className="flex size-7 flex-none items-center justify-center rounded-full bg-brand-600 text-[13px] font-bold text-white">
+          <span aria-hidden="true" className="flex size-7 flex-none items-center justify-center rounded-full bg-brand-600 text-meta font-bold text-white">
             {sender.trim().charAt(0).toUpperCase()}
           </span>
-          <span dir="ltr" className="font-mono text-[13px] font-semibold text-ink">
+          <span dir="ltr" className="font-mono text-meta font-semibold text-ink">
             {sender}
           </span>
         </figcaption>
       ) : null}
       <div
         dir="auto"
-        className="relative max-w-full self-start rounded-[20px] rounded-ss-md border border-brand-200 bg-white px-4 py-3 text-[15px] leading-8 text-ink shadow-[0_1px_2px_rgb(0_0_0/0.04)]"
+        className="relative max-w-full self-start rounded-[20px] rounded-ss-md border border-brand-200 bg-white px-4 py-3 text-body leading-8 text-ink shadow-[0_1px_2px_rgb(0_0_0/0.04)]"
       >
         {children}
       </div>
-      {meta ? <div className="text-[13px] text-muted">{meta}</div> : null}
+      {meta ? <div className="text-meta text-muted">{meta}</div> : null}
     </figure>
   );
 }

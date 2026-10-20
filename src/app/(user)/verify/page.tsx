@@ -36,9 +36,9 @@ export default async function VerifyPage() {
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2.5">
-          <span className="text-[13px] font-semibold text-brand-600">{t("verify.step2")}</span>
-          <h1 className="text-[28px] font-bold leading-snug">{t("verify.heading")}</h1>
-          <p className="text-[15px] leading-7 text-muted">
+          <span className="text-meta font-semibold text-brand-600">{t("verify.step2")}</span>
+          <h1 className="text-page font-bold">{t("verify.heading")}</h1>
+          <p className="text-body text-muted">
             {t("verify.sentTo")}{" "}
             <span dir="ltr" className="font-semibold text-ink">
               {maskEmail(email)}
