@@ -77,7 +77,12 @@ export default async function RequestSummaryPage({ params }: { params: Promise<{
               content: fromReview(requestPath.content(draft.id)),
             }}
           />
-          <SubmitPanel draftId={draft.id} canSubmit={check.ok} backHref={requestPath.content(draft.id)} />
+          <SubmitPanel
+            draftId={draft.id}
+            canSubmit={check.ok}
+            backHref={requestPath.content(draft.id)}
+            blocked={check.ok ? null : { message: t(check.message), href: fromReview(requestPath[check.step](draft.id)) }}
+          />
         </>
       )}
     </UserShell>
