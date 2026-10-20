@@ -5,12 +5,12 @@ import { db } from "@/server/db";
 import { requestMeta } from "@/server/http-meta";
 import { hitRateLimit, waitText } from "@/server/auth/rate-limit";
 import {
-  OTP_MAX_ATTEMPTS,
   OTP_RESEND_COOLDOWN_SEC,
   OTP_TTL_SEC,
   generateOtpCode,
   hashOtp,
   otpMatches,
+  reserveOtpAttempt,
 } from "@/server/auth/otp";
 import {
   clearPendingOtpEmail,
@@ -139,17 +139,20 @@ export async function verifyOtpAction(_prev: ActionState, formData: FormData): P
   if (!otp || otp.expiresAt <= new Date()) {
     return { error: t("auth.codeExpired"), tone: "warning" };
   }
-  if (otp.attempts >= OTP_MAX_ATTEMPTS) {
-    await db.otpCode.update({ where: { id: otp.id }, data: { consumedAt: new Date() } });
+  // حد ثانٍ لكل بريد، لا يتأثر بتغيير عنوان IP
+  const byEmail = await hitRateLimit(`verify:email:${email}`, 15, 15 * 60);
+  if (!byEmail.allowed) {
+    return { error: t("auth.tooMany", { wait: waitText(byEmail.retryAfterSec, t) }), tone: "warning" };
+  }
+
+  // المحاولة تُحجز قبل المقارنة، فلا تتجاوز الطلبات المتزامنة حد المحاولات
+  const left = await reserveOtpAttempt(otp.id, otp.attempts);
+  if (left === null) {
+    await db.otpCode.updateMany({ where: { id: otp.id, consumedAt: null }, data: { consumedAt: new Date() } });
     return { error: t("auth.attemptsExhausted"), tone: "warning" };
   }
 
   if (!otpMatches(otp.codeHash, email, code)) {
-    const updated = await db.otpCode.update({
-      where: { id: otp.id },
-      data: { attempts: { increment: 1 } },
-    });
-    const left = OTP_MAX_ATTEMPTS - updated.attempts;
     if (left <= 0) {
       await db.otpCode.update({ where: { id: otp.id }, data: { consumedAt: new Date() } });
       return { error: t("auth.wrongNoAttempts"), tone: "error" };

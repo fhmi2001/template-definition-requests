@@ -1,5 +1,6 @@
 import "server-only";
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
+import { db } from "@/server/db";
 import { env } from "@/server/env";
 
 export const OTP_TTL_SEC = 5 * 60; // صلاحية الرمز
@@ -23,6 +24,22 @@ export function otpMatches(storedHash: string, email: string, code: string) {
   const a = Buffer.from(storedHash, "hex");
   const b = Buffer.from(hashOtp(email, code), "hex");
   return a.length === b.length && timingSafeEqual(a, b);
+}
+
+/**
+ * يحجز محاولة إدخال قبل مقارنة الرمز، في عملية واحدة في قاعدة البيانات.
+ * القراءة ثم الزيادة كانت تسمح لطلبات متزامنة كثيرة بتجربة أكثر من OTP_MAX_ATTEMPTS رمزاً.
+ * يعيد عدد المحاولات المتبقية بعد هذه المحاولة، أو null إن نفدت المحاولات أو استُهلك الرمز.
+ */
+export async function reserveOtpAttempt(otpId: string, attemptsBefore: number): Promise<number | null> {
+  const res = await db.otpCode.updateMany({
+    where: { id: otpId, consumedAt: null, attempts: { lt: OTP_MAX_ATTEMPTS } },
+    data: { attempts: { increment: 1 } },
+  });
+  if (res.count !== 1) return null;
+  // العدد الدقيق بعد الزيادة (قد تكون طلبات أخرى زادته في نفس اللحظة)
+  const row = await db.otpCode.findUnique({ where: { id: otpId }, select: { attempts: true } });
+  return OTP_MAX_ATTEMPTS - (row?.attempts ?? attemptsBefore + 1);
 }
 
 /** يخفي جزءاً من البريد للعرض: na***@company.com */

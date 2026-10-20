@@ -8,13 +8,13 @@ import { audit } from "@/server/audit";
 import { verifyPassword } from "@/server/auth/password";
 import { hitRateLimit, waitText } from "@/server/auth/rate-limit";
 import {
-  OTP_MAX_ATTEMPTS,
   OTP_RESEND_COOLDOWN_SEC,
   OTP_TTL_SEC,
   adminOtpKey,
   generateOtpCode,
   hashOtp,
   otpMatches,
+  reserveOtpAttempt,
 } from "@/server/auth/otp";
 import { clearPendingAdmin, createAdminSession, destroySession, getPendingAdmin, setPendingAdmin } from "@/server/auth/session";
 import { getAdminSession } from "@/server/auth/dal";
@@ -147,15 +147,21 @@ export async function adminVerifyAction(_prev: ActionState, formData: FormData):
   const key = adminOtpKey(adminId);
   const otp = await db.otpCode.findFirst({ where: { email: key, consumedAt: null }, orderBy: { createdAt: "desc" } });
   if (!otp || otp.expiresAt <= new Date()) return { error: t("auth.codeExpired"), tone: "warning" };
-  if (otp.attempts >= OTP_MAX_ATTEMPTS) {
-    await db.otpCode.update({ where: { id: otp.id }, data: { consumedAt: new Date() } });
+  // حد ثانٍ لكل أدمن، لا يتأثر بتغيير عنوان IP
+  const byAdmin = await hitRateLimit(`admin-verify:${adminId}`, 15, 15 * 60);
+  if (!byAdmin.allowed) {
+    return { error: t("auth.tooMany", { wait: waitText(byAdmin.retryAfterSec, t) }), tone: "warning" };
+  }
+
+  // المحاولة تُحجز قبل المقارنة، فلا تتجاوز الطلبات المتزامنة حد المحاولات
+  const left = await reserveOtpAttempt(otp.id, otp.attempts);
+  if (left === null) {
+    await db.otpCode.updateMany({ where: { id: otp.id, consumedAt: null }, data: { consumedAt: new Date() } });
     return { error: t("auth.attemptsExhausted"), tone: "warning" };
   }
 
   if (!otpMatches(otp.codeHash, key, code)) {
-    const updated = await db.otpCode.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
     await audit({ adminId, action: "admin.otp_failed", entityType: "admin", entityId: adminId, ip: meta.ip });
-    const left = OTP_MAX_ATTEMPTS - updated.attempts;
     if (left <= 0) {
       await db.otpCode.update({ where: { id: otp.id }, data: { consumedAt: new Date() } });
       return { error: t("auth.wrongNoAttempts"), tone: "error" };
