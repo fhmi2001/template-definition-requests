@@ -10,7 +10,6 @@ import { todayRiyadh } from "@/lib/sender-status";
 import { UserShell } from "@/components/user-shell";
 import { StepHeader } from "@/app/(user)/request/request-ui";
 import { SenderPicker, type PickableSender } from "./sender-picker";
-import { allowedSenderTypes, senderTypeLabel } from "@/lib/sender-types";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -41,9 +40,7 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
     id: s.id,
     name: s.name,
     clientName: s.clientName,
-    types: s.senderTypes.map((x) => senderTypeLabel(t, x)),
     expired: s.senderExpiryDate !== null && s.senderExpiryDate <= today,
-    allowsCurrentType: !draft?.senderType || allowedSenderTypes(s.senderTypes).includes(draft.senderType),
   }));
   const review = !!draft && isFromReview(sp.from);
   // العودة من مرحلة لاحقة تُبقي الاختيار وتحدّث نفس المسودة، بشرط أن يكون المرسل من قائمة هذا العميل
@@ -75,7 +72,6 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
           senders={senders}
           initialSelected={initialSelected}
           draftId={draft?.id}
-          currentTypeLabel={draft?.senderType ? senderTypeLabel(t, draft.senderType) : null}
           reviewHref={review && draft ? requestPath.summary(draft.id) : null}
         />
       )}

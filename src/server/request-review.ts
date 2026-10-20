@@ -45,6 +45,7 @@ export async function notifyStatusChange(changeId: string) {
     const locale = isLocale(r.locale) ? r.locale : DEFAULT_LOCALE;
     const data = {
       ref: referenceText(r.referenceNo),
+      authorityRef: r.authorityRef,
       submittedAt: r.submittedAt,
       clientName: r.sender?.clientName ?? r.client.name,
       senderName: r.senderName,

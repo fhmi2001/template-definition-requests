@@ -10,6 +10,8 @@ import { MAIL, emailLayout } from "./layout";
 
 type RequestMailData = {
   ref: string;
+  /** رقم الطلب لدى هيئة الاتصالات (بعد «لدى الهيئة») */
+  authorityRef: string | null;
   submittedAt: Date | null;
   clientName: string;
   senderName: string;
@@ -43,7 +45,12 @@ function render(locale: Locale, d: RequestMailData, kind: "received" | "status")
   const [bg, fg] = STATUS_COLOR[d.status];
 
   const heading = kind === "received" ? t("mail.received.heading") : t("mail.status.heading");
-  const subject = kind === "received" ? t("mail.received.subject", { ref: d.ref }) : t("mail.status.subject", { ref: d.ref, status });
+  const subject =
+    kind === "received"
+      ? t("mail.received.subject", { ref: d.ref })
+      : d.authorityRef
+        ? t("mail.status.subjectAuthority", { ref: d.ref, authorityRef: d.authorityRef, status })
+        : t("mail.status.subject", { ref: d.ref, status });
   const intro =
     kind === "received"
       ? [t("mail.received.body")]
@@ -54,6 +61,7 @@ function render(locale: Locale, d: RequestMailData, kind: "received" | "status")
   const vars = d.specs.map((s, i) => `${markTokens(tokenText(i + 1))} — ${variableTypeLabel(t, s.type)}${s.length ? ` · ${s.length}` : ""}`);
   const rows: [string, string, boolean?][] = [
     [t("submitted.ref"), d.ref, true],
+    ...(d.authorityRef ? ([[t("authorityRef.label"), d.authorityRef, true]] as [string, string, boolean][]) : []),
     [t("mail.f.status"), status],
     [t("mail.f.submittedAt"), formatDateTime(d.submittedAt, locale)],
     [t("col.client"), d.clientName],
@@ -83,8 +91,21 @@ function render(locale: Locale, d: RequestMailData, kind: "received" | "status")
     `      <h1 style="margin:0 0 12px;font-size:20px">${e(heading)}</h1>
       <p style="margin:0 0 16px">
         <span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${fg};font-size:13px;font-weight:bold">${e(status)}</span>
-        <span dir="ltr" style="font-family:Consolas,monospace;font-size:14px;color:${MAIL.muted};margin:0 8px">${e(d.ref)}</span>
       </p>
+      <table role="presentation" style="margin:0 0 18px;border-collapse:separate;border-spacing:0;border:1px solid ${MAIL.hair};border-radius:12px;font-size:14px">
+        <tr>
+          <td style="padding:10px 16px;color:${MAIL.muted}">${e(t("submitted.ref"))}</td>
+          <td dir="ltr" style="padding:10px 16px;font-family:Consolas,monospace;font-size:16px;font-weight:bold;color:${MAIL.ink2};text-align:${align}">${e(d.ref)}</td>
+        </tr>${
+          d.authorityRef
+            ? `
+        <tr>
+          <td style="padding:10px 16px;border-top:1px solid ${MAIL.hair};color:${MAIL.muted}">${e(t("authorityRef.label"))}</td>
+          <td dir="ltr" style="padding:10px 16px;border-top:1px solid ${MAIL.hair};font-family:Consolas,monospace;font-size:16px;font-weight:bold;color:${MAIL.ink2};text-align:${align}">${e(d.authorityRef)}</td>
+        </tr>`
+            : ""
+        }
+      </table>
       ${intro.map((p) => `<p style="margin:0 0 12px;font-size:15px;line-height:1.8;color:${MAIL.ink2}">${e(p)}</p>`).join("")}
       ${reasonBlock}
       <h2 style="margin:24px 0 10px;font-size:16px">${e(t("mail.summary"))}</h2>
@@ -106,6 +127,7 @@ function render(locale: Locale, d: RequestMailData, kind: "received" | "status")
   const text = [
     heading,
     `${t("submitted.ref")}: ${d.ref} · ${status}`,
+    ...(d.authorityRef ? [`${t("authorityRef.label")}: ${d.authorityRef}`] : []),
     "",
     ...intro,
     ...(d.status === "REJECTED" && d.reason ? ["", `${t("mail.reason")}: ${d.reason}`, t("mail.rejectedHint")] : []),

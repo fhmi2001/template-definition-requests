@@ -8,7 +8,13 @@ import { requireAdmin } from "@/server/auth/dal";
 import { requestMeta } from "@/server/http-meta";
 import { notifyStatusChange } from "@/server/request-review";
 import { getT } from "@/i18n/server";
-import { REJECTION_REASON_MAX, REJECTION_REASON_MIN, isReviewStatus } from "@/lib/review-status";
+import {
+  AUTHORITY_REF_PATTERN,
+  REJECTION_REASON_MAX,
+  REJECTION_REASON_MIN,
+  isReviewStatus,
+  needsAuthorityRef,
+} from "@/lib/review-status";
 import { uuidSchema } from "@/lib/validation";
 import type { ActionState } from "@/lib/action-state";
 
@@ -16,6 +22,7 @@ const detail = (id: string) => `/admin/requests/${id}`;
 
 /**
  * تغيير حالة طلب مقدَّم. الرفض يتطلب سبباً يُحفظ في السجل ويُرسل للعميل.
+ * «لدى الهيئة» و«مقبول» و«مرفوض» تتطلب رقم القالب (رقم الطلب لدى هيئة الاتصالات)، ويظهر للعميل وفي رسائل الحالة.
  * الحالة الحالية تُرسل مع النموذج حتى لا يُكتب فوق تغيير أجراه مشرف آخر للتو.
  */
 export async function changeRequestStatusAction(requestId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -27,13 +34,18 @@ export async function changeRequestStatusAction(requestId: string, _prev: Action
   const status = String(formData.get("status") ?? "");
   const current = String(formData.get("current") ?? "");
   const reason = String(formData.get("reason") ?? "").replace(/\r\n?/g, "\n").trim();
-  const values = { status, reason };
+  const authorityRef = String(formData.get("authorityRef") ?? "").replace(/\s+/g, " ").trim();
+  const values = { status, reason, authorityRef };
 
   if (!isReviewStatus(status)) return { fields: { status: t("rq.err.chooseStatus") }, values };
   if (status === "REJECTED") {
     if (!reason) return { fields: { reason: t("rq.err.reasonRequired") }, values };
     if (Array.from(reason).length < REJECTION_REASON_MIN) return { fields: { reason: t("rq.err.reasonShort") }, values };
     if (Array.from(reason).length > REJECTION_REASON_MAX) return { fields: { reason: t("rq.err.reasonLong") }, values };
+  }
+  if (needsAuthorityRef(status)) {
+    if (!authorityRef) return { fields: { authorityRef: t("rq.err.authorityRequired") }, values };
+    if (!AUTHORITY_REF_PATTERN.test(authorityRef)) return { fields: { authorityRef: t("rq.err.authorityInvalid") }, values };
   }
   if (status === current) return { error: t("rq.err.sameStatus"), tone: "info", values };
 
@@ -48,7 +60,12 @@ export async function changeRequestStatusAction(requestId: string, _prev: Action
   const changeId = await db.$transaction(async (tx) => {
     const res = await tx.templateRequest.updateMany({
       where: { id: request.id, status: "SUBMITTED", reviewStatus: request.reviewStatus },
-      data: { reviewStatus: status, rejectionReason: status === "REJECTED" ? reason : null, reviewedAt: now },
+      data: {
+        reviewStatus: status,
+        rejectionReason: status === "REJECTED" ? reason : null,
+        reviewedAt: now,
+        ...(needsAuthorityRef(status) ? { authorityRef } : {}),
+      },
     });
     if (res.count !== 1) return null;
     const change = await tx.requestStatusChange.create({
@@ -71,7 +88,13 @@ export async function changeRequestStatusAction(requestId: string, _prev: Action
     action: "request.status_change",
     entityType: "template_request",
     entityId: request.id,
-    metadata: { referenceNo: request.referenceNo, from: request.reviewStatus, to: status, ...(status === "REJECTED" ? { reason } : {}) },
+    metadata: {
+      referenceNo: request.referenceNo,
+      from: request.reviewStatus,
+      to: status,
+      ...(status === "REJECTED" ? { reason } : {}),
+      ...(needsAuthorityRef(status) ? { authorityRef } : {}),
+    },
     ip: (await requestMeta()).ip,
   });
   after(() => notifyStatusChange(changeId));

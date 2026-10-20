@@ -317,6 +317,8 @@ model TemplateRequest {
 
   // المراجعة (للطلبات المقدّمة فقط)
   reviewStatus    ReviewStatus? @map("review_status")
+  /// رقم الطلب لدى هيئة الاتصالات: إلزامي عند نقل الطلب إلى «لدى الهيئة»، ويظهر للعميل وفي رسائل البريد
+  authorityRef    String?       @map("authority_ref") @db.VarChar(50)
   rejectionReason String?       @map("rejection_reason") @db.VarChar(1000)
   reviewedAt      DateTime?     @map("reviewed_at") /// آخر تغيير للحالة من الإدارة
 

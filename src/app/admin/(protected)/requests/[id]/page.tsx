@@ -68,6 +68,14 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
               {t(`rv.${r.reviewStatus}`)}
             </span>
           ) : null}
+          {r.authorityRef ? (
+            <span className="inline-flex items-center gap-2 rounded-full bg-chip px-3 py-1 text-sm text-ink-2">
+              {t("authorityRef.label")}
+              <span dir="ltr" className="font-mono font-semibold text-ink">
+                {r.authorityRef}
+              </span>
+            </span>
+          ) : null}
         </div>
         <p className="text-sm leading-6 text-muted">
           <Link href={`/admin/clients/${r.client.id}`} className="font-semibold text-brand-600 underline-offset-4 hover:underline">
@@ -114,7 +122,7 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
             <h2 id="status-title" className="text-lg font-bold">
               {t("rq.d.statusTitle")}
             </h2>
-            <StatusForm requestId={r.id} current={r.reviewStatus} />
+            <StatusForm requestId={r.id} current={r.reviewStatus} authorityRef={r.authorityRef} />
             <p className="text-[13px] leading-5 text-muted">
               {recipient ? t("rq.d.emailTo", { email: `\u2068${recipient}\u2069`, lang: t(`lang.${reqLocale}`) }) : t("rq.d.noEmail")}
             </p>

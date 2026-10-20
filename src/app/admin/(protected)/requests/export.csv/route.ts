@@ -31,6 +31,7 @@ export async function GET(req: Request) {
 
   const header = [
     t("rq.th.ref"),
+    t("authorityRef.label"),
     t("rq.th.submitted"),
     t("col.status"),
     t("rq.th.reviewed"),
@@ -54,6 +55,7 @@ export async function GET(req: Request) {
       const specs = sanitizeSpecs(r.variables);
       return [
         referenceText(r.referenceNo),
+        r.authorityRef ?? "",
         formatDateTime(r.submittedAt, locale),
         r.reviewStatus ? t(`rv.${r.reviewStatus}`) : "",
         r.reviewedAt ? formatDateTime(r.reviewedAt, locale) : "",

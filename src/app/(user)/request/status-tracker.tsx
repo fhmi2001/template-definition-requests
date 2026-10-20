@@ -9,7 +9,18 @@ type Change = { toStatus: ReviewStatus; createdAt: Date };
  * مراحل الطلب بعد التقديم: الاستلام ← المراجعة ← القرار (اعتماد أو رفض).
  * تاريخ كل مرحلة من آخر تغيير للحالة إليها.
  */
-export async function StatusTracker({ status, changes, locale }: { status: ReviewStatus; changes: Change[]; locale: Locale }) {
+export async function StatusTracker({
+  status,
+  changes,
+  locale,
+  authorityRef,
+}: {
+  status: ReviewStatus;
+  changes: Change[];
+  locale: Locale;
+  /** رقم القالب (لدى هيئة الاتصالات): يظهر أعلى المتابعة كما في رسائل البريد، أياً كان مسار الطلب */
+  authorityRef: string | null;
+}) {
   const { t } = await getT();
   const at = (s: ReviewStatus) => changes.filter((c) => c.toStatus === s).at(-1)?.createdAt ?? null;
   const decided = status === "APPROVED" || status === "REJECTED";
@@ -23,9 +34,19 @@ export async function StatusTracker({ status, changes, locale }: { status: Revie
 
   return (
     <section aria-labelledby="track-title" className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 sm:p-6">
-      <h2 id="track-title" className="text-base font-bold">
-        {t("track.title")}
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="track-title" className="text-base font-bold">
+          {t("track.title")}
+        </h2>
+        {authorityRef ? (
+          <span className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-chip px-3 py-1.5 text-[13px] text-ink-2">
+            {t("authorityRef.label")}
+            <span dir="ltr" className="font-mono text-[15px] font-semibold text-ink">
+              {authorityRef}
+            </span>
+          </span>
+        ) : null}
+      </div>
       <ol className="flex flex-col">
         {stages.map((s, i) => {
           const done = i <= reached;

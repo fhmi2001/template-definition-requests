@@ -4,12 +4,20 @@ import { useActionState, useEffect, useState } from "react";
 import type { ReviewStatus } from "@/generated/prisma/enums";
 import { changeRequestStatusAction, resendStatusEmailAction } from "@/actions/request-review";
 import { initialState } from "@/lib/action-state";
-import { REJECTION_REASON_MAX, REVIEW_STATUSES, REVIEW_STYLE } from "@/lib/review-status";
-import { Alert, SubmitButton, ConfirmButton } from "@/components/ui";
+import { AUTHORITY_REF_MAX, REJECTION_REASON_MAX, REVIEW_STATUSES, REVIEW_STYLE, needsAuthorityRef } from "@/lib/review-status";
+import { Alert, SubmitButton, ConfirmButton, inputClass } from "@/components/ui";
 import { useT } from "@/i18n/client";
 
-/** تغيير حالة الطلب: أربع حالات، وسبب إلزامي عند الرفض. */
-export function StatusForm({ requestId, current }: { requestId: string; current: ReviewStatus | null }) {
+/** تغيير حالة الطلب: أربع حالات، ورقم القالب إلزامي لكل حالة بعد «مستلم»، وسبب إلزامي عند الرفض. */
+export function StatusForm({
+  requestId,
+  current,
+  authorityRef,
+}: {
+  requestId: string;
+  current: ReviewStatus | null;
+  authorityRef: string | null;
+}) {
   const [state, action] = useActionState(changeRequestStatusAction.bind(null, requestId), initialState);
   const [selected, setSelected] = useState<ReviewStatus | null>(null);
   const [reasonLength, setReasonLength] = useState(0);
@@ -25,6 +33,8 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
 
   const rejecting = selected === "REJECTED";
   const reasonError = state.fields?.reason;
+  const askAuthorityRef = needsAuthorityRef(selected);
+  const refError = state.fields?.authorityRef;
 
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
@@ -80,6 +90,36 @@ export function StatusForm({ requestId, current }: { requestId: string; current:
           </p>
         ) : null}
       </fieldset>
+
+      {askAuthorityRef ? (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="authorityRef" className="text-[13px] font-semibold text-ink-2">
+            {t("authorityRef.label")} <span className="text-danger-600">*</span>
+          </label>
+          <input
+            id="authorityRef"
+            name="authorityRef"
+            type="text"
+            dir="ltr"
+            required
+            autoComplete="off"
+            spellCheck={false}
+            maxLength={AUTHORITY_REF_MAX}
+            defaultValue={state.values?.authorityRef ?? authorityRef ?? ""}
+            aria-invalid={!!refError}
+            aria-describedby={refError ? "authorityRef-error authorityRef-hint" : "authorityRef-hint"}
+            className={`${inputClass(!!refError)} text-left font-mono`}
+          />
+          {refError ? (
+            <p id="authorityRef-error" role="alert" className="text-[13px] text-danger-600">
+              {refError}
+            </p>
+          ) : null}
+          <p id="authorityRef-hint" className="text-[13px] leading-6 text-muted">
+            {t("authorityRef.hint")}
+          </p>
+        </div>
+      ) : null}
 
       {rejecting ? (
         <div className="flex flex-col gap-1.5">

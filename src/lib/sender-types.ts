@@ -1,7 +1,10 @@
 import type { TX } from "@/i18n/translate";
 
-/** أنواع المرسل كما في ملف الإكسل. أسماؤها المترجمة في قاموس اللغات (senderType.*). */
-export const SENDER_TYPES = ["Advertisement", "Service", "Awareness", "Warning"] as const;
+/**
+ * الفئات الأربع المعتمدة لرسائل SMS بترتيب عرضها. أسماؤها وتعريفاتها في قاموس اللغات
+ * (senderType.* و senderType.purpose.* و senderType.examples.*).
+ */
+export const SENDER_TYPES = ["Service", "Awareness", "Warning", "Advertisement"] as const;
 
 export const AWARENESS = "Awareness";
 
@@ -25,5 +28,8 @@ export const customerTypeDisplay = (t: HasX, ct: string) => {
   return label === ct ? ct : `${label} · ${ct}`;
 };
 
-/** الأنواع التي يختار منها العميل: أنواع المرسل المسجّلة في الإكسل، أو الأربعة إن لم يُسجَّل له نوع. */
-export const allowedSenderTypes = (registered: string[]) => (registered.length ? [...new Set(registered)] : [...SENDER_TYPES]);
+/**
+ * الأنواع التي يختار منها العميل: الأربعة دائماً ولكل العملاء.
+ * أنواع المرسل المسجّلة في ملف الإكسل تبقى للعرض في لوحة الإدارة فقط ولا تقيّد العميل.
+ */
+export const allowedSenderTypes = (_registered?: string[]): string[] => [...SENDER_TYPES];

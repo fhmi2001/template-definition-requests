@@ -8,7 +8,7 @@ import { Alert, Field, SubmitButton, inputClass } from "@/components/ui";
 import { StepFooter } from "@/components/step-footer";
 import { useT } from "@/i18n/client";
 
-type TypeOption = { value: string; label: string; sub: string | null };
+type TypeOption = { value: string; label: string; sub: string | null; purpose: string; examples: string };
 
 /** اختيار نوع مرسل واحد؛ عند «توعوي · Awareness» يظهر حقل Client Name الإلزامي. */
 export function TypeForm({
@@ -52,7 +52,7 @@ export function TypeForm({
             return (
               <label
                 key={o.value}
-                className={`flex min-h-[72px] cursor-pointer items-center gap-3.5 rounded-xl border px-4 py-3 transition-[border-color,background-color,box-shadow] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600 ${
+                className={`flex min-h-[72px] cursor-pointer items-start gap-3.5 rounded-xl border px-4 py-3.5 transition-[border-color,background-color,box-shadow] has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600 ${
                   on
                     ? "border-brand-600 bg-brand-25 shadow-[inset_0_0_0_1px_var(--color-brand-600)]"
                     : typeError
@@ -73,17 +73,23 @@ export function TypeForm({
                 />
                 <span
                   aria-hidden="true"
-                  className={`flex size-5 flex-none items-center justify-center rounded-full border-2 ${on ? "border-brand-600" : "border-field-strong"}`}
+                  className={`mt-0.5 flex size-5 flex-none items-center justify-center rounded-full border-2 ${on ? "border-brand-600" : "border-field-strong"}`}
                 >
                   {on ? <span className="size-2.5 rounded-full bg-brand-600" /> : null}
                 </span>
-                <span className="flex flex-col">
-                  <span className="text-[15px] font-semibold">{o.label}</span>
-                  {o.sub ? (
-                    <span dir="ltr" className="text-[13px] text-muted">
-                      {o.sub}
-                    </span>
-                  ) : null}
+                <span className="flex min-w-0 flex-col gap-1.5">
+                  <span className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="text-[15px] font-semibold">{o.label}</span>
+                    {o.sub ? (
+                      <span dir="ltr" className="text-[13px] text-muted">
+                        {o.sub}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="text-[14px] leading-6 text-ink-2">{o.purpose}</span>
+                  <span className="text-[13px] leading-6 text-muted">
+                    <span className="font-semibold">{t("type.examples")}</span> {o.examples}
+                  </span>
                 </span>
               </label>
             );

@@ -11,10 +11,7 @@ export type PickableSender = {
   id: string;
   name: string;
   clientName: string | null;
-  types: string[];
   expired: boolean;
-  /** يتيح نوع المرسل المختار حالياً في المسودة (عند تغيير المرسل) */
-  allowsCurrentType: boolean;
 };
 
 const SEARCH_FROM = 10;
@@ -27,14 +24,11 @@ export function SenderPicker({
   senders,
   initialSelected,
   draftId,
-  currentTypeLabel = null,
   reviewHref = null,
 }: {
   senders: PickableSender[];
   initialSelected?: string;
   draftId?: string;
-  /** نوع المرسل المختار في المسودة: يُنبَّه العميل إن كان المرسل الجديد لا يتيحه */
-  currentTypeLabel?: string | null;
   /** فُتحت من صفحة المراجعة: الحفظ يعيد إليها، ورابط للعودة دون تغيير */
   reviewHref?: string | null;
 }) {
@@ -49,8 +43,6 @@ export function SenderPicker({
     return senders.filter((s) => s.name.toLowerCase().includes(term) || (s.clientName ?? "").toLowerCase().includes(term));
   }, [q, senders]);
   const chosen = senders.find((s) => s.id === selected);
-  // مرسل آخر لا يتيح النوع المختار: يُمسح النوع ويُختار من جديد بعد الحفظ
-  const typeWillReset = !!currentTypeLabel && !!chosen && chosen.id !== initialSelected && !chosen.allowsCurrentType;
 
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
@@ -130,15 +122,10 @@ export function SenderPicker({
                       ) : null}
                     </span>
                   </span>
-                  {/* اسم العميل والأنواع وحالة الانتهاء: تُقرأ مع اسم المرسل */}
+                  {/* اسم العميل وحالة الانتهاء: تُقرأ مع اسم المرسل */}
                   <span id={`sender-${s.id}-details`} className="flex flex-col gap-2">
                     <span className="text-[14px] leading-6 text-ink-2">{s.clientName ?? <span className="text-muted">—</span>}</span>
                     <span className="flex flex-wrap gap-1.5">
-                      {s.types.map((ty) => (
-                        <span key={ty} className="rounded-md bg-chip px-2 py-0.5 text-[13px] text-ink-2">
-                          {ty}
-                        </span>
-                      ))}
                       {s.expired ? <span className="rounded-md bg-warn-50 px-2 py-0.5 text-[13px] font-semibold text-warn-700">{t("picker.expired")}</span> : null}
                     </span>
                   </span>
@@ -169,11 +156,6 @@ export function SenderPicker({
             {reviewHref ? t("review.save") : t("common.next")}
           </SubmitButton>
         </div>
-        {typeWillReset && chosen ? (
-          <p role="status" className="w-full rounded-xl bg-warn-50 px-3.5 py-2.5 text-[13px] leading-6 text-warn-700">
-            {t("picker.typeWillReset", { name: chosen.name, type: currentTypeLabel ?? "" })}
-          </p>
-        ) : null}
       </div>
     </form>
   );

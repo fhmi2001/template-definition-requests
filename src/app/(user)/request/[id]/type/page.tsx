@@ -24,11 +24,17 @@ export default async function RequestTypePage({
   const review = isFromReview((await searchParams).from);
   const { t } = await getT();
 
-  // الاسم بلغة المستخدم، والقيمة الأصلية تحته إن اختلفت (مثل «توعوي» ثم Awareness)
+  // الأنواع الأربعة لكل العملاء: الاسم بلغة المستخدم، والقيمة الأصلية إن اختلفت، ثم تعريف النوع وأمثلته
   const options = sender
-    ? allowedSenderTypes(sender.senderTypes).map((value) => {
+    ? allowedSenderTypes().map((value) => {
         const label = senderTypeLabel(t, value);
-        return { value, label, sub: label === value ? null : value };
+        return {
+          value,
+          label,
+          sub: label === value ? null : value,
+          purpose: t.x(`senderType.purpose.${value}`),
+          examples: t.x(`senderType.examples.${value}`),
+        };
       })
     : [];
   // نوع واحد فقط متاح: يُختار مسبقاً
