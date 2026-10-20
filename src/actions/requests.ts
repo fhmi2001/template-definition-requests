@@ -12,6 +12,8 @@ import { requireUser } from "@/server/auth/dal";
 import { findClientSender } from "@/server/client-senders";
 import {
   checkDraftComplete,
+  findDuplicateRequest,
+  referenceText,
   fromReview,
   getDraft,
   getDraftWithSender,
@@ -180,6 +182,17 @@ export async function saveContentAction(draftId: string, _prev: ActionState, for
   if (!evaluation.ok) {
     const failed = evaluation.rules.filter((r) => r.status === "fail" || r.status === "pending").map((r) => msg(t, r.title));
     return { error: t("req.err.rulesFailed", { list: failed }) };
+  }
+  // فحص التكرار هنا أيضاً (لا في المراجعة فقط): يعرف العميل وهو يكتب النص أن طلباً مطابقاً قائم
+  const duplicate = await findDuplicateRequest({ ...found.draft, content: text });
+  if (duplicate) {
+    return {
+      error: t("req.err.duplicateAtNext", {
+        ref: referenceText(duplicate.referenceNo),
+        status: duplicate.reviewStatus ? t(`rv.${duplicate.reviewStatus}`) : "—",
+      }),
+      tone: "warning",
+    };
   }
   redirect(requestPath.summary(found.draft.id));
 }

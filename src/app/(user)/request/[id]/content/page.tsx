@@ -60,6 +60,7 @@ export default async function RequestContentPage({
             signature={messageSignature(draft.senderType, draft.awarenessClientName)}
             signatureEditHref={requestPath.type(draft.id)}
             senderName={sender.name}
+            initiallyKept={draft.keepDraft}
           />
         </>
       )}

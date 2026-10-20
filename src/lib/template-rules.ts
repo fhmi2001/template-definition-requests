@@ -468,3 +468,53 @@ export function evaluateTemplate(input: {
     ok,
   };
 }
+
+// -----------------------------------------------------------------------------
+// عدد أجزاء رسالة SMS
+// -----------------------------------------------------------------------------
+
+/** أحرف GSM 03.38 الأساسية (حرف واحد لكل منها). */
+const GSM_BASIC = new Set(
+  "@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà",
+);
+/** أحرف GSM الإضافية: تُحسب حرفين لكل منها. */
+const GSM_EXTENDED = new Set("^{}\[~]|€");
+
+export type SmsEstimate = {
+  /** GSM-7 للاتينية الأساسية، و UCS-2 لأي حرف آخر (العربية مثلاً) */
+  encoding: "GSM" | "UCS2";
+  /** وحدات الرسالة: أحرف GSM (الإضافية بحرفين) أو وحدات UTF-16 */
+  units: number;
+  parts: number;
+  /** سعة الجزء: 160/153 لـ GSM و 70/67 لـ UCS-2 */
+  perPart: number;
+  /** أطوال كل المتغيرات معروفة (وإلا فالتقدير بنص المتغير نفسه) */
+  complete: boolean;
+};
+
+/**
+ * تقدير عدد أجزاء الرسالة كما تُرسل، والمتغيرات بأطوالها القصوى.
+ * متغير من نوع «نص» قد يحمل أحرفاً عربية، فيُحسب الترميز UCS-2 احتياطاً.
+ */
+export function estimateSms(message: string, specs: VariableSpec[]): SmsEstimate {
+  let complete = true;
+  let mayBeUnicode = false;
+  let i = 0;
+  const filled = message.replace(TOKEN_RE, (token) => {
+    const spec = specs[i++];
+    if (spec?.type === "TEXT") mayBeUnicode = true;
+    if (!spec?.length) {
+      complete = false;
+      return token;
+    }
+    return "x".repeat(spec.length);
+  });
+
+  const chars = Array.from(filled);
+  const gsm = !mayBeUnicode && chars.every((c) => GSM_BASIC.has(c) || GSM_EXTENDED.has(c));
+  const units = gsm ? chars.reduce((n, c) => n + (GSM_EXTENDED.has(c) ? 2 : 1), 0) : filled.length;
+  const single = gsm ? 160 : 70;
+  const multi = gsm ? 153 : 67;
+  const parts = units === 0 ? 0 : units <= single ? 1 : Math.ceil(units / multi);
+  return { encoding: gsm ? "GSM" : "UCS2", units, parts, perPart: parts > 1 ? multi : single, complete };
+}

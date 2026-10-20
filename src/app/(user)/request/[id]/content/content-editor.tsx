@@ -20,6 +20,7 @@ import {
   exceptionLabel,
   cleanTemplateText,
   composeMessage,
+  estimateSms,
   evaluateTemplate,
   findTokens,
   markTokens,
@@ -116,7 +117,8 @@ function RuleItem({ r }: { r: RuleResult }) {
 }
 
 /** حالة الحفظ التلقائي بجانب عدّاد الأحرف. الخطأ وحده يُعلَن لقارئ الشاشة حتى لا يتكرر الإعلان مع كل توقف. */
-function SaveStatus({ status, onRetry }: { status: AutosaveStatus; onRetry: () => void }) {
+/** kept: حُفظ بـ«حفظ والعودة لاحقاً». غير المحفوظ يُحذف عند الخروج، فلا نقول «حُفظ» بإطلاق. */
+function SaveStatus({ status, onRetry, kept }: { status: AutosaveStatus; onRetry: () => void; kept: boolean }) {
   const t = useT();
   const locale = useLocale();
   if (status.kind === "idle") return <span />;
@@ -140,7 +142,7 @@ function SaveStatus({ status, onRetry }: { status: AutosaveStatus; onRetry: () =
         <span aria-hidden="true" className={`size-1.5 rounded-full ${status.kind === "saving" ? "bg-brand-400" : "bg-field-strong"}`} />
       )}
       {status.kind === "saved"
-        ? t("autosave.saved", { time: formatTime(status.at, locale) })
+        ? t(kept ? "autosave.saved" : "autosave.savedSession", { time: formatTime(status.at, locale) })
         : status.kind === "saving"
           ? t("common.saving")
           : t("autosave.unsaved")}
@@ -169,6 +171,7 @@ export function ContentEditor({
   signature,
   signatureEditHref,
   senderName,
+  initiallyKept = false,
 }: {
   draftId: string;
   initialText: string;
@@ -186,6 +189,8 @@ export function ContentEditor({
   signatureEditHref: string;
   /** اسم المرسل فوق المعاينة */
   senderName: string;
+  /** حُفظ مسبقاً بـ«حفظ والعودة لاحقاً» (keepDraft) */
+  initiallyKept?: boolean;
 }) {
   const start = useMemo(() => normalizeTemplate(initialText, initialSpecs), [initialText, initialSpecs]);
   const [text, setText] = useState(start.text);
@@ -241,6 +246,7 @@ export function ContentEditor({
   // «حفظ والعودة لاحقاً»: رسالة النجاح تبقى ما دام النص لم يتغير بعد الحفظ
   const [drafting, setDrafting] = useState(false);
   const [savedLater, setSavedLater] = useState<string | null>(null);
+  const [kept, setKept] = useState(initiallyKept);
   const showSavedLater = savedLater === snapshot && !autosave.dirty;
   const busy = saving || drafting;
 
@@ -319,6 +325,7 @@ export function ContentEditor({
     if (ok) {
       try {
         ok = !(await keepDraftAction(draftId)).error;
+        if (ok) setKept(true);
       } catch {
         ok = false;
       }
@@ -337,6 +344,8 @@ export function ContentEditor({
 
   // الطول يشمل السطر الثابت لأنه جزء من الرسالة
   const length = charCount(composeMessage(text, signature).trim());
+  // أجزاء SMS للرسالة كما تُرسل، والمتغيرات بأطوالها القصوى
+  const sms = estimateSms(composeMessage(text, signature).trim(), specs);
   const blocking = (r: RuleResult) => r.status === "fail" || r.status === "pending";
   const open = rules.filter((r) => r.status !== "pass");
   const passed = rules.filter((r) => r.status === "pass");
@@ -437,11 +446,20 @@ export function ContentEditor({
             </div>
           ) : null}
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-            <SaveStatus status={autosave.status} onRetry={() => void autosave.flush()} />
-            <p id="content-count" className={`ms-auto text-[13px] ${length > TEMPLATE_MAX_LENGTH ? "font-semibold text-danger-600" : "text-muted"}`}>
-              <span dir="ltr">
+            <SaveStatus status={autosave.status} onRetry={() => void autosave.flush()} kept={kept} />
+            <p id="content-count" className="ms-auto flex flex-wrap items-baseline justify-end gap-x-2 text-[13px] text-muted">
+              <span dir="ltr" className={length > TEMPLATE_MAX_LENGTH ? "font-semibold text-danger-600" : undefined}>
                 {length} / {TEMPLATE_MAX_LENGTH}
               </span>
+              {sms.parts > 0 ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className={sms.parts > 1 ? "font-semibold text-ink-2" : undefined}>
+                    {t("content.smsParts", { n: sms.parts, per: sms.perPart })}
+                    {sms.complete ? null : <span className="text-muted"> {t("content.smsEstimate")}</span>}
+                  </span>
+                </>
+              ) : null}
             </p>
           </div>
         </div>
@@ -722,7 +740,7 @@ export function ContentEditor({
 
       {/* ---------------- الأزرار ---------------- */}
       <div className="flex flex-col gap-3 lg:col-start-1">
-        {saveState.error ? <Alert>{saveState.error}</Alert> : null}
+        {saveState.error ? <Alert tone={saveState.tone ?? "error"}>{saveState.error}</Alert> : null}
         {showSavedLater ? <Alert tone="success">{t("req.ok.draftSaved")}</Alert> : null}
         <StepFooter backHref={backHref} backLabel={fromReview ? t("review.back") : t("common.previous")}>
           <button type="button" onClick={() => void saveDraft()} disabled={busy} className={buttonClass("secondary")}>
@@ -733,6 +751,13 @@ export function ContentEditor({
           </button>
         </StepFooter>
         {!allMet ? <p className="text-[13px] text-muted">{t("content.remaining", { n: failing })}</p> : null}
+        {/* غير المحفوظ للعودة لاحقاً يُحذف عند تسجيل الخروج أو بدء طلب جديد */}
+        <p className={`flex items-start gap-2 text-[13px] leading-6 ${kept ? "text-brand-700" : "text-muted"}`}>
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mt-1 flex-none">
+            {kept ? <path d="M5 12l5 5L20 7" /> : <><circle cx="12" cy="12" r="9" /><path d="M12 8v4M12 16h.01" /></>}
+          </svg>
+          {kept ? t("content.keptNote") : t("content.saveLaterNote")}
+        </p>
       </div>
     </div>
   );

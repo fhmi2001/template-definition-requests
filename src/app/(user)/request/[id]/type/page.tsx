@@ -33,7 +33,8 @@ export default async function RequestTypePage({
           label,
           sub: label === value ? null : value,
           purpose: t.x(`senderType.purpose.${value}`),
-          examples: t.x(`senderType.examples.${value}`),
+          examples: t.x(`senderType.examples.${value}`).split("|"),
+          rule: t.x(`senderType.rule.${value}`),
         };
       })
     : [];
@@ -42,7 +43,7 @@ export default async function RequestTypePage({
 
   return (
     <UserShell email={user.email} clientName={client.name}>
-      <StepHeader current={2} draftId={draft.id} done={stepsDone(draft)} title={t("home.title")} intro={t("type.intro")} />
+      <StepHeader current={2} draftId={draft.id} done={stepsDone(draft)} title={t("type.heading")} intro={t("type.intro")} />
 
       {!sender ? (
         <SenderGone changeHref={requestPath.sender(draft.id)} />
