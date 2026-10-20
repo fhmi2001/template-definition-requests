@@ -8,7 +8,16 @@ import { Alert, Field, SubmitButton, inputClass } from "@/components/ui";
 import { StepFooter } from "@/components/step-footer";
 import { useT } from "@/i18n/client";
 
-type TypeOption = { value: string; label: string; sub: string | null; purpose: string; examples: string[]; rule: string };
+type TypeOption = {
+  value: string;
+  label: string;
+  sub: string | null;
+  purpose: string;
+  examples: string[];
+  rule: string;
+  /** سبب تعطيل النوع لهذا المرسل (مثلاً الإعلاني لاسم أطول من 8 أحرف)، أو null */
+  blocked: string | null;
+};
 
 /** اختيار نوع مرسل واحد؛ عند «توعوي · Awareness» يظهر حقل Client Name الإلزامي. */
 export function TypeForm({
@@ -57,13 +66,17 @@ export function TypeForm({
           {options.map((o) => {
             const on = type === o.value;
             const descId = `type-${o.value}-desc`;
+            const blockedId = `type-${o.value}-blocked`;
+            const dim = o.blocked ? "opacity-55" : "";
             return (
               <label
                 key={o.value}
                 className={`group flex h-full cursor-pointer flex-col rounded-2xl border transition-[border-color,background-color,box-shadow] duration-150 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600 ${
-                  on
-                    ? "border-brand-600 bg-brand-50 shadow-[inset_0_0_0_1px_var(--color-brand-600)]"
-                    : "border-line-strong bg-white hover:border-field-strong hover:bg-canvas-2"
+                  o.blocked
+                    ? "cursor-not-allowed border-dashed border-line-strong bg-canvas"
+                    : on
+                      ? "border-brand-600 bg-brand-50 shadow-[inset_0_0_0_1px_var(--color-brand-600)]"
+                      : "border-line-strong bg-white hover:border-field-strong hover:bg-canvas-2"
                 }`}
               >
                 <input
@@ -71,14 +84,15 @@ export function TypeForm({
                   name="senderTypeChoice"
                   value={o.value}
                   checked={on}
-                  aria-describedby={descId}
+                  disabled={!!o.blocked}
+                  aria-describedby={o.blocked ? `${descId} ${blockedId}` : descId}
                   onChange={() => {
                     setType(o.value);
                     setSeenState(state);
                   }}
                   className="sr-only"
                 />
-                <span className="flex items-start gap-3 px-5 pb-3 pt-4">
+                <span className={`flex items-start gap-3 px-5 pb-3 pt-4 ${dim}`}>
                   <span
                     aria-hidden="true"
                     className={`mt-0.5 flex size-6 flex-none items-center justify-center rounded-full border-2 transition-colors ${
@@ -105,7 +119,7 @@ export function TypeForm({
                     </span>
                   </span>
                 </span>
-                <span className="flex flex-wrap gap-1.5 px-5 pb-4 ps-14">
+                <span className={`flex flex-wrap gap-1.5 px-5 pb-4 ps-14 ${dim}`}>
                   {o.examples.map((ex, i) => (
                     <span
                       key={ex}
@@ -116,6 +130,15 @@ export function TypeForm({
                     </span>
                   ))}
                 </span>
+                {o.blocked ? (
+                  <span id={blockedId} className="mt-auto flex items-start gap-2 border-t border-warn-50 bg-warn-50 px-5 py-3 text-[13px] font-semibold leading-5 text-warn-700 rounded-b-2xl">
+                    <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mt-px flex-none">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M5.6 5.6l12.8 12.8" />
+                    </svg>
+                    {o.blocked}
+                  </span>
+                ) : (
                 <span
                   className={`mt-auto flex items-center gap-2 border-t px-5 py-3 ps-14 text-[13px] leading-5 ${
                     on ? "border-brand-200 text-brand-800" : "border-hair text-muted"
@@ -127,6 +150,7 @@ export function TypeForm({
                   </svg>
                   {o.rule}
                 </span>
+                )}
               </label>
             );
           })}

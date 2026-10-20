@@ -275,6 +275,9 @@ export const ar = {
   // ── typeStep ──
   "type.title": "نوع المرسل",
   "type.heading": "اختر نوع المرسل",
+  "type.adBlocked": "غير متاح: اسم المرسل للإعلاني يجب ألا يتجاوز {max} أحرف بما فيها المسافات والرموز (طول {name} هو {n}).",
+  "req.f.adNameTooLong": "النوع الإعلاني غير متاح لهذا المرسل: اسمه أطول من {max} أحرف.",
+  "req.check.adNameTooLong": "النوع الإعلاني غير متاح لأسماء المرسلين الأطول من 8 أحرف. اختر نوعاً آخر.",
   "senderType.rule.Advertisement": "في أوقات الإرسال النظامية فقط · يلزم نص إلغاء الاشتراك",
   "senderType.rule.Warning": "أعلى أولوية إرسال · للحالات العاجلة فقط",
   "senderType.rule.Awareness": "بلا محتوى تجاري · يلزم سطر Client Name",

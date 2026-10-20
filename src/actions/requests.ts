@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import type { ActionState } from "@/lib/action-state";
 import { awarenessClientNameSchema, fieldErrors, templateSchema, uuidSchema } from "@/lib/validation";
-import { AWARENESS, allowedSenderTypes } from "@/lib/sender-types";
+import { AD_SENDER_NAME_MAX, AWARENESS, allowedSenderTypes, isTypeBlocked } from "@/lib/sender-types";
 import { db } from "@/server/db";
 import { requireUser } from "@/server/auth/dal";
 import { findClientSender } from "@/server/client-senders";
@@ -62,7 +62,7 @@ export async function chooseSenderAction(_prev: ActionState, formData: FormData)
     draftId = draft.id;
     if (draft.senderId !== sender.id) {
       // اسم مرسل آخر: يبقى النوع المختار إن كان المرسل الجديد يتيحه، وإلا يُعاد اختياره
-      const keepType = !!draft.senderType && allowedSenderTypes(sender.senderTypes).includes(draft.senderType);
+      const keepType = !!draft.senderType && allowedSenderTypes(sender.name).includes(draft.senderType);
       await db.templateRequest.update({
         where: { id: draft.id },
         data: keepType
@@ -95,7 +95,10 @@ export async function saveSenderTypeAction(draftId: string, _prev: ActionState, 
   const values = { senderType: types[0] ?? "", clientName: String(formData.get("clientName") ?? "") };
   if (types.length === 0) return { fields: { senderType: t("req.f.chooseType") }, values };
   if (types.length > 1) return { fields: { senderType: t("req.f.oneType") }, values };
-  if (!allowedSenderTypes(found.sender.senderTypes).includes(values.senderType)) {
+  if (isTypeBlocked(values.senderType, found.sender.name)) {
+    return { fields: { senderType: t("req.f.adNameTooLong", { max: AD_SENDER_NAME_MAX }) }, values };
+  }
+  if (!allowedSenderTypes(found.sender.name).includes(values.senderType)) {
     return { fields: { senderType: t("req.f.typeUnavailable") }, values };
   }
 

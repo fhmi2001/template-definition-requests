@@ -274,6 +274,9 @@ export const en: Record<MessageKey, Entry> = {
   // ── typeStep ──
   "type.title": "Sender type",
   "type.heading": "Choose the sender type",
+  "type.adBlocked": "Not available: Advertisement sender names must be {max} characters or fewer, including spaces and symbols ({name} has {n}).",
+  "req.f.adNameTooLong": "Advertisement isn't available for this sender: the name is longer than {max} characters.",
+  "req.check.adNameTooLong": "Advertisement isn't available for sender names longer than 8 characters. Choose another sender type.",
   "senderType.rule.Advertisement": "Legal sending hours only · opt-out text required",
   "senderType.rule.Warning": "Highest delivery priority · urgent cases only",
   "senderType.rule.Awareness": "No commercial content · needs a Client Name line",

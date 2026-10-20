@@ -28,8 +28,18 @@ export const customerTypeDisplay = (t: HasX, ct: string) => {
   return label === ct ? ct : `${label} · ${ct}`;
 };
 
+export const ADVERTISEMENT = "Advertisement";
+/** اسم المرسل للإعلاني: 8 أحرف على الأكثر، تُحسب المسافات والرموز. */
+export const AD_SENDER_NAME_MAX = 8;
+
+export const senderNameLength = (name: string) => Array.from(name).length;
+
+/** النوع ممنوع لهذا المرسل؟ (الإعلاني لاسم أطول من 8 أحرف) */
+export const isTypeBlocked = (type: string, senderName: string) =>
+  type === ADVERTISEMENT && senderNameLength(senderName) > AD_SENDER_NAME_MAX;
+
 /**
- * الأنواع التي يختار منها العميل: الأربعة دائماً ولكل العملاء.
+ * الأنواع التي يختار منها العميل: الأربعة لكل العملاء، عدا الإعلاني إن كان اسم المرسل أطول من 8 أحرف.
  * أنواع المرسل المسجّلة في ملف الإكسل تبقى للعرض في لوحة الإدارة فقط ولا تقيّد العميل.
  */
-export const allowedSenderTypes = (_registered?: string[]): string[] => [...SENDER_TYPES];
+export const allowedSenderTypes = (senderName: string): string[] => SENDER_TYPES.filter((t) => !isTypeBlocked(t, senderName));

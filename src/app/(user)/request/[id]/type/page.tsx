@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
 import { requireUser } from "@/server/auth/dal";
 import { isFromReview, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
-import { allowedSenderTypes, senderTypeLabel } from "@/lib/sender-types";
+import { AD_SENDER_NAME_MAX, SENDER_TYPES, isTypeBlocked, senderNameLength, senderTypeLabel } from "@/lib/sender-types";
 import { UserShell } from "@/components/user-shell";
 import { ChosenSender, SenderGone, StepHeader } from "../../request-ui";
 import { TypeForm } from "./type-form";
@@ -24,11 +24,16 @@ export default async function RequestTypePage({
   const review = isFromReview((await searchParams).from);
   const { t } = await getT();
 
-  // الأنواع الأربعة لكل العملاء: الاسم بلغة المستخدم، والقيمة الأصلية إن اختلفت، ثم تعريف النوع وأمثلته
+  // الأنواع الأربعة لكل العملاء: الاسم بلغة المستخدم، والقيمة الأصلية إن اختلفت، ثم تعريف النوع وأمثلته.
+  // الإعلاني يظهر معطّلاً مع السبب إن كان اسم المرسل أطول من 8 أحرف.
   const options = sender
-    ? allowedSenderTypes().map((value) => {
+    ? SENDER_TYPES.map((value) => {
         const label = senderTypeLabel(t, value);
+        const blocked = isTypeBlocked(value, sender.name);
         return {
+          blocked: blocked
+            ? t("type.adBlocked", { max: AD_SENDER_NAME_MAX, name: sender.name, n: senderNameLength(sender.name) })
+            : null,
           value,
           label,
           sub: label === value ? null : value,
@@ -38,8 +43,10 @@ export default async function RequestTypePage({
         };
       })
     : [];
-  // نوع واحد فقط متاح: يُختار مسبقاً
-  const initialType = draft.senderType ?? (options.length === 1 ? options[0].value : undefined);
+  // نوع محفوظ لم يعد متاحاً (مثلاً إعلاني بعد تغيير المرسل) لا يُعرض مختاراً
+  const available = options.filter((o) => !o.blocked);
+  const saved = available.some((o) => o.value === draft.senderType) ? (draft.senderType ?? undefined) : undefined;
+  const initialType = saved ?? (available.length === 1 ? available[0].value : undefined);
 
   return (
     <UserShell email={user.email} clientName={client.name}>
