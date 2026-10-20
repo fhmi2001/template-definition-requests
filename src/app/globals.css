@@ -87,3 +87,63 @@ textarea::placeholder {
 :where(.overflow-x-auto) {
   position: relative;
 }
+
+/*
+ * حركة تغيّر حالة الطلب (من «لدى الهيئة» إلى القرار):
+ * الحالة القديمة تخرج والجديدة تدخل، وخط التقدم يكتمل حتى عقدة القرار ثم تستقر بحلقة واحدة.
+ * مع تقليل الحركة: لا انتقال مكاني، ويبقى تغيّر اللون والنص الذي يحمل المعنى.
+ */
+@keyframes status-in {
+  from { transform: translateY(70%); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes status-out {
+  from { transform: none; opacity: 1; }
+  to { transform: translateY(-70%); opacity: 0; }
+}
+@keyframes decision-ring {
+  0% { box-shadow: 0 0 0 0 var(--decision-ring, rgb(34 128 78 / 0.45)); }
+  100% { box-shadow: 0 0 0 12px rgb(0 0 0 / 0); }
+}
+@keyframes track-fill {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+@keyframes change-tint {
+  from { background-color: var(--color-brand-50); }
+  to { background-color: transparent; }
+}
+@keyframes reveal-entry {
+  from { grid-template-rows: 0fr; opacity: 0; }
+  to { grid-template-rows: 1fr; opacity: 1; }
+}
+@keyframes note-fade {
+  0%, 75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.motion-status-in { animation: status-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.motion-status-out { animation: status-out 180ms cubic-bezier(0.4, 0, 1, 1) both; }
+.motion-decision { animation: decision-ring 900ms cubic-bezier(0.16, 1, 0.3, 1) 1; }
+.motion-reveal { display: grid; animation: reveal-entry 380ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.motion-reveal > * { min-height: 0; overflow: hidden; }
+.motion-tint { animation: change-tint 2.6s ease-out both; }
+.motion-note { animation: note-fade 6s ease-out both; }
+
+/* متابعة العميل: خط «لدى الهيئة → القرار» يمتلئ ثم تستقر عقدة القرار */
+[data-news] [data-track-line="1"] { transform-origin: top; animation: track-fill 600ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both; }
+[data-news] [data-track-node="decision"] { animation: decision-ring 900ms cubic-bezier(0.16, 1, 0.3, 1) 650ms 1; }
+[data-track-node="decision"][data-tone="rejected"] { --decision-ring: rgb(168 34 26 / 0.4); }
+
+/* قائمة الطلبات: الصف الذي تغيّرت حالته للتو، وعدّاد الحالة الجديدة */
+tr[data-just-changed] > td { animation: change-tint 2.6s ease-out both; }
+[data-chip][data-pulse] { animation: decision-ring 900ms cubic-bezier(0.16, 1, 0.3, 1) 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-status-in, .motion-status-out { animation: none; }
+  .motion-status-out { display: none; }
+  .motion-reveal { animation: none; }
+  [data-news] [data-track-line="1"] { animation: none; }
+  /* الحلقة والتلوين يبقيان (لون لا حركة)، أقصر وأهدأ */
+  .motion-decision, [data-news] [data-track-node="decision"], [data-chip][data-pulse] { animation-duration: 400ms; }
+}

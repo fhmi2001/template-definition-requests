@@ -2,6 +2,8 @@ import type { ReviewStatus } from "@/generated/prisma/enums";
 import type { Locale } from "@/i18n/config";
 import { getT } from "@/i18n/server";
 import { formatDateTime } from "@/lib/format";
+import { REVIEW_STATUSES } from "@/lib/review-status";
+import { TrackerNews } from "@/components/status-motion";
 
 type Change = { toStatus: ReviewStatus; createdAt: Date };
 
@@ -10,11 +12,14 @@ type Change = { toStatus: ReviewStatus; createdAt: Date };
  * تاريخ كل مرحلة من آخر تغيير للحالة إليها.
  */
 export async function StatusTracker({
+  requestId,
   status,
   changes,
   locale,
   authorityRef,
 }: {
+  /** لتذكّر آخر حالة رآها العميل لهذا الطلب (حركة «تحديث منذ زيارتك الأخيرة») */
+  requestId: string;
   status: ReviewStatus;
   changes: Change[];
   locale: Locale;
@@ -25,6 +30,7 @@ export async function StatusTracker({
   const at = (s: ReviewStatus) => changes.filter((c) => c.toStatus === s).at(-1)?.createdAt ?? null;
   const decided = status === "APPROVED" || status === "REJECTED";
   const reached = status === "RECEIVED" ? 0 : status === "UNDER_REVIEW" ? 1 : 2;
+  const labels = Object.fromEntries(REVIEW_STATUSES.map((s) => [s, t(`rv.${s}`)])) as Record<ReviewStatus, string>;
 
   const stages = [
     { key: "RECEIVED", label: t("track.RECEIVED"), date: at("RECEIVED") },
@@ -47,6 +53,7 @@ export async function StatusTracker({
           </span>
         ) : null}
       </div>
+      <TrackerNews requestId={requestId} status={status} labels={labels} template={t("track.news")} />
       <ol className="flex flex-col">
         {stages.map((s, i) => {
           const done = i <= reached;
@@ -55,10 +62,12 @@ export async function StatusTracker({
           return (
             <li key={s.key} aria-current={current ? "step" : undefined} className="relative flex gap-3.5 pb-6 last:pb-0">
               {i < stages.length - 1 ? (
-                <span aria-hidden="true" className={`absolute start-[13px] top-8 bottom-1 w-0.5 rounded-full ${i < reached ? "bg-brand-400" : "bg-line"}`} />
+                <span aria-hidden="true" data-track-line={i} className={`absolute start-[13px] top-8 bottom-1 w-0.5 rounded-full ${i < reached ? "bg-brand-400" : "bg-line"}`} />
               ) : null}
               <span
                 aria-hidden="true"
+                data-track-node={i === 2 ? "decision" : undefined}
+                data-tone={rejected ? "rejected" : undefined}
                 className={`relative flex size-7 flex-none items-center justify-center rounded-full ${
                   rejected ? "bg-danger-600 text-white" : done ? "bg-brand-600 text-white" : "border-2 border-line-strong bg-white"
                 } ${current && !decided ? "ring-4 ring-brand-100" : ""}`}

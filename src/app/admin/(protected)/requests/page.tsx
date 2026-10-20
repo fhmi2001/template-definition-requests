@@ -10,6 +10,7 @@ import { referenceText } from "@/server/requests";
 import { CUSTOMER_TYPES, PAGE_SIZE, buildWhere, filtersQuery, hasFilters, orderBy, parseFilters } from "@/server/admin-requests";
 import { FilterChips, Pager } from "@/components/list-controls";
 import { buttonClass } from "@/components/button-styles";
+import { RecentChangeNote } from "@/components/status-motion";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -22,6 +23,7 @@ const label = "text-[13px] font-semibold text-ink-2";
 export default async function RequestsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireAdmin();
   const { t, locale } = await getT();
+  const statusLabels = Object.fromEntries(REVIEW_STATUSES.map((s) => [s, t(`rv.${s}`)])) as Record<(typeof REVIEW_STATUSES)[number], string>;
   const f = parseFilters(await searchParams);
   const where = buildWhere(f);
 
@@ -251,6 +253,8 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                       "—"
                     )}
                     {r.reviewedAt ? <div className="mt-1 whitespace-nowrap text-[13px] text-muted">{formatDateTime(r.reviewedAt, locale)}</div> : null}
+                    {/* آخر طلب غيّر المشرف حالته: يُظلَّل الصف ويظهر «كانت: …» لثوانٍ */}
+                    <RecentChangeNote id={r.id} status={r.reviewStatus} labels={statusLabels} wasLabel={t("rq.was")} />
                   </td>
                   <td className="px-4 py-3">
                     <Link href={`/admin/requests/${r.id}`} className="font-semibold text-brand-600 underline-offset-4 hover:underline">

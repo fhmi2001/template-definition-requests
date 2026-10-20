@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { ReviewStatus } from "@/generated/prisma/enums";
 import { changeRequestStatusAction, resendStatusEmailAction } from "@/actions/request-review";
 import { initialState } from "@/lib/action-state";
 import { AUTHORITY_REF_MAX, REJECTION_REASON_MAX, REVIEW_STATUSES, REVIEW_STYLE, needsAuthorityRef } from "@/lib/review-status";
 import { Alert, SubmitButton, ConfirmButton, inputClass } from "@/components/ui";
+import { rememberStatusChange } from "@/components/status-motion";
 import { useT } from "@/i18n/client";
 
 /** تغيير حالة الطلب: أربع حالات، ورقم القالب إلزامي لكل حالة بعد «مستلم»، وسبب إلزامي عند الرفض. */
@@ -23,9 +24,13 @@ export function StatusForm({
   const [reasonLength, setReasonLength] = useState(0);
   const t = useT();
 
+  // آخر تغيير أُرسل: تُبرزه قائمة الطلبات عند العودة إليها
+  const submitted = useRef<{ from: ReviewStatus | null; to: ReviewStatus } | null>(null);
+
   // بعد الحفظ تصبح الحالة الجديدة هي الحالية، فيُلغى الاختيار
   useEffect(() => {
     if (state.ok) {
+      if (submitted.current) rememberStatusChange({ id: requestId, ...submitted.current });
       setSelected(null);
       setReasonLength(0);
     }
@@ -37,7 +42,14 @@ export function StatusForm({
   const refError = state.fields?.authorityRef;
 
   return (
-    <form action={action} className="flex flex-col gap-4" noValidate>
+    <form
+      action={action}
+      onSubmit={() => {
+        submitted.current = selected ? { from: current, to: selected } : null;
+      }}
+      className="flex flex-col gap-4"
+      noValidate
+    >
       {/* القيمة من الحالة: React يعيد ضبط أزرار الاختيار بعد كل رد، والحقل المخفي لا يتأثر */}
       <input type="hidden" name="status" value={selected ?? ""} />
       <input type="hidden" name="current" value={current ?? ""} />

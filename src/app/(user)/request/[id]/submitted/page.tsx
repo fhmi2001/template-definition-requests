@@ -92,7 +92,7 @@ export default async function RequestSubmittedPage({ params }: { params: Promise
           />
         </div>
         <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
-          {request.reviewStatus ? <StatusTracker status={request.reviewStatus} changes={changes} locale={locale} authorityRef={request.authorityRef} /> : null}
+          {request.reviewStatus ? <StatusTracker requestId={request.id} status={request.reviewStatus} changes={changes} locale={locale} authorityRef={request.authorityRef} /> : null}
           <p className="px-1 text-[13px] leading-6 text-muted">{t("submitted.keep")}</p>
           <div className="flex flex-wrap gap-3 px-1">
             <LinkButton href="/requests" size="sm">

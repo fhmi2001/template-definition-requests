@@ -12,6 +12,7 @@ export function FilterChips({ label, items }: { label: string; items: { key: str
         <Link
           key={it.key}
           href={it.href}
+          data-chip={it.key}
           aria-current={it.active ? "page" : undefined}
           className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-[13px] transition-colors ${
             it.active ? "border-brand-600 bg-brand-600 font-semibold text-white" : "border-line-strong bg-white text-ink hover:bg-canvas"

@@ -8,12 +8,13 @@ import { requestRecipient } from "@/server/request-review";
 import { getT } from "@/i18n/server";
 import { DEFAULT_LOCALE, isLocale } from "@/i18n/config";
 import { formatDateTime } from "@/lib/format";
-import { REVIEW_STYLE } from "@/lib/review-status";
+import { REVIEW_STATUSES, REVIEW_STYLE } from "@/lib/review-status";
 import { messageSignature, sanitizeSpecs } from "@/lib/template-rules";
 import { uuidSchema } from "@/lib/validation";
 import { RequestDetails } from "@/app/(user)/request/request-details";
 import { AutoRefresh } from "../../imports/[id]/auto-refresh";
 import { ResendEmailButton, StatusForm } from "./review-forms";
+import { RevealOnUpdate, StatusBadge } from "@/components/status-motion";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { t } = await getT();
@@ -27,6 +28,7 @@ const card = "flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 sm
 export default async function RequestReviewPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { t, locale } = await getT();
+  const statusLabels = Object.fromEntries(REVIEW_STATUSES.map((s) => [s, t(`rv.${s}`)])) as Record<(typeof REVIEW_STATUSES)[number], string>;
   const id = uuidSchema.safeParse((await params).id);
   if (!id.success) notFound();
 
@@ -64,9 +66,7 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
             </span>
           </h1>
           {r.reviewStatus ? (
-            <span data-testid="review-status" className={`rounded-full px-3 py-1 text-sm font-semibold ${REVIEW_STYLE[r.reviewStatus]}`}>
-              {t(`rv.${r.reviewStatus}`)}
-            </span>
+            <StatusBadge status={r.reviewStatus} labels={statusLabels} styles={REVIEW_STYLE} className="px-3 py-1 text-sm font-semibold" />
           ) : null}
           {r.authorityRef ? (
             <span className="inline-flex items-center gap-2 rounded-full bg-chip px-3 py-1 text-sm text-ink-2">
@@ -136,7 +136,9 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
             </h2>
             <ol className="flex flex-col">
               {r.statusChanges.map((c) => (
-                <li key={c.id} className="flex flex-col gap-1 border-t border-hair py-3 first:border-0 first:pt-0">
+                <li key={c.id} className="border-t border-hair py-3 first:border-0 first:pt-0">
+                  <RevealOnUpdate>
+                  <div className="flex flex-col gap-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={`rounded-full px-2 py-0.5 text-[13px] font-semibold ${REVIEW_STYLE[c.toStatus]}`}>{t(`rv.${c.toStatus}`)}</span>
                     <span className="text-[13px] text-muted">{formatDateTime(c.createdAt, locale)}</span>
@@ -175,6 +177,8 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
                     ) : null}
                   </div>
                   {c.emailStatus === "FAILED" || c.emailStatus === "SKIPPED" ? <ResendEmailButton changeId={c.id} /> : null}
+                  </div>
+                  </RevealOnUpdate>
                 </li>
               ))}
             </ol>
