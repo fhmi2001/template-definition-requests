@@ -1,7 +1,7 @@
 import "server-only";
 import { notFound, redirect } from "next/navigation";
 import { db } from "@/server/db";
-import { findClientSender } from "@/server/client-senders";
+import { availableSenderSelect, findClientSender, senderVisibleTo } from "@/server/client-senders";
 import { uuidSchema, awarenessClientNameSchema, templateSchema } from "@/lib/validation";
 import { AWARENESS, allowedSenderTypes } from "@/lib/sender-types";
 import type { MessageKey } from "@/i18n/translate";
@@ -138,27 +138,57 @@ export async function getDraft(clientId: string, id: unknown) {
 }
 
 /** المسودة مع اسم المرسل، بشرط أن يبقى المرسل مرتبطاً بالعميل وظاهراً له. */
+const pledgeSelect = { id: true, fileName: true, size: true, mimeType: true, createdAt: true } as const;
+
+/**
+ * الطلب مع مرسله (بشروط ظهوره للعميل) وآخر خطاب تعهد في استعلام واحد،
+ * بدل ثلاثة استعلامات متتالية (الطلب ثم المرسل ثم الخطاب). كل رحلة لقاعدة البيانات لها كلفة زمنية.
+ */
+async function loadRequestBundle(clientId: string, id: unknown) {
+  const parsed = uuidSchema.safeParse(id);
+  if (!parsed.success) return null;
+  const row = await db.templateRequest.findFirst({
+    where: { id: parsed.data, clientId },
+    include: {
+      sender: { select: { ...availableSenderSelect, clientId: true, isActive: true, missingFromFile: true } },
+      attachments: { where: { kind: "PLEDGE" }, orderBy: { createdAt: "desc" }, take: 1, select: pledgeSelect },
+    },
+  });
+  if (!row) return null;
+  const { sender: rawSender, attachments, ...request } = row;
+  const visible = senderVisibleTo(rawSender, clientId);
+  const sender = visible
+    ? {
+        id: visible.id,
+        name: visible.name,
+        clientName: visible.clientName,
+        customerType: visible.customerType,
+        senderTypes: visible.senderTypes,
+        senderExpiryDate: visible.senderExpiryDate,
+      }
+    : null;
+  return { request, sender, pledge: attachments[0] ?? null };
+}
+
 export async function getDraftWithSender(clientId: string, id: unknown) {
-  const draft = await getDraft(clientId, id);
-  if (!draft) return null;
-  const sender = draft.senderId ? await findClientSender(clientId, draft.senderId) : null;
-  return { draft, sender };
+  const b = await loadRequestBundle(clientId, id);
+  if (!b || b.request.status !== "DRAFT") return null;
+  return { draft: b.request, sender: b.sender, pledge: b.pledge };
 }
 
 /** لصفحات المراحل: الطلب المقدَّم يذهب لصفحة التأكيد، وغير الموجود 404. */
 export async function loadDraftForPage(clientId: string, id: unknown) {
-  const request = await getOwnRequest(clientId, id);
-  if (!request) notFound();
-  if (request.status !== "DRAFT") redirect(requestPath.submitted(request.id));
-  const sender = request.senderId ? await findClientSender(clientId, request.senderId) : null;
-  return { draft: request, sender };
+  const b = await loadRequestBundle(clientId, id);
+  if (!b) notFound();
+  if (b.request.status !== "DRAFT") redirect(requestPath.submitted(b.request.id));
+  return { draft: b.request, sender: b.sender, pledge: b.pledge };
 }
 
 export async function getPledge(requestId: string) {
   return db.requestAttachment.findFirst({
     where: { requestId, kind: "PLEDGE" },
     orderBy: { createdAt: "desc" },
-    select: { id: true, fileName: true, size: true, mimeType: true, createdAt: true },
+    select: pledgeSelect,
   });
 }
 
@@ -174,6 +204,8 @@ type Sender = NonNullable<Awaited<ReturnType<typeof findClientSender>>>;
 export async function checkDraftComplete(
   draft: Draft,
   sender: Sender | null,
+  /** خطاب التعهد إن كان محمّلاً مسبقاً مع الطلب (يوفّر استعلاماً) */
+  pledge?: { id: string } | null,
 ): Promise<
   | { ok: true; evaluation: Evaluation }
   | { ok: false; step: "sender" | "type" | "template" | "content"; message: MessageKey; duplicate?: DuplicateRequest }
@@ -194,7 +226,7 @@ export async function checkDraftComplete(
     signature: messageSignature(draft.senderType, draft.awarenessClientName),
     variables: normalized.specs,
     customerType: sender.customerType,
-    hasPledge: !!(await getPledge(draft.id)),
+    hasPledge: pledge !== undefined ? !!pledge : !!(await getPledge(draft.id)),
   });
   if (!evaluation.ok) return { ok: false, step: "content", message: "req.check.content" };
   // طلب مقدَّم غير مرفوض بنفس اسم المرسل ونوعه ونص الرسالة: لا يُقدَّم مرة أخرى

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/server/auth/dal";
-import { draftSpecs, getPledge, isFromReview, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
+import { draftSpecs, isFromReview, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
 import { AWARENESS, senderTypeDisplay, customerTypeDisplay } from "@/lib/sender-types";
 import { isGovernment, messageSignature } from "@/lib/template-rules";
 import { UserShell } from "@/components/user-shell";
@@ -22,13 +22,12 @@ export default async function RequestContentPage({
   searchParams: Promise<{ from?: string }>;
 }) {
   const { user, client } = await requireUser();
-  const { draft, sender } = await loadDraftForPage(client.id, (await params).id);
+  const { draft, sender, pledge } = await loadDraftForPage(client.id, (await params).id);
   const review = isFromReview((await searchParams).from);
   // لا يمكن تخطي المراحل السابقة
   if (!draft.senderType) redirect(requestPath.type(draft.id));
   if (!draft.templateName || !draft.templateDescription) redirect(requestPath.template(draft.id));
 
-  const pledge = await getPledge(draft.id);
   const { t } = await getT();
   const extra = [
     { label: t("col.senderType"), value: senderTypeDisplay(t, draft.senderType) },

@@ -38,7 +38,7 @@ import { buttonClass } from "@/components/button-styles";
 import { StepFooter } from "@/components/step-footer";
 import { MessageBubble } from "@/components/message-bubble";
 import { useLocale, useT } from "@/i18n/client";
-import { msg, type MessageKey } from "@/i18n/translate";
+import { msg, type MessageKey } from "@/i18n/core";
 import { formatTime } from "@/lib/format";
 import { useAutosave, type AutosaveStatus } from "./use-autosave";
 

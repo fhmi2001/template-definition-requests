@@ -10,7 +10,9 @@ function createClient() {
   const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL,
     max: process.env.NODE_ENV === "production" ? 3 : 10,
-    idleTimeoutMillis: 10_000,
+    // الاتصال يبقى مفتوحاً 5 دقائق بين الطلبات: فتح اتصال جديد يكلف عدة رحلات (TCP و TLS والمصادقة)،
+    // والاستخدام متقطع (عميل يكتب نص القالب لدقائق) فكانت المهلة القصيرة تعيد الاتصال مع كل صفحة تقريباً
+    idleTimeoutMillis: 5 * 60_000,
   });
   return new PrismaClient({
     adapter,

@@ -12,7 +12,7 @@ import { senderNameKey } from "@/lib/validation";
 
 type Db = PrismaClient | Prisma.TransactionClient;
 
-const availableSenderSelect = {
+export const availableSenderSelect = {
   id: true,
   name: true,
   clientName: true,
@@ -22,6 +22,11 @@ const availableSenderSelect = {
 } satisfies Prisma.SenderSelect;
 
 const visibleToClient = { isActive: true, missingFromFile: false } satisfies Prisma.SenderWhereInput;
+
+/** نفس شروط findClientSender على مرسل محمّل مسبقاً (مع الطلب في استعلام واحد). */
+export function senderVisibleTo<S extends { clientId: string | null; isActive: boolean; missingFromFile: boolean }>(sender: S | null, clientId: string) {
+  return sender && sender.clientId === clientId && sender.isActive && !sender.missingFromFile ? sender : null;
+}
 
 /** المرسلون الذين يستطيع العميل اختيارهم. */
 export async function availableSendersForClient(clientId: string) {

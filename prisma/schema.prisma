@@ -335,6 +335,9 @@ model TemplateRequest {
   @@index([status, reviewStatus, submittedAt(sort: Desc)])
   @@index([senderId])
   @@index([userId])
+  // فهرس جزئي لفحص التكرار في migration 20261021000000_duplicate_check_index (Prisma لا يصف WHERE):
+  // template_requests_duplicate_check_idx ON (sender_name, sender_type) WHERE status = 'SUBMITTED'
+  // لا تحذفه إن اقترحت prisma migrate dev ذلك.
   @@map("template_requests")
 }
 

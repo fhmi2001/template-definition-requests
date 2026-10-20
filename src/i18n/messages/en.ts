@@ -43,6 +43,7 @@ export const en: Record<MessageKey, Entry> = {
   "app.subtitle": "طلبات تعريف القوالب",
   "admin.panel": "Admin panel",
   "common.working": "Working…",
+  "common.loading": "Loading…",
   "common.saving": "Saving…",
   "common.next": "Next",
   "common.cancel": "Cancel",

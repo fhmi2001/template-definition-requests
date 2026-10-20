@@ -20,20 +20,23 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
   const { user, client } = await requireUser();
   const { t, locale } = await getT();
   const sp = await searchParams;
-  const [rows, draft] = await Promise.all([availableSendersForClient(client.id), sp.draft ? getDraft(client.id, sp.draft) : null]);
-  // طلب حُفظ بـ«حفظ والعودة لاحقاً» خلال آخر 30 يوماً: نعرض رابط متابعته (غير المحفوظ يُحذف عند الخروج)
-  const unfinished = draft
-    ? null
-    : await db.templateRequest.findFirst({
-        where: {
-          clientId: client.id,
-          status: "DRAFT",
-          keepDraft: true,
-          updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-        },
-        orderBy: { updatedAt: "desc" },
-        select: { id: true, senderName: true, templateName: true, content: true, updatedAt: true },
-      });
+  // الاستعلامات الثلاثة معاً بدل التتالي (كل رحلة لقاعدة البيانات لها كلفة زمنية)
+  const [rows, draft, saved] = await Promise.all([
+    availableSendersForClient(client.id),
+    sp.draft ? getDraft(client.id, sp.draft) : null,
+    // طلب حُفظ بـ«حفظ والعودة لاحقاً» خلال آخر 30 يوماً: نعرض رابط متابعته (غير المحفوظ يُحذف عند الخروج)
+    db.templateRequest.findFirst({
+      where: {
+        clientId: client.id,
+        status: "DRAFT",
+        keepDraft: true,
+        updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+      },
+      orderBy: { updatedAt: "desc" },
+      select: { id: true, senderName: true, templateName: true, content: true, updatedAt: true },
+    }),
+  ]);
+  const unfinished = draft ? null : saved;
   const today = todayRiyadh();
 
   const senders: PickableSender[] = rows.map((s) => ({

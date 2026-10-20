@@ -44,6 +44,7 @@ export const ar = {
   "app.subtitle": "Template Definition Requests",
   "admin.panel": "لوحة الإدارة",
   "common.working": "جارٍ التنفيذ…",
+  "common.loading": "جارٍ التحميل…",
   "common.saving": "جارٍ الحفظ…",
   "common.next": "التالي",
   "common.cancel": "إلغاء",

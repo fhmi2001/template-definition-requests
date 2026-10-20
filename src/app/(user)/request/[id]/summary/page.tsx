@@ -3,7 +3,7 @@ import { getT } from "@/i18n/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/server/auth/dal";
-import { checkDraftComplete, draftSpecs, fromReview, getPledge, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
+import { checkDraftComplete, draftSpecs, fromReview, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
 import { messageSignature, normalizeTemplate } from "@/lib/template-rules";
 import { Alert } from "@/components/ui";
 import { UserShell } from "@/components/user-shell";
@@ -19,12 +19,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RequestSummaryPage({ params }: { params: Promise<{ id: string }> }) {
   const { user, client } = await requireUser();
-  const { draft, sender } = await loadDraftForPage(client.id, (await params).id);
+  const { draft, sender, pledge } = await loadDraftForPage(client.id, (await params).id);
   // مسودة لم تصل للمراجعة بعد تكمل من حيث توقفت؛ أما ما نقص بعد تعديل من هنا (مثل نوع مُسح بتغيير المرسل) فيُعرض مع رابط لإكماله
   const done = stepsDone(draft);
   if (!done[2] && !done[3]) redirect(requestPath.type(draft.id));
 
-  const [check, pledge] = await Promise.all([checkDraftComplete(draft, sender), getPledge(draft.id)]);
+  const check = await checkDraftComplete(draft, sender, pledge);
   const { t } = await getT();
   const normalized = normalizeTemplate(draft.content ?? "", draftSpecs(draft.variables));
 

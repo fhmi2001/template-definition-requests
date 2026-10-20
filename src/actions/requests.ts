@@ -16,7 +16,6 @@ import {
   getDraft,
   getDraftWithSender,
   getOwnRequest,
-  getPledge,
   isFromReview,
   purgeAbandonedDrafts,
   requestPath,
@@ -175,7 +174,7 @@ export async function saveContentAction(draftId: string, _prev: ActionState, for
     signature: messageSignature(found.draft.senderType, found.draft.awarenessClientName),
     variables: specs,
     customerType: found.sender.customerType,
-    hasPledge: !!(await getPledge(found.draft.id)),
+    hasPledge: !!found.pledge,
   });
   await storeContent(found.draft.id, text, specs, found.sender.customerType, evaluation.exceptions);
   if (!evaluation.ok) {
@@ -285,7 +284,7 @@ export async function submitRequestAction(draftId: string, _prev: ActionState): 
     return { error: t("req.err.notFound") };
   }
 
-  const check = await checkDraftComplete(found.draft, found.sender);
+  const check = await checkDraftComplete(found.draft, found.sender, found.pledge);
   if (!check.ok) return { error: t("req.err.submitCheck", { message: t(check.message) }), values: { step: fromReview(requestPath[check.step](found.draft.id)) } };
 
   // التقديم يجعل الطلب «مستلم» ويُسجَّل ذلك في سجل الحالة، ثم يُرسل بريد الاستلام بعد الرد
