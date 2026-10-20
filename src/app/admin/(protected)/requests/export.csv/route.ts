@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     where: buildWhere(f),
     orderBy: orderBy(f),
     take: MAX_ROWS,
-    include: { client: { select: { name: true } }, user: { select: { email: true } }, sender: { select: { clientName: true } } },
+    include: { client: { select: { name: true } }, user: { select: { email: true } }, sender: { select: { clientName: true, enterpriseUnifiedNumber: true, crNumber: true } } },
   });
 
   const header = [
@@ -37,6 +37,8 @@ export async function GET(req: Request) {
     t("rq.th.reviewed"),
     t("mail.reason"),
     t("col.client"),
+    t("ent.unified"),
+    t("ent.cr"),
     t("rq.th.by"),
     t("col.senderName"),
     t("col.clientName"),
@@ -61,6 +63,8 @@ export async function GET(req: Request) {
         r.reviewedAt ? formatDateTime(r.reviewedAt, locale) : "",
         r.reviewStatus === "REJECTED" ? r.rejectionReason : "",
         r.client.name,
+        r.sender?.enterpriseUnifiedNumber ?? "",
+        r.sender?.crNumber ?? "",
         r.user?.email,
         r.senderName,
         r.sender?.clientName,

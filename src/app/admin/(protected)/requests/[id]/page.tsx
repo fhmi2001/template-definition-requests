@@ -35,7 +35,7 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
     include: {
       client: { select: { id: true, name: true } },
       user: { select: { email: true, isActive: true } },
-      sender: { select: { id: true, clientName: true } },
+      sender: { select: { id: true, clientName: true, enterpriseUnifiedNumber: true, crNumber: true } },
       statusChanges: { orderBy: { createdAt: "desc" }, include: { admin: { select: { username: true } } } },
     },
   });
@@ -113,6 +113,8 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
               customerType: r.customerType,
               exceptions: r.exceptions,
               pledge: pledge ? { fileName: pledge.fileName, href: `/admin/requests/${r.id}/attachments/${pledge.id}` } : null,
+              // أرقام المنشأة من بيانات المرسل المستوردة من ملف الإكسل (للإدارة فقط)
+              enterprise: { unified: r.sender?.enterpriseUnifiedNumber ?? null, cr: r.sender?.crNumber ?? null },
             }}
           />
         </div>

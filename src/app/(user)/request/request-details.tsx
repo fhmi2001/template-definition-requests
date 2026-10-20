@@ -66,6 +66,8 @@ type RequestView = {
   customerType: string | null;
   exceptions: string[];
   pledge: { fileName: string; href: string } | null;
+  /** أرقام المنشأة من بيانات المرسل (الإكسل): تمررها صفحة الإدارة فقط، فلا تظهر للعميل */
+  enterprise?: { unified: string | null; cr: string | null };
 };
 
 /** عرض كامل للطلب (للمراجعة قبل التقديم، ولصفحة التأكيد بعده). */
@@ -95,6 +97,16 @@ export async function RequestDetails({
           <Row label={t("col.senderType")}>{r.senderType ? senderTypeDisplay(t, r.senderType) : "—"}</Row>
           {r.senderType === AWARENESS ? <Row label="Client Name">{r.awarenessClientName}</Row> : null}
           <Row label="Customer Type">{r.customerType ? customerTypeDisplay(t, r.customerType) : t("details.ctUnknown")}</Row>
+          {r.enterprise ? (
+            <>
+              <Row label={t("ent.unified")} ltr>
+                {r.enterprise.unified ?? "—"}
+              </Row>
+              <Row label={t("ent.cr")} ltr>
+                {r.enterprise.cr ?? "—"}
+              </Row>
+            </>
+          ) : null}
         </dl>
       </Section>
 

@@ -43,6 +43,8 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         customerType: true,
         client: { select: { id: true, name: true } },
         user: { select: { email: true } },
+        // أرقام المنشأة من بيانات المرسل المستوردة من ملف الإكسل
+        sender: { select: { enterpriseUnifiedNumber: true, crNumber: true } },
       },
     }),
     db.templateRequest.count({ where }),
@@ -183,13 +185,14 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         <div className="rounded-2xl border border-line bg-white px-6 py-12 text-center text-sm text-muted">{filtered ? t("rq.noMatch") : t("rq.empty")}</div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table aria-labelledby="rq-title" className="w-full min-w-[940px] border-collapse text-sm">
+          <table aria-labelledby="rq-title" className="w-full min-w-[1080px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line bg-canvas text-[13px] text-ink-2">
                 <th scope="col" className="px-4 py-3 font-semibold">{t("rq.th.ref")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("rq.th.submitted")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("col.client")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("col.senderName")}</th>
+                <th scope="col" className="px-4 py-3 font-semibold">{t("ent.title")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("template.name")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Customer Type</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("col.status")}</th>
@@ -220,6 +223,20 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                       {r.senderName}
                     </div>
                     {r.senderType ? <div className="text-[13px] text-muted">{senderTypeDisplay(t, r.senderType)}</div> : null}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-[13px] leading-6">
+                    <div>
+                      <span className="text-muted">{t("ent.unifiedShort")}</span>{" "}
+                      <span dir="ltr" className="font-mono text-ink">
+                        {r.sender?.enterpriseUnifiedNumber ?? "—"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted">{t("ent.crShort")}</span>{" "}
+                      <span dir="ltr" className="font-mono text-ink">
+                        {r.sender?.crNumber ?? "—"}
+                      </span>
+                    </div>
                   </td>
                   <td className="max-w-[260px] px-4 py-3 leading-6">
                     <div className="break-words">{r.templateName ?? "—"}</div>

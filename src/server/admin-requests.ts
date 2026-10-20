@@ -75,6 +75,10 @@ export function buildWhere(f: RequestFilters, opts: { ignoreStatus?: boolean } =
         { rejectionReason: text },
         { client: { name: text } },
         { user: { email: { contains: q.toLowerCase() } } },
+        { authorityRef: text },
+        // أرقام المنشأة من بيانات المرسل (الإكسل)
+        { sender: { enterpriseUnifiedNumber: text } },
+        { sender: { crNumber: text } },
       ],
     });
   }
