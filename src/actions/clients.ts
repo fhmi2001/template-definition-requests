@@ -81,6 +81,7 @@ export async function createClientAction(_prev: ActionState, formData: FormData)
   const check = await checkSendersForClient(names.data, null);
   if (check.missing.length || check.taken.length) return { fields: { senderNames: senderProblemsMessage(check, t) }, values };
 
+  let clientId: string;
   try {
     const client = await db.$transaction(async (tx) => {
       const c = await tx.client.create({
@@ -98,6 +99,7 @@ export async function createClientAction(_prev: ActionState, formData: FormData)
       metadata: { name, emails, senders: check.link.map((x) => x.name) },
       ip: (await requestMeta()).ip,
     });
+    clientId = client.id;
   } catch (err) {
     if (isUniqueViolation(err)) return { error: t("clients.err.emailRace"), values };
     if (err instanceof SenderLinkConflict) return { error: t("clients.err.senderRace"), values };
@@ -105,11 +107,8 @@ export async function createClientAction(_prev: ActionState, formData: FormData)
   }
 
   revalidatePath(LIST);
-  const count = t("count.emails", { n: emails.length });
-  const message = check.link.length
-    ? t("clients.ok.createdWithSenders", { name, emails: count, senders: t("count.senders", { n: check.link.length }) })
-    : t("clients.ok.created", { name, emails: count });
-  return { ok: true, message };
+  // صفحة العميل الجديد مباشرة، مع تأكيد الإضافة أعلاها
+  redirect(`${detail(clientId)}?created=1`);
 }
 
 export async function updateClientAction(clientId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {

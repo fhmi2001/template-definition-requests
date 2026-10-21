@@ -18,7 +18,7 @@ import { senderStatus, todayRiyadh } from "@/lib/sender-status";
 import { AddEmailsForm, EditClientForm, LinkSendersForm } from "../client-forms";
 import { SenderStatusChip } from "../../senders/sender-ui";
 import { senderTypeLabel } from "@/lib/sender-types";
-import { ConfirmButton } from "@/components/ui";
+import { Alert, ConfirmButton } from "@/components/ui";
 import { REVIEW_STATUSES, REVIEW_STYLE } from "@/lib/review-status";
 import { referenceText } from "@/server/requests";
 
@@ -30,9 +30,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("clientDetail.title") };
 }
 
-export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ClientDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ created?: string }>;
+}) {
   await requireAdmin();
   const { t, locale } = await getT();
+  const created = (await searchParams).created === "1";
   const parsed = uuidSchema.safeParse((await params).id);
   if (!parsed.success) notFound();
 
@@ -113,6 +120,8 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           </div>
         </div>
       </div>
+
+      {created ? <Alert tone="success">{t("clients.ok.added")}</Alert> : null}
 
       <section aria-labelledby="info-title" className="flex flex-col gap-5 rounded-2xl border border-line bg-white p-6">
         <h2 id="info-title" className="text-lg font-bold">
