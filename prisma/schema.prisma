@@ -165,6 +165,9 @@ model Admin {
   username          String    @unique @db.VarChar(50) /// lowercase
   passwordHash      String    @map("password_hash") /// argon2id
   displayName       String?   @map("display_name") @db.VarChar(100)
+  /// بريد المشرف، فريد بين حسابات الإدارة (lowercase). إلزامي عند الإضافة والتعديل؛
+  /// يبقى فارغاً في قاعدة البيانات للحسابات القديمة حتى يُضاف من صفحة تعديلها.
+  email             String?   @unique @db.VarChar(254)
   role              AdminRole @default(ADMIN)
   isActive          Boolean   @default(true) @map("is_active")
   failedLoginCount  Int       @default(0) @map("failed_login_count")

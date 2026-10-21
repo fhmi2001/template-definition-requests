@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { db } from "@/server/db";
-import { env } from "@/server/env";
 import { requestMeta } from "@/server/http-meta";
 import { audit } from "@/server/audit";
 import { verifyPassword } from "@/server/auth/password";
@@ -11,6 +10,7 @@ import {
   OTP_RESEND_COOLDOWN_SEC,
   OTP_TTL_SEC,
   adminOtpKey,
+  adminOtpRecipient,
   generateOtpCode,
   hashOtp,
   otpMatches,
@@ -30,15 +30,17 @@ const LOCK_MINUTES = 15;
 type IssueResult = { ok: true } | { ok: false; state: ActionState };
 
 /**
- * يرسل رمز دخول الأدمن إلى ADMIN_OTP_EMAIL.
- * الرمز مخزّن في otp_codes بمفتاح admin:<id> حتى لا يختلط برموز العملاء.
+ * يرسل رمز دخول الأدمن إلى بريده الخاص المسجّل في حسابه، ولا يوجد بريد بديل.
+ * حساب بلا بريد يُمنع من الدخول هنا (قبل إنشاء أي رمز أو جلسة).
+ * الرمز مخزّن في otp_codes بمفتاح admin:<id> حتى لا يختلط برموز العملاء، فلا يصلح إلا لهذا الحساب.
  */
 async function issueAdminOtp(adminId: string, opts: { reuseRecent: boolean }): Promise<IssueResult> {
   const { t, locale } = await getT();
-  const to = env().ADMIN_OTP_EMAIL;
+  const to = await adminOtpRecipient(adminId);
   if (!to) {
-    console.error("[admin-otp] ADMIN_OTP_EMAIL غير مضبوط؛ دخول الأدمن متوقف");
-    return { ok: false, state: { error: t("adminCode.notConfigured") } };
+    const { ip } = await requestMeta();
+    await audit({ adminId, action: "admin.login_blocked_no_email", entityType: "admin", entityId: adminId, ip });
+    return { ok: false, state: { error: t("adminLogin.noEmail"), tone: "warning" } };
   }
 
   const { ip } = await requestMeta();

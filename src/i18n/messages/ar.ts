@@ -161,7 +161,7 @@ export const ar = {
   "adminCode.heading": "أدخل رمز التحقق",
   "adminCode.intro": "لحماية لوحة الإدارة، أرسلنا رمزاً من 6 أرقام إلى",
   "adminCode.cancel": "الدخول بحساب آخر",
-  "adminCode.notConfigured": "دخول الإدارة غير مكتمل الإعداد: لم يُحدَّد بريد لاستلام رمز التحقق. تواصل مع الدعم الفني.",
+  "adminLogin.noEmail": "لا يوجد بريد مرتبط بحساب الإدارة هذا، فلا يمكن إرسال رمز الدخول. تواصل مع المشرف الرئيسي.",
   "adminLogin.noSignup": "لا يوجد تسجيل ذاتي لحسابات الإدارة.",
   "adminLogin.username": "اسم المستخدم",
   "adminLogin.password": "كلمة المرور",
@@ -458,6 +458,130 @@ export const ar = {
   "clients.noMatch.body": "جرّب بحثاً آخر، أو امسح الفلاتر لعرض كل العملاء.",
   "clients.more": "+{n}",
   "clients.pager": "صفحة {page} من {pages}",
+
+  "users.err.uniqueRace": "اسم المستخدم أو البريد سُجّل للتو لحساب آخر. حدّث الصفحة وحاول مجدداً.",
+
+  "users.err.adminEmailTaken": "هذا البريد مسجّل لحساب الإدارة «{username}»",
+
+  "users.noEmailNote": "هذا الحساب بلا بريد، فلا يستطيع الدخول حتى يُضاف بريده الخاص من «البيانات» أدناه.",
+
+  "users.noEmail": "بلا بريد",
+
+  "users.f.emailHint": "بريد هذا المشرف. لا يتكرر بين حسابات الإدارة.",
+
+  "clientDetail.deleteEmailConfirm": "حذف {email} نهائياً؟",
+
+  "users.lockedNote": "الحساب مقفل مؤقتاً بعد محاولات دخول خاطئة. تعيين كلمة مرور جديدة يلغي القفل.",
+
+  "users.locked": "مقفل مؤقتاً",
+
+  "users.you": "أنت",
+
+  "users.f.roleHint": "المشرف الرئيسي وحده يدير حسابات فريق الإدارة.",
+
+  "nav.users": "مستخدمو الإدارة",
+
+  "v.userName.long": "الاسم طويل جداً",
+
+  "v.username.short": "اسم المستخدم 3 أحرف على الأقل",
+
+  "v.username.long": "اسم المستخدم 50 حرفاً على الأكثر",
+
+  "v.username.chars": "أحرف إنجليزية صغيرة وأرقام و . _ - فقط",
+
+  "v.password.short": "كلمة المرور 12 حرفاً على الأقل",
+
+  "v.password.long": "كلمة المرور طويلة جداً",
+
+  "users.title": "مستخدمو الإدارة",
+
+  "users.intro": "حسابات فريق لوحة الإدارة. لكل مشرف مفعّل صلاحيات كاملة في اللوحة. لا يُحذف أي حساب؛ التعطيل يوقف الدخول.",
+
+  "users.add": "إضافة مشرف",
+
+  "users.edit": "تعديل",
+
+  "users.new.intro": "يدخل الحساب الجديد باسم المستخدم وكلمة المرور، ثم برمز يُرسل لبريد الإدارة.",
+
+  "users.f.role": "الدور",
+
+  "users.f.label": "تصفية المستخدمين",
+
+  "users.f.qPlaceholder": "الاسم أو اسم المستخدم أو البريد",
+
+  "users.f.lastLogin": "آخر دخول",
+
+  "users.f.password": "كلمة المرور",
+
+  "users.f.passwordHint": "12 حرفاً على الأقل.",
+
+  "users.f.confirm": "تأكيد كلمة المرور",
+
+  "users.f.name": "الاسم",
+
+  "users.f.username": "اسم المستخدم",
+
+  "users.f.usernameHint": "أحرف إنجليزية صغيرة وأرقام و . _ -",
+
+  "users.f.adminNote": "لا يُرسل للحساب الجديد أي بريد: شارك اسم المستخدم وكلمة المرور معه مباشرة.",
+
+  "users.f.roleLocked": "لا يمكنك تغيير دورك بنفسك.",
+
+  "users.th.user": "المستخدم",
+
+  "users.th.created": "تاريخ الإنشاء",
+
+  "users.never": "لم يدخل بعد",
+
+  "users.noMatch.title": "لا يوجد مشرفون يطابقون هذا البحث",
+
+  "users.meta": "أُنشئ {created} · آخر دخول: {login}",
+
+  "users.ok.createdAdmin": "تمت إضافة حساب الإدارة. شارك اسم المستخدم وكلمة المرور مع صاحبه.",
+
+  "users.details": "البيانات",
+
+  "users.resetPassword": "تعيين كلمة مرور جديدة",
+
+  "users.resetIntro": "تنتهي كل جلسات هذا الحساب، ويدخل بكلمة المرور الجديدة.",
+
+  "users.access": "الوصول",
+
+  "users.accessActive": "الحساب مفعّل ويستطيع الدخول.",
+
+  "users.accessDisabled": "الحساب معطّل ولا يستطيع الدخول.",
+
+  "users.confirm.reset": "تعيين كلمة مرور جديدة لهذا الحساب؟ ستنتهي جلساته الحالية.",
+
+  "users.confirm.resetSelf": "تعيين كلمة مرور جديدة لحسابك؟ ستخرج من هذه الجلسة وتدخل من جديد.",
+
+  "users.confirm.disable": "تعطيل {name}؟ لن يستطيع الدخول وتنتهي جلساته.",
+
+  "users.confirm.enable": "تفعيل {name}؟",
+
+  "users.disable": "تعطيل الحساب",
+
+  "users.enable": "تفعيل الحساب",
+
+  "users.err.passwordMismatch": "كلمتا المرور غير متطابقتين",
+
+  "users.err.usernameTaken": "اسم المستخدم مستخدم مسبقاً",
+
+  "users.err.notFound": "المستخدم غير موجود.",
+
+  "users.err.selfRole": "لا يمكنك تغيير دورك بنفسك",
+
+  "users.err.lastSuper": "هذا آخر مشرف رئيسي مفعّل، فلا يمكن تعطيله أو تغيير دوره.",
+
+  "users.err.selfDisable": "لا يمكنك تعطيل حسابك بنفسك.",
+
+  "users.ok.saved": "تم حفظ التغييرات.",
+
+  "users.ok.passwordReset": "تم تعيين كلمة المرور الجديدة.",
+
+  "users.ok.enabled": "تم تفعيل الحساب.",
+
+  "users.ok.disabled": "تم تعطيل الحساب وانتهت جلساته.",
   "senders.err.missing": "غير موجود في قائمة أسماء المرسلين: {list}",
   "senders.err.taken": "مرتبط بعميل آخر: {list}",
   // ── clientDetail ──
@@ -476,9 +600,7 @@ export const ar = {
   "clientDetail.disableEmailConfirm": "تعطيل {email}؟ ستُلغى جلساته الحالية.",
   "clientDetail.enableEmailConfirm": "تفعيل {email}؟",
   "common.disableVerb": "تعطيل",
-  "common.enableVerb": "تفعيل",
-  "clientDetail.deleteEmailConfirm": "حذف {email} نهائياً؟",
-  "clientDetail.senders": "أسماء المرسلين المرتبطة",
+  "common.enableVerb": "تفعيل",  "clientDetail.senders": "أسماء المرسلين المرتبطة",
   "clientDetail.sendersIntro": "هذه الأسماء فقط تظهر للعميل عند إنشاء الطلب. اسم المرسل يرتبط بعميل واحد، والمعطّل أو الغائب عن آخر ملف إكسل لا يظهر له.",
   "clientDetail.requests": "طلبات العميل",
   "clientDetail.requestsIntro": "الطلبات التي قدّمها هذا العميل وحالتها. للعرض فقط.",

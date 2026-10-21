@@ -160,7 +160,7 @@ export const en: Record<MessageKey, Entry> = {
   "adminCode.heading": "Enter the verification code",
   "adminCode.intro": "To protect the admin panel, we sent a 6-digit code to",
   "adminCode.cancel": "Sign in with a different account",
-  "adminCode.notConfigured": "Admin sign-in isn't fully set up: no email is configured to receive the verification code. Contact technical support.",
+  "adminLogin.noEmail": "No email address is associated with this admin account, so no sign-in code can be sent. Please contact the Super Admin.",
   "adminLogin.noSignup": "Admin accounts can't be self-registered.",
   "adminLogin.username": "Username",
   "adminLogin.password": "Password",
@@ -457,6 +457,130 @@ export const en: Record<MessageKey, Entry> = {
   "clients.noMatch.body": "Try a different search, or clear the filters to see every client.",
   "clients.more": "+{n}",
   "clients.pager": "Page {page} of {pages}",
+
+  "users.err.uniqueRace": "The username or email was just taken by another account. Refresh the page and try again.",
+
+  "users.err.adminEmailTaken": "This email belongs to the admin account “{username}”",
+
+  "users.noEmailNote": "This account has no email, so it can't sign in until its own email is added under Details below.",
+
+  "users.noEmail": "No email",
+
+  "users.f.emailHint": "This admin's own email. It can't be shared with another admin account.",
+
+  "clientDetail.deleteEmailConfirm": "Permanently delete {email}?",
+
+  "users.lockedNote": "This account is temporarily locked after failed sign-in attempts. Setting a new password removes the lock.",
+
+  "users.locked": "Locked",
+
+  "users.you": "You",
+
+  "users.f.roleHint": "Only a super admin manages admin team accounts.",
+
+  "nav.users": "Admin users",
+
+  "v.userName.long": "The name is too long",
+
+  "v.username.short": "Use at least 3 characters",
+
+  "v.username.long": "Use at most 50 characters",
+
+  "v.username.chars": "Use lowercase letters, numbers and . _ - only",
+
+  "v.password.short": "Use at least 12 characters",
+
+  "v.password.long": "The password is too long",
+
+  "users.title": "Admin users",
+
+  "users.intro": "Accounts for the admin panel team. Every active admin has full access to the panel. No account is ever deleted; disabling stops sign-in.",
+
+  "users.add": "Add admin",
+
+  "users.edit": "Edit",
+
+  "users.new.intro": "The new account signs in with its username and password, then a code sent to the admin email.",
+
+  "users.f.role": "Role",
+
+  "users.f.label": "Filter users",
+
+  "users.f.qPlaceholder": "Name, username or email",
+
+  "users.f.lastLogin": "Last sign-in",
+
+  "users.f.password": "Password",
+
+  "users.f.passwordHint": "At least 12 characters.",
+
+  "users.f.confirm": "Confirm password",
+
+  "users.f.name": "Name",
+
+  "users.f.username": "Username",
+
+  "users.f.usernameHint": "Lowercase letters, numbers and . _ -",
+
+  "users.f.adminNote": "No email is sent to the new account: share the username and password with its owner directly.",
+
+  "users.f.roleLocked": "You can't change your own role.",
+
+  "users.th.user": "User",
+
+  "users.th.created": "Created",
+
+  "users.never": "Never",
+
+  "users.noMatch.title": "No admins match this search",
+
+  "users.meta": "Created {created} · Last sign-in: {login}",
+
+  "users.ok.createdAdmin": "Admin account added. Share the username and password with its owner.",
+
+  "users.details": "Details",
+
+  "users.resetPassword": "Set a new password",
+
+  "users.resetIntro": "All of this account's sessions end, and it signs in with the new password.",
+
+  "users.access": "Access",
+
+  "users.accessActive": "The account is active and can sign in.",
+
+  "users.accessDisabled": "The account is disabled and can't sign in.",
+
+  "users.confirm.reset": "Set a new password for this account? Its current sessions will end.",
+
+  "users.confirm.resetSelf": "Set a new password for your account? You'll be signed out of this session.",
+
+  "users.confirm.disable": "Disable {name}? They won't be able to sign in, and their sessions end.",
+
+  "users.confirm.enable": "Enable {name}?",
+
+  "users.disable": "Disable account",
+
+  "users.enable": "Enable account",
+
+  "users.err.passwordMismatch": "The passwords don't match",
+
+  "users.err.usernameTaken": "This username is already taken",
+
+  "users.err.notFound": "User not found.",
+
+  "users.err.selfRole": "You can't change your own role",
+
+  "users.err.lastSuper": "This is the last active super admin, so it can't be disabled or have its role changed.",
+
+  "users.err.selfDisable": "You can't disable your own account.",
+
+  "users.ok.saved": "Changes saved.",
+
+  "users.ok.passwordReset": "New password set.",
+
+  "users.ok.enabled": "Account enabled.",
+
+  "users.ok.disabled": "Account disabled, and its sessions ended.",
   "senders.err.missing": "Not in the sender names list: {list}",
   "senders.err.taken": "Linked to another client: {list}",
   // ── clientDetail ──
@@ -475,9 +599,7 @@ export const en: Record<MessageKey, Entry> = {
   "clientDetail.disableEmailConfirm": "Disable {email}? Its current sessions will be ended.",
   "clientDetail.enableEmailConfirm": "Enable {email}?",
   "common.disableVerb": "Disable",
-  "common.enableVerb": "Enable",
-  "clientDetail.deleteEmailConfirm": "Permanently delete {email}?",
-  "clientDetail.senders": "Linked sender names",
+  "common.enableVerb": "Enable",  "clientDetail.senders": "Linked sender names",
   "clientDetail.sendersIntro": "Only these names appear to the client when creating a request. A sender name belongs to one client; disabled names or names missing from the latest Excel file aren't shown.",
   "clientDetail.requests": "Client requests",
   "clientDetail.requestsIntro": "Requests this client has submitted and their status. Read-only.",

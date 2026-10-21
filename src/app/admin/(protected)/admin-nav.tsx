@@ -5,19 +5,21 @@ import { usePathname } from "next/navigation";
 import { useT } from "@/i18n/client";
 import type { MessageKey } from "@/i18n/translate";
 
-const items: { href: string; label: MessageKey; ready: boolean }[] = [
+const items: { href: string; label: MessageKey; ready: boolean; superOnly?: boolean }[] = [
   { href: "/admin/requests", label: "nav.requests", ready: true },
   { href: "/admin/clients", label: "nav.clients", ready: true },
   { href: "/admin/senders", label: "nav.senders", ready: true },
   { href: "/admin/imports", label: "nav.imports", ready: true },
+  // فريق الإدارة: للمشرف الرئيسي وحده (الصفحة نفسها تتحقق من ذلك في الخادم)
+  { href: "/admin/users", label: "nav.users", ready: true, superOnly: true },
 ];
 
-export function AdminNav() {
+export function AdminNav({ superAdmin = false }: { superAdmin?: boolean }) {
   const pathname = usePathname();
   const t = useT();
   return (
     <nav aria-label={t("nav.label")} className="flex flex-col gap-1">
-      {items.map((item) => {
+      {items.filter((item) => superAdmin || !item.superOnly).map((item) => {
         if (!item.ready) {
           return (
             <span key={item.href} className="flex min-h-11 items-center justify-between gap-2 rounded-xl px-3 text-sm text-night-muted">

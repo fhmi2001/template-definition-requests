@@ -3,10 +3,9 @@ import { getT } from "@/i18n/server";
 import { redirect } from "next/navigation";
 import { AuthShell, FooterLink } from "@/components/auth-shell";
 import { db } from "@/server/db";
-import { env } from "@/server/env";
 import { getAdminSession } from "@/server/auth/dal";
 import { getPendingAdmin } from "@/server/auth/session";
-import { OTP_RESEND_COOLDOWN_SEC, adminOtpKey, maskEmail } from "@/server/auth/otp";
+import { OTP_RESEND_COOLDOWN_SEC, adminOtpKey, adminOtpRecipient, maskEmail } from "@/server/auth/otp";
 import { adminCancelOtpAction, adminResendAction, adminVerifyAction } from "@/actions/admin-auth";
 import { VerifyForm } from "@/app/(user)/verify/verify-form";
 import { AdminLoginForm } from "./admin-login-form";
@@ -31,7 +30,8 @@ export default async function AdminLoginPage() {
       orderBy: { createdAt: "desc" },
       select: { createdAt: true, expiresAt: true },
     });
-    const to = env().ADMIN_OTP_EMAIL;
+    // نفس البريد الذي أُرسل إليه الرمز: بريد هذا المشرف، أو بريد الإدارة إن لم يُضف له بريد بعد
+    const to = await adminOtpRecipient(pendingId);
 
     return (
       <AuthShell

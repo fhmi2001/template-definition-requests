@@ -45,3 +45,12 @@ export async function requireAdmin() {
   if (!s) notFound();
   return s;
 }
+
+export const isSuperAdmin = (admin: { role: string }) => admin.role === "SUPER_ADMIN";
+
+/** تفعيل الحسابات وتعطيلها للمشرف الرئيسي وحده. */
+export async function requireSuperAdmin() {
+  const s = await requireAdmin();
+  if (!isSuperAdmin(s.admin)) notFound();
+  return s;
+}

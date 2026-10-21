@@ -12,6 +12,15 @@ export function generateOtpCode() {
   return randomInt(0, 1_000_000).toString().padStart(6, "0");
 }
 
+/**
+ * بريد رمز دخول المشرف: بريده الخاص المسجّل في حسابه فقط، بلا أي بريد بديل.
+ * حساب بلا بريد لا يستطيع الدخول حتى يضيف له المشرف الرئيسي بريداً.
+ */
+export async function adminOtpRecipient(adminId: string): Promise<string | null> {
+  const admin = await db.admin.findUnique({ where: { id: adminId }, select: { email: true } });
+  return admin?.email ?? null;
+}
+
 /** مفتاح رموز الأدمن في جدول otp_codes (بدل البريد) حتى لا تختلط برموز العملاء. */
 export const adminOtpKey = (adminId: string) => `admin:${adminId}`;
 

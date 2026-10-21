@@ -1,6 +1,6 @@
 import { adminLogoutAction } from "@/actions/admin-auth";
 import { BrandLogo } from "@/components/brand";
-import { requireAdmin } from "@/server/auth/dal";
+import { isSuperAdmin, requireAdmin } from "@/server/auth/dal";
 import { AdminNav } from "./admin-nav";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { SkipLink } from "@/components/skip-link";
@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <BrandLogo tone="dark" />
           <span className="mt-2 block text-[13px] text-night-muted">{t("admin.panel")}</span>
         </div>
-        <AdminNav />
+        <AdminNav superAdmin={isSuperAdmin(admin)} />
         <div className="mt-auto flex flex-col gap-2 border-t border-night-line px-3 pt-3.5">
           <span dir="ltr" className="font-mono text-[13px] text-white">
             {admin.username}
