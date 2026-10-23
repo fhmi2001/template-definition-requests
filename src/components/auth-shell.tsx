@@ -67,7 +67,10 @@ export function AuthShell({ children, footer, dark = false }: { children: ReactN
           <LanguageSwitcher dark />
         </header>
         <main className="flex flex-1 items-center justify-center px-4 pb-16 pt-6">
-          <div className="w-full max-w-[440px] rounded-2xl bg-white px-6 py-10 shadow-[0_24px_48px_-24px_rgb(0_0_0/0.5)] sm:px-8">{children}</div>
+          <div className="w-full max-w-[440px] overflow-hidden rounded-2xl rounded-ss-md bg-white shadow-[0_24px_48px_-24px_rgb(0_0_0/0.5)]">
+            <div aria-hidden="true" className="h-1.5 bg-brand-400" />
+            <div className="px-6 py-10 sm:px-8">{children}</div>
+          </div>
         </main>
         {footer ? <footer data-surface="dark" className="flex flex-wrap items-center justify-between gap-3 px-6 pb-24 pt-5 text-meta text-night-fg sm:px-8 sm:pb-5">{footer}</footer> : null}
       </div>

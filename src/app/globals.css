@@ -51,11 +51,12 @@
   --color-brand-700: #1a6a3f;
   --color-brand-800: #134f2f;
 
-  --color-night: #262928;
-  --color-night-2: #323634;
-  --color-night-line: #434845;
-  --color-night-fg: #dadfdc;
-  --color-night-muted: #a5ada9;
+  /* لوحة الإدارة: رمادي الشعار نفسه (#2D2D2D) وأخضره */
+  --color-night: #2d2d2d;
+  --color-night-2: #3a3c3b;
+  --color-night-line: #4a4d4b;
+  --color-night-fg: #e4e8e5;
+  --color-night-muted: #aab1ad;
 
   --color-info-25: #f1f6fc;
   --color-info-50: #e3eef9;
@@ -192,4 +193,9 @@ tr[data-just-changed] > td { animation: change-tint 2.6s ease-out both; }
   [data-news] [data-track-line="1"] { animation: none; }
   /* الحلقة والتلوين يبقيان (لون لا حركة)، أقصر وأهدأ */
   .motion-decision, [data-news] [data-track-node="decision"], [data-chip][data-pulse] { animation-duration: 400ms; }
+}
+
+/* صفوف جداول الإدارة تتلوّن بأخضر خفيف عند المرور لتسهيل تتبّع الصف. */
+.admin-main :where(tbody tr):hover {
+  background: var(--color-brand-25);
 }

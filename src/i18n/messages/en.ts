@@ -386,7 +386,6 @@ export const en: Record<MessageKey, Entry> = {
   "nav.clients": "Clients",
   "nav.senders": "Sender names",
   "nav.imports": "Excel import",
-  "nav.soon": "Soon",
   // ── clientsList ──
   "clients.title": "Clients",
   "clients.intro": "Only an email added here for an active client can sign in with a verification code. Any other email sees “You aren't registered” and receives no code.",
