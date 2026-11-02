@@ -43,6 +43,7 @@ enum SessionActor {
 enum SenderSource {
   MANUAL // أضافه الأدمن يدوياً
   EXCEL // أُنشئ تلقائياً أثناء استيراد ملف
+  MATRIX // نُسخ من Matrix (مزامنة حسابات Deewan)
 }
 
 enum ImportStatus {
@@ -103,7 +104,13 @@ model Client {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  /// Matrix (Deewan backoffice) — رقم العميل ومدير الحساب وآخر مزامنة
+  matrixClientId Int?      @unique @map("matrix_client_id")
+  accountManager String?   @map("account_manager") @db.VarChar(150)
+  matrixSyncedAt DateTime? @map("matrix_synced_at")
+
   createdBy Admin?            @relation("ClientCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  matrixAccounts MatrixAccount[]
   users     User[]
   /// أسماء المرسلين التي يراها العميل عند إنشاء الطلب
   senders   Sender[]
@@ -121,6 +128,10 @@ model User {
   fullName    String?   @map("full_name") @db.VarChar(150)
   isActive    Boolean   @default(true) @map("is_active")
   lastLoginAt DateTime? @map("last_login_at")
+  /// Matrix: معرّف مستخدم الكونسول، والحساب الذي جاء منه، ومصدره (CONSOLE_USER | ACCOUNT_EMAIL)
+  matrixUserId    String? @unique @map("matrix_user_id") @db.VarChar(40)
+  matrixAccountId Int?    @map("matrix_account_id")
+  source          String? @db.VarChar(20)
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
@@ -270,6 +281,7 @@ model Sender {
   @@index([senderExpiryDate])
   @@index([lastImportId])
   @@index([clientId])
+  @@index([matrixAccountId])
   @@map("senders")
 }
 
@@ -476,4 +488,25 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([adminId, createdAt(sort: Desc)])
   @@map("audit_logs")
+}
+
+/// حساب Matrix تابع لعميل (رقم الحساب واسمه وبريد الإشعارات) — يُحدَّث من مزامنة Matrix
+model MatrixAccount {
+  accountId       Int      @id @map("account_id")
+  clientId        String   @map("client_id") @db.Uuid
+  parentAccountId Int?     @map("parent_account_id")
+  accountName     String?  @map("account_name") @db.VarChar(200)
+  username        String?  @db.VarChar(200)
+  companyName     String?  @map("company_name") @db.VarChar(255)
+  email           String?  @db.VarChar(254) /// بريد الحساب (الإشعارات)
+  consoleEmail    String?  @map("console_email") @db.VarChar(254)
+  product         String?  @db.VarChar(100)
+  status          Int?
+  billingCompany  String?  @map("billing_company") @db.VarChar(100)
+  syncedAt        DateTime @default(now()) @map("synced_at")
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@map("matrix_accounts")
 }
