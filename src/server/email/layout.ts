@@ -3,6 +3,7 @@ import { dirOf, type Locale } from "@/i18n/config";
 import { makeT } from "@/i18n/translate";
 import { escapeHtml } from "./send";
 import { logoImg } from "./logo";
+import { env } from "@/server/env";
 
 /** ألوان البريد (نفس هوية المنصة). */
 export const MAIL = {
@@ -22,6 +23,7 @@ export const MAIL = {
 export function emailLayout(locale: Locale, body: string, maxWidth = 600) {
   const t = makeT(locale);
   const dir = dirOf(locale);
+  const help = env().EMAIL_REPLY_TO;
   return `<!doctype html>
 <html lang="${locale}" dir="${dir}">
 <body style="margin:0;padding:24px;background:${MAIL.canvas};font-family:Tahoma,Arial,sans-serif;color:${MAIL.ink}">
@@ -33,6 +35,11 @@ export function emailLayout(locale: Locale, body: string, maxWidth = 600) {
     </div>
     <div style="padding:20px 32px 32px">
 ${body}
+    </div>
+    <div style="padding:16px 32px 20px;background:${MAIL.canvas};border-top:1px solid ${MAIL.hair};font-size:12px;line-height:1.6;color:${MAIL.subtle}">
+      <p style="margin:0;font-weight:bold;color:${MAIL.brandDeep}">${escapeHtml(t("email.footer.company"))}</p>
+      <p style="margin:4px 0 0">${escapeHtml(t("email.footer.auto"))}</p>${help ? `
+      <p style="margin:4px 0 0">${escapeHtml(t("email.footer.help", { email: help }))}</p>` : ""}
     </div>
   </div>
 </body>

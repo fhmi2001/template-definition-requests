@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // نسخة مستقلة للتشغيل على خادم خاص (لا تؤثر على Netlify)
+  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   // مكتبات تعمل على الخادم فقط ولا تُحزَّم (تشفير كلمات المرور وقراءة ملفات الإكسل)
   serverExternalPackages: ["@node-rs/argon2", "exceljs"],
   experimental: {
