@@ -25,6 +25,11 @@ import type { ActionState } from "@/lib/action-state";
 import { getT } from "@/i18n/server";
 import { getUserSession } from "@/server/auth/dal";
 import { purgeAbandonedDrafts } from "@/server/requests";
+import { env } from "@/server/env";
+
+/** مسجّل لكن حسابه أو عميله معطّل (مثلاً حساب Matrix غير نشط): نوجّهه لجهة التواصل بدل «غير مسجل». */
+const isInactive = (user: { isActive: boolean; client: { isActive: boolean } } | null) => Boolean(user && (!user.isActive || !user.client.isActive));
+const inactiveContact = () => env().EMAIL_REPLY_TO ?? "fahmi@deewan.sa";
 
 type IssueResult = { ok: true } | { ok: false; state: ActionState };
 
@@ -40,6 +45,9 @@ async function issueOtp(email: string, opts: { reuseRecent: boolean }): Promise<
 
   // البريد غير المسجّل لا يُرسل له شيء
   const user = await db.user.findUnique({ where: { email }, include: { client: true } });
+  if (isInactive(user)) {
+    return { ok: false, state: { error: t("auth.inactive", { contact: inactiveContact() }), tone: "warning", values: { email } } };
+  }
   if (!user || !user.isActive || !user.client.isActive) {
     return { ok: false, state: { error: t("auth.notRegistered"), tone: "warning", values: { email } } };
   }
@@ -173,7 +181,7 @@ export async function verifyOtpAction(_prev: ActionState, formData: FormData): P
   const user = await db.user.findUnique({ where: { email }, include: { client: true } });
   if (!user || !user.isActive || !user.client.isActive) {
     await clearPendingOtpEmail();
-    return { error: t("auth.notRegistered"), tone: "warning" };
+    return { error: isInactive(user) ? t("auth.inactive", { contact: inactiveContact() }) : t("auth.notRegistered"), tone: "warning" };
   }
 
   await createUserSession(user.id, meta);

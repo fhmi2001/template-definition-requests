@@ -136,6 +136,7 @@ export const ar = {
   "verify.notReceived": "لم يصلك الرمز؟",
   "verify.resendIn": (p) => `إعادة الإرسال بعد ${p.n} ${Number(p.n) >= 3 && Number(p.n) <= 10 ? "ثوانٍ" : "ثانية"}`,
   "verify.resend": "إعادة الإرسال",
+  "auth.inactive": "حسابك غير نشط حالياً. يرجى التواصل مع {contact} لإعادة تفعيله.",
   "auth.notRegistered": "أنت غير مسجل في المنصة. تواصل مع الإدارة لإضافة بريدك الإلكتروني إلى قائمة العملاء.",
   "auth.tooManyDevice": "محاولات كثيرة من هذا الجهاز. حاول بعد {wait}.",
   "auth.tooManyEmail": "طلبت رموزاً كثيرة لهذا البريد. حاول بعد {wait}.",

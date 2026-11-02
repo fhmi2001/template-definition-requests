@@ -135,6 +135,7 @@ export const en: Record<MessageKey, Entry> = {
   "verify.notReceived": "Didn't get the code?",
   "verify.resendIn": (p) => `Resend in ${p.n} ${Number(p.n) === 1 ? "second" : "seconds"}`,
   "verify.resend": "Resend",
+  "auth.inactive": "Your account is currently inactive. Please contact {contact} to reactivate it.",
   "auth.notRegistered": "You aren't registered on the platform. Contact the administration to have your email added to the client list.",
   "auth.tooManyDevice": "Too many attempts from this device. Try again in {wait}.",
   "auth.tooManyEmail": "Too many codes requested for this email. Try again in {wait}.",
