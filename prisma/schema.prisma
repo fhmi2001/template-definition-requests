@@ -265,6 +265,9 @@ model Sender {
 
   /// العميل الذي يتبعه المرسل (يربطه الأدمن يدوياً أو من ملف العملاء). مرسل واحد لعميل واحد.
   clientId String? @map("client_id") @db.Uuid
+  /// Matrix: الحساب الذي يملك المرسل، ومعرّف المرسل فيه
+  matrixAccountId       Int? @map("matrix_account_id")
+  matrixAccountSenderId Int? @unique @map("matrix_account_sender_id")
 
   createdById String?  @map("created_by_id") @db.Uuid
   updatedById String?  @map("updated_by_id") @db.Uuid
