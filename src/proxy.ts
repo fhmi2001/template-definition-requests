@@ -1,8 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ADMIN_LOGIN_ROUTE, adminLoginPath } from "@/lib/admin-path";
 
+/**
+ * مسار داخلي على نفس الأصل: نعدّل نسخة من nextUrl بدل new URL(path, request.url).
+ * خلف وكيل (nginx) قد يختلف أصل request.url عن أصل الخادم، فيعامل Next إعادة الكتابة كوكيل خارجي
+ * (https://localhost:PORT) ويفشل الاتصال → خطأ 500 في صفحة دخول الأدمن.
+ */
+const internal = (request: NextRequest, path: string) => {
+  const url = request.nextUrl.clone();
+  url.pathname = path;
+  url.search = "";
+  return url;
+};
+
 /** صفحة 404 عادية: لا نكشف أن هناك لوحة إدارة خلف هذا المسار. */
-const notFound = (request: NextRequest) => NextResponse.rewrite(new URL("/_admin-not-found", request.url), { status: 404 });
+const notFound = (request: NextRequest) => NextResponse.rewrite(internal(request, "/_admin-not-found"), { status: 404 });
 
 /**
  * تحويل مبدئي سريع فقط. التحقق الحقيقي من الجلسة يتم في الصفحات والـ actions عبر src/server/auth/dal.ts.
@@ -15,7 +27,7 @@ export function proxy(request: NextRequest) {
   if (pathname.startsWith("/admin")) {
     const loginPath = adminLoginPath();
     const hidden = loginPath !== ADMIN_LOGIN_ROUTE;
-    if (hidden && pathname === loginPath) return NextResponse.rewrite(new URL(ADMIN_LOGIN_ROUTE, request.url));
+    if (hidden && pathname === loginPath) return NextResponse.rewrite(internal(request, ADMIN_LOGIN_ROUTE));
     if (pathname === ADMIN_LOGIN_ROUTE) return hidden ? notFound(request) : NextResponse.next();
     if (!request.cookies.has("tdr_admin")) return notFound(request);
   }
