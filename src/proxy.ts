@@ -17,7 +17,11 @@ export function proxy(request: NextRequest) {
     const hidden = loginPath !== ADMIN_LOGIN_ROUTE;
     if (hidden && pathname === loginPath) return NextResponse.rewrite(new URL(ADMIN_LOGIN_ROUTE, request.url));
     if (pathname === ADMIN_LOGIN_ROUTE) return hidden ? notFound(request) : NextResponse.next();
-    if (!request.cookies.has("tdr_admin")) return notFound(request);
+    // الرابط السري مفعّل: 404 حتى لا نكشف اللوحة. غير مفعّل: صفحة الدخول معروفة أصلاً، فنحوّل إليها
+    // (إعادة الكتابة إلى صفحة 404 تفشل بخطأ 500 خلف proxy يرسل X-Forwarded-Proto: https).
+    if (!request.cookies.has("tdr_admin")) {
+      return hidden ? notFound(request) : NextResponse.redirect(new URL(ADMIN_LOGIN_ROUTE, request.url));
+    }
   }
 
   if ((pathname.startsWith("/home") || pathname.startsWith("/request")) && !request.cookies.has("tdr_session")) {
