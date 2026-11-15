@@ -357,7 +357,7 @@ export function ContentEditor({
   const showPledge = government && (settled.exceptions.length > 0 || !!pledge);
   const addDisabled = !government && tokens.length >= MAX_VARIABLES;
   const stats = live.stats;
-  const ratio = stats.staticRatio;
+  const ratio = stats.variableRatio;
   const maxLength = stats.variablesLength === null ? null : stats.staticLength + stats.variablesLength;
   const rows = 4 + (showPledge ? 1 : 0);
 
@@ -720,13 +720,13 @@ export function ContentEditor({
               <>
                 <div className="relative h-3 overflow-hidden rounded-full bg-line" aria-hidden="true">
                   <div
-                    className={`h-full rounded-full ${ratio >= 0.6 ? "bg-brand-600" : government ? "bg-info-700" : "bg-danger-600"}`}
-                    style={{ width: `${Math.round(ratio * 100)}%` }}
+                    className={`h-full rounded-full ${ratio <= 0.4 + 1e-9 ? "bg-brand-600" : government ? "bg-info-700" : "bg-danger-600"}`}
+                    style={{ width: `${Math.min(100, Math.round(ratio * 100))}%` }}
                   />
-                  <div className="absolute inset-y-0 w-0.5 bg-ink/60" style={{ insetInlineStart: "60%" }} />
+                  <div className="absolute inset-y-0 w-0.5 bg-ink/60" style={{ insetInlineStart: "40%" }} />
                 </div>
                 <p className="text-meta text-ink-2">
-                  {t("content.ratioLine", { staticPct: Math.round(ratio * 100), varPct: Math.round((1 - ratio) * 100) })}
+                  {t("content.ratioLine", { varPct: Math.round(ratio * 100) })}
                 </p>
               </>
             ) : null}
