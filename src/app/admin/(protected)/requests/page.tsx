@@ -11,6 +11,8 @@ import { CUSTOMER_TYPES, PAGE_SIZE, buildWhere, filtersQuery, hasFilters, orderB
 import { FilterChips, Pager } from "@/components/list-controls";
 import { buttonClass } from "@/components/button-styles";
 import { RecentChangeNote } from "@/components/status-motion";
+import { BulkBar, BulkProvider, HeadCheck, RowCheck } from "./bulk-select";
+import { QuickStatus } from "./quick-status";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
@@ -39,6 +41,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         submittedAt: true,
         reviewStatus: true,
         reviewedAt: true,
+        authorityRef: true,
         senderName: true,
         senderType: true,
         templateName: true,
@@ -186,10 +189,14 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
       {requests.length === 0 ? (
         <div className="rounded-2xl border border-line bg-white px-6 py-12 text-center text-sm text-muted">{filtered ? t("rq.noMatch") : t("rq.empty")}</div>
       ) : (
+        <BulkProvider pageIds={requests.map((r) => r.id)} total={total} filters={filtersQuery(f, { page: 1 }).slice(1)}>
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table aria-labelledby="rq-title" className="w-full min-w-[1080px] border-collapse text-sm">
+          <table aria-labelledby="rq-title" className="w-full min-w-[1180px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line bg-canvas text-[13px] text-ink-2">
+                <th scope="col" className="w-12 px-4 py-3">
+                  <HeadCheck />
+                </th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("rq.th.ref")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("rq.th.submitted")}</th>
                 <th scope="col" className="px-4 py-3 font-semibold">{t("col.client")}</th>
@@ -206,6 +213,9 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
             <tbody>
               {requests.map((r) => (
                 <tr key={r.id} className="border-b border-hair align-top last:border-0">
+                  <td className="px-4 py-3">
+                    <RowCheck id={r.id} refText={referenceText(r.referenceNo)} />
+                  </td>
                   <td className="whitespace-nowrap px-4 py-3">
                     <Link href={`/admin/requests/${r.id}`} dir="ltr" className="font-mono font-semibold text-brand-600 underline-offset-4 hover:underline">
                       {referenceText(r.referenceNo)}
@@ -257,15 +267,20 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                     <RecentChangeNote id={r.id} status={r.reviewStatus} labels={statusLabels} wasLabel={t("rq.was")} />
                   </td>
                   <td className="px-4 py-3">
-                    <Link href={`/admin/requests/${r.id}`} className="font-semibold text-brand-600 underline-offset-4 hover:underline">
-                      {t("rq.view")}
-                    </Link>
+                    <div className="flex flex-col items-start gap-2">
+                      <QuickStatus requestId={r.id} refText={referenceText(r.referenceNo)} current={r.reviewStatus} authorityRef={r.authorityRef} />
+                      <Link href={`/admin/requests/${r.id}`} className="font-semibold text-brand-600 underline-offset-4 hover:underline">
+                        {t("rq.view")}
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <BulkBar />
+        </BulkProvider>
       )}
 
       <Pager

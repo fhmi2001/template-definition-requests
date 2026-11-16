@@ -14,14 +14,18 @@ export function StatusForm({
   requestId,
   current,
   authorityRef,
+  onSaved,
 }: {
   requestId: string;
   current: ReviewStatus | null;
   authorityRef: string | null;
+  /** يُستدعى بعد حفظ ناجح (مثلاً لإغلاق نافذة التغيير السريع) */
+  onSaved?: () => void;
 }) {
   const [state, action] = useActionState(changeRequestStatusAction.bind(null, requestId), initialState);
   const [selected, setSelected] = useState<ReviewStatus | null>(null);
   const [reasonLength, setReasonLength] = useState(0);
+  const [silent, setSilent] = useState(false);
   const t = useT();
 
   // آخر تغيير أُرسل: تُبرزه قائمة الطلبات عند العودة إليها
@@ -33,7 +37,10 @@ export function StatusForm({
       if (submitted.current) rememberStatusChange({ id: requestId, ...submitted.current });
       setSelected(null);
       setReasonLength(0);
+      setSilent(false);
+      onSaved?.();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   const rejecting = selected === "REJECTED";
@@ -165,14 +172,19 @@ export function StatusForm({
         </div>
       ) : null}
 
+      <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm text-ink-2">
+        <input type="checkbox" name="silent" checked={silent} onChange={(e) => setSilent(e.target.checked)} className="size-4 accent-brand-600" />
+        {t("rq.silent.label")}
+      </label>
+
       <div>
         <ConfirmButton
           variant={rejecting ? "danger" : "primary"}
           pendingText={t("rq.d.saving")}
           disabled={!selected}
-          message={selected ? t("rq.d.confirm", { status: t(`rv.${selected}`) }) : ""}
+          message={selected ? t(silent ? "rq.d.confirmSilent" : "rq.d.confirm", { status: t(`rv.${selected}`) }) : ""}
         >
-          {t("rq.d.save")}
+          {t(silent ? "rq.d.saveSilent" : "rq.d.save")}
         </ConfirmButton>
       </div>
     </form>

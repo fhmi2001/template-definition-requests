@@ -6,7 +6,7 @@ import { db } from "@/server/db";
 import { audit } from "@/server/audit";
 import { requireAdmin } from "@/server/auth/dal";
 import { requestMeta } from "@/server/http-meta";
-import { notifyStatusChange } from "@/server/request-review";
+import { NOTIFY_BATCH_MAX, applyStatusChange, notifyMany, notifyStatusChange } from "@/server/request-review";
 import { getT } from "@/i18n/server";
 import {
   AUTHORITY_REF_PATTERN,
@@ -16,6 +16,8 @@ import {
   needsAuthorityRef,
 } from "@/lib/review-status";
 import { uuidSchema } from "@/lib/validation";
+import { buildWhere, parseFilters } from "@/server/admin-requests";
+import type { Prisma } from "@/generated/prisma/client";
 import type { ActionState } from "@/lib/action-state";
 
 const detail = (id: string) => `/admin/requests/${id}`;
@@ -56,51 +58,21 @@ export async function changeRequestStatusAction(requestId: string, _prev: Action
   if (!request) return { error: t("rq.err.notFound") };
   if ((request.reviewStatus ?? "") !== current) return { error: t("rq.err.changed"), tone: "warning", values };
 
-  const now = new Date();
-  const changeId = await db.$transaction(async (tx) => {
-    const res = await tx.templateRequest.updateMany({
-      where: { id: request.id, status: "SUBMITTED", reviewStatus: request.reviewStatus },
-      data: {
-        reviewStatus: status,
-        rejectionReason: status === "REJECTED" ? reason : null,
-        reviewedAt: now,
-        ...(needsAuthorityRef(status) ? { authorityRef } : {}),
-      },
-    });
-    if (res.count !== 1) return null;
-    const change = await tx.requestStatusChange.create({
-      data: {
-        requestId: request.id,
-        fromStatus: request.reviewStatus,
-        toStatus: status,
-        reason: status === "REJECTED" ? reason : null,
-        adminId: admin.id,
-        createdAt: now,
-      },
-      select: { id: true },
-    });
-    return change.id;
+  const silent = formData.get("silent") === "on";
+  const changeId = await applyStatusChange({
+    adminId: admin.id,
+    ip: (await requestMeta()).ip,
+    request,
+    status,
+    reason,
+    authorityRef: needsAuthorityRef(status) ? authorityRef : null,
+    silent,
   });
   if (!changeId) return { error: t("rq.err.changed"), tone: "warning", values };
-
-  await audit({
-    adminId: admin.id,
-    action: "request.status_change",
-    entityType: "template_request",
-    entityId: request.id,
-    metadata: {
-      referenceNo: request.referenceNo,
-      from: request.reviewStatus,
-      to: status,
-      ...(status === "REJECTED" ? { reason } : {}),
-      ...(needsAuthorityRef(status) ? { authorityRef } : {}),
-    },
-    ip: (await requestMeta()).ip,
-  });
-  after(() => notifyStatusChange(changeId));
+  if (!silent) after(() => notifyStatusChange(changeId));
   revalidatePath(detail(request.id));
   revalidatePath("/admin/requests");
-  return { ok: true, message: t("rq.ok.changed", { status: t(`rv.${status}`) }) };
+  return { ok: true, message: t(silent ? "rq.ok.changedSilent" : "rq.ok.changed", { status: t(`rv.${status}`) }) };
 }
 
 /** إعادة إرسال بريد إشعار لم يصل (فشل أو لم تكن خدمة البريد مهيأة). */
@@ -118,4 +90,80 @@ export async function resendStatusEmailAction(changeId: string, _prev: ActionSta
   after(() => notifyStatusChange(change.id));
   revalidatePath(detail(change.requestId));
   return { ok: true, message: t("rq.ok.resent") };
+}
+
+/** أقصى عدد طلبات في عملية جماعية واحدة. */
+const BULK_MAX = 100;
+
+/**
+ * تغيير حالة عدة طلبات دفعة واحدة: المحدَّد بالنقر (ids) أو كل نتائج البحث الحالية (scope=all مع الفلاتر).
+ * رقم القالب لا يُدخل هنا: الطلب الذي لا رقم محفوظ له يُتخطّى عند «لدى الهيئة/مقبول/مرفوض»، والسبب مشترك للرفض.
+ * الإشعارات تُرسل بالتتابع، لذا تُحدَّد بـ NOTIFY_BATCH_MAX ما لم يُختر «بدون إشعار».
+ */
+export async function bulkChangeStatusAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { admin } = await requireAdmin();
+  const { t } = await getT();
+  const status = String(formData.get("status") ?? "");
+  const reason = String(formData.get("reason") ?? "").replace(/\r\n?/g, "\n").trim();
+  const silent = formData.get("silent") === "on";
+  const values = { status, reason };
+
+  if (!isReviewStatus(status)) return { fields: { status: t("rq.err.chooseStatus") }, values };
+  if (status === "REJECTED") {
+    if (!reason) return { fields: { reason: t("rq.err.reasonRequired") }, values };
+    if (Array.from(reason).length < REJECTION_REASON_MIN) return { fields: { reason: t("rq.err.reasonShort") }, values };
+    if (Array.from(reason).length > REJECTION_REASON_MAX) return { fields: { reason: t("rq.err.reasonLong") }, values };
+  }
+
+  let where: Prisma.TemplateRequestWhereInput;
+  if (formData.get("scope") === "all") {
+    where = buildWhere(parseFilters(Object.fromEntries(new URLSearchParams(String(formData.get("filters") ?? "")))));
+  } else {
+    const ids = [...new Set(formData.getAll("ids").map(String))].filter((v) => uuidSchema.safeParse(v).success);
+    if (ids.length === 0) return { error: t("rq.bulk.err.none"), values };
+    if (ids.length > BULK_MAX) return { error: t("rq.bulk.err.tooMany", { max: BULK_MAX }), values };
+    where = { id: { in: ids }, status: "SUBMITTED" };
+  }
+
+  const targets = await db.templateRequest.findMany({
+    where,
+    take: BULK_MAX + 1,
+    orderBy: [{ submittedAt: "asc" }, { referenceNo: "asc" }],
+    select: { id: true, reviewStatus: true, referenceNo: true, authorityRef: true },
+  });
+  if (targets.length > BULK_MAX) return { error: t("rq.bulk.err.tooMany", { max: BULK_MAX }), values };
+
+  const same = targets.filter((r) => r.reviewStatus === status);
+  const noRef = targets.filter((r) => r.reviewStatus !== status && needsAuthorityRef(status) && !r.authorityRef);
+  const eligible = targets.filter((r) => r.reviewStatus !== status && !(needsAuthorityRef(status) && !r.authorityRef));
+  if (eligible.length === 0) return { error: t("rq.bulk.err.nothing", { same: same.length, noRef: noRef.length }), tone: "info", values };
+  if (!silent && eligible.length > NOTIFY_BATCH_MAX) {
+    return { error: t("rq.bulk.err.notifyCap", { max: NOTIFY_BATCH_MAX, count: eligible.length }), tone: "warning", values };
+  }
+
+  const ip = (await requestMeta()).ip;
+  const changedIds: string[] = [];
+  let conflicts = 0;
+  for (const r of eligible) {
+    const changeId = await applyStatusChange({
+      adminId: admin.id,
+      ip,
+      request: r,
+      status,
+      reason,
+      authorityRef: r.authorityRef,
+      silent,
+      bulk: true,
+    });
+    if (changeId) changedIds.push(changeId);
+    else conflicts++;
+  }
+  if (!silent && changedIds.length > 0) after(() => notifyMany(changedIds));
+  revalidatePath("/admin/requests");
+
+  const parts = [t(silent ? "rq.bulk.okSilent" : "rq.bulk.ok", { n: changedIds.length, status: t(`rv.${status}`) })];
+  if (same.length) parts.push(t("rq.bulk.skipSame", { n: same.length }));
+  if (noRef.length) parts.push(t("rq.bulk.skipNoRef", { n: noRef.length }));
+  if (conflicts) parts.push(t("rq.bulk.skipConflict", { n: conflicts }));
+  return { ok: true, message: parts.join(" · ") };
 }
