@@ -248,6 +248,7 @@ export const en: Record<MessageKey, Entry> = {
   "req.ok.pledgeRemoved": "The letter was removed.",
   "req.err.submitCheck": "{message} Review that step, fix it, then try again.",
   "req.err.submitFailed": "The request couldn't be submitted. Refresh the page and try again.",
+  "req.err.dailyLimit": "Your account has reached the daily limit of {max} submitted requests. Your draft is saved: submit it after midnight (Riyadh time), or contact your account manager to raise the limit.",
   // ── home ──
   "home.title": "New request",
   "home.intro": "Choose the sender name you want to define the template for, then select “Next”.",

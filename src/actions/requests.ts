@@ -1,5 +1,6 @@
 "use server";
 
+import { DAILY_SUBMIT_LIMIT, riyadhTodayStart } from "@/lib/request-limits";
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -305,6 +306,12 @@ export async function submitRequestAction(draftId: string, _prev: ActionState): 
 
   // التقديم يجعل الطلب «مستلم» ويُسجَّل ذلك في سجل الحالة، ثم يُرسل بريد الاستلام بعد الرد
   const changeId = await db.$transaction(async (tx) => {
+    // السقف اليومي لكل عميل: القفل يمنع تجاوزه بتقديمين متزامنين، والعدّ قبل أخذ رقم المرجع حتى لا تُحرق أرقام
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${client.id}))`;
+    const today = await tx.templateRequest.count({
+      where: { clientId: client.id, status: "SUBMITTED", submittedAt: { gte: riyadhTodayStart() } },
+    });
+    if (today >= DAILY_SUBMIT_LIMIT) return "limit" as const;
     const [{ n }] = await tx.$queryRaw<{ n: bigint }[]>`SELECT nextval('template_request_ref_seq') AS n`;
     const now = new Date();
     const res = await tx.templateRequest.updateMany({
@@ -327,6 +334,7 @@ export async function submitRequestAction(draftId: string, _prev: ActionState): 
     });
     return change.id;
   });
+  if (changeId === "limit") return { error: t("req.err.dailyLimit", { max: DAILY_SUBMIT_LIMIT }), tone: "warning" };
   if (!changeId) return { error: t("req.err.submitFailed") };
   after(() => notifyStatusChange(changeId));
   redirect(requestPath.submitted(found.draft.id));
