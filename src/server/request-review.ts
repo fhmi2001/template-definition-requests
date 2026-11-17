@@ -1,5 +1,8 @@
 import "server-only";
 import { db } from "@/server/db";
+import { audit } from "@/server/audit";
+import type { ReviewStatus } from "@/generated/prisma/enums";
+import { needsAuthorityRef } from "@/lib/review-status";
 import { DEFAULT_LOCALE, isLocale } from "@/i18n/config";
 import { messageSignature, sanitizeSpecs } from "@/lib/template-rules";
 import { referenceText } from "@/server/requests";
@@ -73,4 +76,81 @@ export async function notifyStatusChange(changeId: string) {
       .update({ where: { id: changeId }, data: { emailStatus: "FAILED", emailError: String(err).slice(0, 480) } })
       .catch(() => {});
   }
+}
+
+/** عدد الإشعارات الأقصى في عملية واحدة: الإرسال متتابع بفاصل قصير لتجنب حد معدل Resend. */
+export const NOTIFY_BATCH_MAX = 25;
+const NOTIFY_GAP_MS = 600;
+
+/** يرسل إشعارات عدة تغييرات بالتتابع (بعد الرد على المشرف). */
+export async function notifyMany(changeIds: string[]) {
+  for (const [i, id] of changeIds.entries()) {
+    if (i > 0) await new Promise((r) => setTimeout(r, NOTIFY_GAP_MS));
+    await notifyStatusChange(id);
+  }
+}
+
+/** علامة في السجل لتغيير حالة بلا إشعار (اختاره المشرف). */
+export const SILENT_MARK = "silent";
+
+/**
+ * ينفّذ تغيير حالة واحد (تحديث مشروط + سجل + تدقيق). يُرجع معرّف السجل، أو null إن غيّره مشرف آخر للتو.
+ * المرجع هنا هو الحالة التي قُرئت: لا يُكتب فوق تغيير أحدث.
+ * بلا إشعار: يُسجَّل «لم يُرسل» ولا يُرسل شيء.
+ */
+export async function applyStatusChange(args: {
+  adminId: string;
+  ip: string | null;
+  request: { id: string; reviewStatus: ReviewStatus | null; referenceNo: number };
+  status: ReviewStatus;
+  reason: string;
+  authorityRef: string | null;
+  silent: boolean;
+  bulk?: boolean;
+}): Promise<string | null> {
+  const { request, status, reason, authorityRef, silent } = args;
+  const now = new Date();
+  const changeId = await db.$transaction(async (tx) => {
+    const res = await tx.templateRequest.updateMany({
+      where: { id: request.id, status: "SUBMITTED", reviewStatus: request.reviewStatus },
+      data: {
+        reviewStatus: status,
+        rejectionReason: status === "REJECTED" ? reason : null,
+        reviewedAt: now,
+        ...(needsAuthorityRef(status) && authorityRef ? { authorityRef } : {}),
+      },
+    });
+    if (res.count !== 1) return null;
+    const change = await tx.requestStatusChange.create({
+      data: {
+        requestId: request.id,
+        fromStatus: request.reviewStatus,
+        toStatus: status,
+        reason: status === "REJECTED" ? reason : null,
+        adminId: args.adminId,
+        createdAt: now,
+        ...(silent ? { emailStatus: "SKIPPED" as const, emailError: SILENT_MARK } : {}),
+      },
+      select: { id: true },
+    });
+    return change.id;
+  });
+  if (!changeId) return null;
+  await audit({
+    adminId: args.adminId,
+    action: "request.status_change",
+    entityType: "template_request",
+    entityId: request.id,
+    metadata: {
+      referenceNo: request.referenceNo,
+      from: request.reviewStatus,
+      to: status,
+      ...(status === "REJECTED" ? { reason } : {}),
+      ...(needsAuthorityRef(status) && authorityRef ? { authorityRef } : {}),
+      ...(silent ? { silent: true } : {}),
+      ...(args.bulk ? { bulk: true } : {}),
+    },
+    ip: args.ip ?? undefined,
+  });
+  return changeId;
 }

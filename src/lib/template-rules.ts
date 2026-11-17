@@ -11,7 +11,8 @@ import type { Msg, T } from "@/i18n/translate";
 
 export const TEMPLATE_MAX_LENGTH = 1000;
 export const MAX_VARIABLES = 2;
-const MIN_STATIC_RATIO = 0.6;
+/** المزود يحسب: مجموع أطوال المتغيرات ÷ طول النص الثابت (بمسافاته)، ولا يقبل أكثر من 40%. */
+const MAX_VARIABLE_RATIO = 0.4;
 export const MAX_VARIABLE_LENGTH = 30;
 /** حد منطقي لطول المتغير حتى في استثناء الجهات الحكومية. */
 export const VARIABLE_LENGTH_CEILING = 500;
@@ -228,7 +229,8 @@ export type TemplateStats = {
   variableCount: number;
   staticLength: number;
   variablesLength: number | null; // null إذا لم تُحدد كل الأطوال
-  staticRatio: number | null;
+  /** مجموع أطوال المتغيرات ÷ طول النص الثابت (0.4 = 40%) */
+  variableRatio: number | null;
 };
 
 export type Evaluation = {
@@ -334,8 +336,7 @@ export function evaluateTemplate(input: {
   // الحسابات: النص الثابت = النص بدون المتغيرات
   const staticLength = charCount(trimmed.replace(TOKEN_RE, ""));
   const variablesLength = lengthsKnown ? specs.reduce((sum, s) => sum + (s.length ?? 0), 0) : null;
-  const total = variablesLength === null ? null : staticLength + variablesLength;
-  const staticRatio = total ? staticLength / total : variablesLength === 0 && staticLength > 0 ? 1 : null;
+  const variableRatio = variablesLength === null ? null : staticLength > 0 ? variablesLength / staticLength : variablesLength > 0 ? 1 : 0;
 
   // 4) نسبة النص الثابت
   {
@@ -345,14 +346,14 @@ export function evaluateTemplate(input: {
       status = "pending";
     } else if (tokens.length === 0) {
       details.push(m("rules.ratio.allStatic"));
-    } else if (staticRatio === null) {
+    } else if (variableRatio === null) {
       status = "pending";
       details.push(m("rules.ratio.needLengths"));
     } else {
       details.push(
-        m("rules.ratio.stats", { staticPct: pct(staticRatio), staticLength, varPct: pct(1 - staticRatio), varLength: variablesLength ?? 0 }),
+        m("rules.ratio.stats", { varPct: pct(variableRatio), staticLength, varLength: variablesLength ?? 0 }),
       );
-      if (staticRatio < MIN_STATIC_RATIO) {
+      if (variableRatio > MAX_VARIABLE_RATIO + 1e-9) {
         if (government) {
           status = "exception";
           exceptions.push("STATIC_RATIO");
@@ -462,7 +463,7 @@ export function evaluateTemplate(input: {
   const ok = rules.every((r) => r.status === "pass" || r.status === "note" || r.status === "exception");
   return {
     rules,
-    stats: { variableCount: tokens.length, staticLength, variablesLength, staticRatio },
+    stats: { variableCount: tokens.length, staticLength, variablesLength, variableRatio },
     exceptions,
     government,
     ok,

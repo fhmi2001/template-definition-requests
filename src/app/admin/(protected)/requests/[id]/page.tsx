@@ -168,7 +168,7 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
                     {c.emailStatus === null
                       ? t("rq.mail.pending")
                       : c.emailStatus === "SKIPPED"
-                        ? t("rq.mail.SKIPPED")
+                        ? t(c.emailError === "silent" ? "rq.mail.SILENT" : "rq.mail.SKIPPED")
                         : t(`rq.mail.${c.emailStatus}`, { email: c.emailTo ?? "—" })}
                     {c.emailStatus === "FAILED" && c.emailError ? (
                       <span dir="ltr" className="mt-0.5 block font-mono text-[13px] text-muted">
