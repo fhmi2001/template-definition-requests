@@ -84,6 +84,7 @@ const deps: FlushDeps = {
         return c ? [mailDataOf(c.request, c)] : [];
       });
       if (items.length === 0) return { status: "SKIPPED" as const, error: "request removed" };
+      items.sort((a, b) => a.ref.localeCompare(b.ref));
       const locale = isLocale(group.locale) ? group.locale : DEFAULT_LOCALE;
       return await sendEmail({ to: group.to, ...renderDigest(locale, group.kind, items) });
     } catch (err) {
