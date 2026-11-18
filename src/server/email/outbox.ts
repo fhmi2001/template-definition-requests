@@ -119,6 +119,8 @@ export function ensureOutboxSweeper() {
     flushOutbox().catch((err) => console.error("[mail-outbox] sweep failed", err));
   }, SWEEP_MS);
   g.__tmOutboxTimer.unref?.();
+  const c = rollupConfigFromEnv(process.env);
+  console.info(`[mail-outbox] roll-up on: receipts ${c.receivedWindowMs / 60_000} min, status ${c.statusWindowMs / 60_000} min, sweep ${SWEEP_MS / 1000} s`);
 }
 
 /** إشعارات جديدة (تقديم أو تغيير حالة): تنتظر في الصندوق، أو تُرسل فوراً إن كان التجميع معطلاً. */
