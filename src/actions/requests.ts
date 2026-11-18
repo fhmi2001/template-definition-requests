@@ -36,7 +36,7 @@ import {
 import type { Prisma } from "@/generated/prisma/client";
 import { getT } from "@/i18n/server";
 import { msg } from "@/i18n/translate";
-import { notifyStatusChange } from "@/server/request-review";
+import { queueNotifications } from "@/server/email/outbox";
 
 /**
  * المرحلة 1: اختيار اسم مرسل واحد.
@@ -336,6 +336,6 @@ export async function submitRequestAction(draftId: string, _prev: ActionState): 
   });
   if (changeId === "limit") return { error: t("req.err.dailyLimit", { max: DAILY_SUBMIT_LIMIT }), tone: "warning" };
   if (!changeId) return { error: t("req.err.submitFailed") };
-  after(() => notifyStatusChange(changeId));
+  after(() => queueNotifications([changeId]));
   redirect(requestPath.submitted(found.draft.id));
 }

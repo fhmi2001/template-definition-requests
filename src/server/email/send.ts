@@ -2,6 +2,7 @@ import "server-only";
 import { Resend } from "resend";
 import { env } from "@/server/env";
 import { LOGO_ATTACHMENT } from "./logo";
+import { noteSendOutcome, outboxState } from "@/lib/mail-rollup";
 
 type SendResult = { status: "SENT" | "FAILED" | "SKIPPED"; error?: string };
 
@@ -10,6 +11,16 @@ type SendResult = { status: "SENT" | "FAILED" | "SKIPPED"; error?: string };
  * بدون مفتاح Resend (التطوير) يُطبع العنوان في الطرفية ويُسجَّل «لم يُرسل».
  */
 export async function sendEmail(msg: { to: string; subject: string; html: string; text: string }): Promise<SendResult> {
+  const result = await deliver(msg);
+  // كل إرسال (ومنه رمز الدخول) يُبلغ صندوق الإشعارات: رفض «الحصة اليومية» يوقف الإشعارات حتى منتصف ليل UTC،
+  // وأي إرسال ناجح يعني أن الحصة عادت. رمز الدخول نفسه لا يُؤجَّل ولا يُمنع أبداً.
+  if (noteSendOutcome(outboxState(), result, new Date())) {
+    console.warn(`[mail-outbox] Resend daily quota exhausted (seen on a send to ${msg.to.replace(/^[^@]*/, "***")}) — request notifications parked until the next UTC day`);
+  }
+  return result;
+}
+
+async function deliver(msg: { to: string; subject: string; html: string; text: string }): Promise<SendResult> {
   const { RESEND_API_KEY, EMAIL_FROM, NODE_ENV, EMAIL_GATEWAY_URL, EMAIL_GATEWAY_KEY } = env();
   if (NODE_ENV !== "production") console.info(`[تطوير] بريد إلى ${msg.to}: ${msg.subject}`);
   if (EMAIL_GATEWAY_URL && EMAIL_GATEWAY_KEY) return sendViaGateway(msg, EMAIL_GATEWAY_URL, EMAIL_GATEWAY_KEY);

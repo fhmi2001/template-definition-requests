@@ -6,7 +6,8 @@ import { db } from "@/server/db";
 import { audit } from "@/server/audit";
 import { requireAdmin } from "@/server/auth/dal";
 import { requestMeta } from "@/server/http-meta";
-import { NOTIFY_BATCH_MAX, applyStatusChange, notifyMany, notifyStatusChange } from "@/server/request-review";
+import { NOTIFY_BATCH_MAX, applyStatusChange } from "@/server/request-review";
+import { queueNotifications, resendNow } from "@/server/email/outbox";
 import { getT } from "@/i18n/server";
 import {
   AUTHORITY_REF_PATTERN,
@@ -69,7 +70,7 @@ export async function changeRequestStatusAction(requestId: string, _prev: Action
     silent,
   });
   if (!changeId) return { error: t("rq.err.changed"), tone: "warning", values };
-  if (!silent) after(() => notifyStatusChange(changeId));
+  if (!silent) after(() => queueNotifications([changeId]));
   revalidatePath(detail(request.id));
   revalidatePath("/admin/requests");
   return { ok: true, message: t(silent ? "rq.ok.changedSilent" : "rq.ok.changed", { status: t(`rv.${status}`) }) };
@@ -87,7 +88,7 @@ export async function resendStatusEmailAction(changeId: string, _prev: ActionSta
 
   await db.requestStatusChange.update({ where: { id: change.id }, data: { emailStatus: null, emailError: null } });
   await audit({ adminId: admin.id, action: "request.email_resend", entityType: "template_request", entityId: change.requestId });
-  after(() => notifyStatusChange(change.id));
+  after(() => resendNow(change.id));
   revalidatePath(detail(change.requestId));
   return { ok: true, message: t("rq.ok.resent") };
 }
@@ -158,7 +159,7 @@ export async function bulkChangeStatusAction(_prev: ActionState, formData: FormD
     if (changeId) changedIds.push(changeId);
     else conflicts++;
   }
-  if (!silent && changedIds.length > 0) after(() => notifyMany(changedIds));
+  if (!silent && changedIds.length > 0) after(() => queueNotifications(changedIds));
   revalidatePath("/admin/requests");
 
   const parts = [t(silent ? "rq.bulk.okSilent" : "rq.bulk.ok", { n: changedIds.length, status: t(`rv.${status}`) })];
