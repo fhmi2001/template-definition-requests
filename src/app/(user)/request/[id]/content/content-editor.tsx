@@ -309,17 +309,7 @@ export function ContentEditor({
     apply(before + after, null);
   }
 
-  const setSpec = (i: number, patch: Partial<VariableSpec>) => {
-    setSpecs((prev) => prev.map((s, k) => (k === i ? { ...s, ...patch } : s)));
-    // متغير من نوع رابط: نضيف https:// تلقائياً ملاصقة له قبله (شرط مزود الخدمة)
-    if (patch.type === "URL") {
-      const tok = tokens[i];
-      if (tok && !/https:\/\/$/i.test(text.slice(0, tok.start))) {
-        const before = text.slice(0, tok.start).replace(/\s+$/, " ").replace(/http:\/\/$/i, "");
-        apply(before + "https://" + text.slice(tok.start), before.length + "https://".length + (tok.end - tok.start));
-      }
-    }
-  };
+  const setSpec = (i: number, patch: Partial<VariableSpec>) => setSpecs((prev) => prev.map((s, k) => (k === i ? { ...s, ...patch } : s)));
 
   function payload() {
     const fd = new FormData();
