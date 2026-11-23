@@ -113,6 +113,19 @@ export function splitTokens(text: string): { text: string; token: boolean }[] {
   return out;
 }
 
+/**
+ * A placeholder written with a name (#GuestFirstName#, #Property Phone#) instead of #Var1#.
+ * It is NOT a variable for the app: it gets no number, type or length, so it must not pass as plain text.
+ * A lone hashtag (#offer) or two hashtags on one line (#offer and #sale) are not matched.
+ */
+const NAMED_PLACEHOLDER_RE = /#(\p{L}(?:[\p{L}\p{N}_.\- ]{0,38}[\p{L}\p{N}])?)#(?![\p{L}\p{N}])/gu;
+
+/** Named placeholders in the text, in order of appearance, each one once. Links and #VarN# are ignored. */
+export function findNamedPlaceholders(text: string): string[] {
+  const rest = text.replace(URL_RE, " ").replace(TOKEN_RE, " ");
+  return [...new Set([...rest.matchAll(NAMED_PLACEHOLDER_RE)].map((m) => m[0]))];
+}
+
 export function findTokens(text: string): Token[] {
   return [...text.matchAll(TOKEN_RE)].map((m) => ({ number: Number(m[1] ?? m[2]), start: m.index!, end: m.index! + m[0].length }));
 }
@@ -280,6 +293,11 @@ export function evaluateTemplate(input: {
     if (BROKEN_TOKEN_RE.test(stray)) {
       if (status === "pass") status = "note";
       details.push(m("rules.text.stray"));
+    }
+    const named = findNamedPlaceholders(text);
+    if (named.length) {
+      status = "fail";
+      details.push(m("rules.text.named", { names: named }));
     }
     rules.push({ id: "text", number: null, title: m("rules.text.title"), status, details });
   }

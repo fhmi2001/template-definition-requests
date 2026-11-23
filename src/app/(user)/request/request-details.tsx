@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AWARENESS, senderTypeDisplay, customerTypeDisplay } from "@/lib/sender-types";
 import { CopyButton } from "@/components/copy-button";
-import { composeMessage, exceptionLabel, tokenText, type VariableSpec, variableTypeLabel } from "@/lib/template-rules";
+import { composeMessage, exceptionLabel, findNamedPlaceholders, tokenText, type VariableSpec, variableTypeLabel } from "@/lib/template-rules";
 import { getT } from "@/i18n/server";
 import { MessageBubble } from "@/components/message-bubble";
 import { TemplatePreview } from "./template-preview";
@@ -82,6 +82,8 @@ export async function RequestDetails({
   copyable?: boolean;
 }) {
   const { t } = await getT();
+  // #GuestFirstName# and the like: the app counts only #VarN#, so say so instead of "No variables"
+  const named = findNamedPlaceholders(r.content ?? "");
   return (
     <>
       <Section
@@ -150,9 +152,14 @@ export async function RequestDetails({
               </tbody>
             </table>
           </div>
-        ) : (
+        ) : named.length ? null : (
           <p className="text-small text-muted">{t("details.noVars")}</p>
         )}
+        {named.length ? (
+          <p role="note" className="rounded-xl bg-warn-50 px-4 py-3 text-small leading-6 text-warn-700">
+            {t("details.namedVars", { names: named.map((n) => `\u2068${n}\u2069`).join(t("common.listSep")) })}
+          </p>
+        ) : null}
         {r.exceptions.length ? (
           <dl className="mt-2 flex flex-col">
             <Row label={t("details.exceptions")}>{r.exceptions.map((e) => exceptionLabel(t, e)).join(t("common.listSep"))}</Row>
