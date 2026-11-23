@@ -82,8 +82,9 @@ export async function RequestDetails({
   copyable?: boolean;
 }) {
   const { t } = await getT();
-  // #GuestFirstName# and the like: the app counts only #VarN#, so say so instead of "No variables"
-  const named = findNamedPlaceholders(r.content ?? "");
+  // #GuestFirstName# and the like: the app counts only #VarN#, so tell the reviewer instead of "No variables".
+  // Admin page only (the one that passes `copyable`): the wording is for reviewers, not for the client.
+  const named = copyable ? findNamedPlaceholders(r.content ?? "") : [];
   return (
     <>
       <Section
