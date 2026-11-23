@@ -102,7 +102,7 @@ export async function applyStatusChange(args: {
   /** null = تغيير آلي عبر واجهة الوكلاء (agent API) وليس من مشرف. */
   adminId: string | null;
   ip: string | null;
-  request: { id: string; reviewStatus: ReviewStatus | null; referenceNo: number };
+  request: { id: string; reviewStatus: ReviewStatus | null; referenceNo: number | null };
   status: ReviewStatus;
   reason: string;
   authorityRef: string | null;

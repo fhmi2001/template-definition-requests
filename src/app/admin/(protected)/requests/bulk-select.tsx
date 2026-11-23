@@ -3,7 +3,7 @@
 import { createContext, useActionState, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { bulkChangeStatusAction } from "@/actions/request-review";
 import { initialState } from "@/lib/action-state";
-import { REJECTION_REASON_MAX, REVIEW_STATUSES, needsAuthorityRef } from "@/lib/review-status";
+import { REJECTION_REASON_MAX, REVIEW_STATUSES, isReviewStatus, needsAuthorityRef } from "@/lib/review-status";
 import { Alert, ConfirmButton, inputClass } from "@/components/ui";
 import { buttonClass } from "@/components/button-styles";
 import { useT } from "@/i18n/client";
@@ -231,7 +231,7 @@ export function BulkBar() {
           variant={rejecting ? "danger" : "primary"}
           pendingText={t("rq.d.saving")}
           disabled={!status || tooMany || tooManyToNotify}
-          message={status ? t(silent ? "rq.bulk.confirmSilent" : "rq.bulk.confirm", { n: count, status: t(`rv.${status}`) }) : ""}
+          message={isReviewStatus(status) ? t(silent ? "rq.bulk.confirmSilent" : "rq.bulk.confirm", { n: count, status: t(`rv.${status}`) }) : ""}
         >
           {t("rq.bulk.apply", { n: count })}
         </ConfirmButton>
