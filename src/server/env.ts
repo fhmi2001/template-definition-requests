@@ -8,6 +8,10 @@ const schema = z.object({
   OTP_SECRET: z.string().min(32, "يجب أن يكون 32 حرفاً على الأقل"),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().min(3).default("Template Definition Requests <onboarding@resend.dev>"),
+  // رمز واجهة الوكلاء (/api/agent/*). اختياري: بدونه تُعطَّل الواجهة وتُرجع 404.
+  AGENT_API_TOKEN: z.string().min(40, "يجب أن يكون 40 حرفاً على الأقل").optional(),
+  // قائمة عناوين IP المسموحة لواجهة الوكلاء، مفصولة بفواصل (اختياري).
+  AGENT_API_ALLOWED_IPS: z.string().optional(),
   // رمز دخول المشرف يُرسل إلى بريده الخاص في حسابه (admins.email)؛ لا يوجد بريد إدارة مشترك.
 });
 
@@ -22,6 +26,8 @@ export function env(): Env {
     ...process.env,
     RESEND_API_KEY: process.env.RESEND_API_KEY || undefined,
     EMAIL_FROM: process.env.EMAIL_FROM || undefined,
+    AGENT_API_TOKEN: process.env.AGENT_API_TOKEN || undefined,
+    AGENT_API_ALLOWED_IPS: process.env.AGENT_API_ALLOWED_IPS || undefined,
   });
   if (!parsed.success) {
     const details = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(" | ");

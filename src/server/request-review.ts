@@ -99,7 +99,8 @@ export const SILENT_MARK = "silent";
  * بلا إشعار: يُسجَّل «لم يُرسل» ولا يُرسل شيء.
  */
 export async function applyStatusChange(args: {
-  adminId: string;
+  /** null = تغيير آلي عبر واجهة الوكلاء (agent API) وليس من مشرف. */
+  adminId: string | null;
   ip: string | null;
   request: { id: string; reviewStatus: ReviewStatus | null; referenceNo: number };
   status: ReviewStatus;
@@ -107,6 +108,8 @@ export async function applyStatusChange(args: {
   authorityRef: string | null;
   silent: boolean;
   bulk?: boolean;
+  /** يُسجَّل في التدقيق عند التغيير عبر واجهة الوكلاء. */
+  via?: "agent-api";
 }): Promise<string | null> {
   const { request, status, reason, authorityRef, silent } = args;
   const now = new Date();
@@ -149,6 +152,7 @@ export async function applyStatusChange(args: {
       ...(needsAuthorityRef(status) && authorityRef ? { authorityRef } : {}),
       ...(silent ? { silent: true } : {}),
       ...(args.bulk ? { bulk: true } : {}),
+      ...(args.via ? { via: args.via } : {}),
     },
     ip: args.ip ?? undefined,
   });
