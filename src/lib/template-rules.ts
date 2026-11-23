@@ -354,9 +354,14 @@ export function evaluateTemplate(input: {
         m("rules.ratio.stats", { varPct: pct(variableRatio), staticLength, varLength: variablesLength ?? 0 }),
       );
       if (variableRatio > MAX_VARIABLE_RATIO + 1e-9) {
-        // 40% حدّ على الجميع بلا استثناء (الجهات الحكومية أيضاً)
-        status = "fail";
-        details.push(m("rules.ratio.fix"));
+        if (government) {
+          status = "exception";
+          exceptions.push("STATIC_RATIO");
+          details.push(m("rules.govAllowed"));
+        } else {
+          status = "fail";
+          details.push(m("rules.ratio.fix"));
+        }
       }
     }
     rules.push({ id: "ratio", number: 4, title: m("rules.ratio.title"), status, details });
