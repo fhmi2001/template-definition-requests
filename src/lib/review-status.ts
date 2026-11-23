@@ -21,6 +21,9 @@ export const REJECTION_REASON_MAX = 1000;
  */
 export const AUTHORITY_REF_STATUSES = ["UNDER_REVIEW", "APPROVED", "REJECTED"] as const satisfies readonly ReviewStatus[];
 export const needsAuthorityRef = (s: unknown): boolean => AUTHORITY_REF_STATUSES.includes(s as (typeof AUTHORITY_REF_STATUSES)[number]);
+/** إلزامي لكل حالة تحتاج رقماً عدا «مرفوض»: الرفض بلا رقم قالب (يُحفظ 0000000000 إن تُرك فارغاً). */
+export const authorityRefRequired = (s: unknown): boolean => needsAuthorityRef(s) && s !== "REJECTED";
+export const REJECTED_DEFAULT_REF = "0000000000";
 export const AUTHORITY_REF_MAX = 50;
 /** أحرف وأرقام (لاتينية أو عربية) مع - _ / . # والمسافة، بين حرفين و50 حرفاً. */
 export const AUTHORITY_REF_PATTERN = /^[\p{L}\p{N}][\p{L}\p{N}\-_/.# ]{1,49}$/u;
