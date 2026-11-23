@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { db } from "@/server/db";
 import { requestMeta } from "@/server/http-meta";
 import { audit } from "@/server/audit";
@@ -20,9 +21,27 @@ import { clearPendingAdmin, createAdminSession, destroySession, getPendingAdmin,
 import { getAdminSession } from "@/server/auth/dal";
 import { EmailSendError, sendOtpEmail } from "@/server/email/otp-email";
 import { adminLoginSchema, fieldErrors, otpCodeSchema } from "@/lib/validation";
-import { adminLoginPath } from "@/lib/admin-path";
+import { ADMIN_LOGIN_ROUTE, adminLoginPath } from "@/lib/admin-path";
 import type { ActionState } from "@/lib/action-state";
 import { getT } from "@/i18n/server";
+
+/**
+ * مسار صفحة دخول الأدمن الذي جاء منه المستخدم. لا نعتمد على ADMIN_LOGIN_PATH وحده: إن لم يكن متاحاً لدالة
+ * الخادم نحصل على /admin/login الذي يعيد 404 عمداً، فيظهر 404 بعد «Sign in». نأخذ المسار فقط من Referer
+ * (لا المضيف)، ولا نقبل إلا /admin/login أو /admin/<slug> بالشكل السري المعروف.
+ */
+async function loginRedirectPath(): Promise<string> {
+  try {
+    const ref = (await headers()).get("referer");
+    if (ref) {
+      const path = new URL(ref).pathname;
+      if (path === ADMIN_LOGIN_ROUTE || /^\/admin\/[A-Za-z0-9_-]{16,}$/.test(path)) return path;
+    }
+  } catch {
+    /* Referer غير صالح: نرجع للقيمة من البيئة */
+  }
+  return adminLoginPath();
+}
 
 const MAX_FAILED = 5;
 const LOCK_MINUTES = 15;
@@ -127,13 +146,13 @@ export async function adminLoginAction(_prev: ActionState, formData: FormData): 
 
   await setPendingAdmin(admin.id);
   await audit({ adminId: admin.id, action: "admin.otp_sent", entityType: "admin", entityId: admin.id, ip: meta.ip });
-  redirect(adminLoginPath());
+  redirect(await loginRedirectPath());
 }
 
 /** الخطوة 2: رمز البريد. */
 export async function adminVerifyAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const adminId = await getPendingAdmin();
-  if (!adminId) redirect(adminLoginPath());
+  if (!adminId) redirect(await loginRedirectPath());
 
   const { t } = await getT();
   const parsed = otpCodeSchema.safeParse(String(formData.get("code") ?? ""));
@@ -195,7 +214,7 @@ export async function adminVerifyAction(_prev: ActionState, formData: FormData):
 /** زر «إعادة الإرسال» في شاشة الرمز. */
 export async function adminResendAction(_prev: ActionState): Promise<ActionState> {
   const adminId = await getPendingAdmin();
-  if (!adminId) redirect(adminLoginPath());
+  if (!adminId) redirect(await loginRedirectPath());
 
   const result = await issueAdminOtp(adminId, { reuseRecent: false });
   if (!result.ok) return result.state;
@@ -206,12 +225,12 @@ export async function adminResendAction(_prev: ActionState): Promise<ActionState
 /** الرجوع من شاشة الرمز لإدخال اسم مستخدم آخر. */
 export async function adminCancelOtpAction() {
   await clearPendingAdmin();
-  redirect(adminLoginPath());
+  redirect(await loginRedirectPath());
 }
 
 export async function adminLogoutAction() {
   const s = await getAdminSession();
   await destroySession("ADMIN");
   if (s) await audit({ adminId: s.admin.id, action: "admin.logout", entityType: "admin", entityId: s.admin.id });
-  redirect(adminLoginPath());
+  redirect(await loginRedirectPath());
 }
