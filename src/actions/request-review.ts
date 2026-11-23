@@ -14,6 +14,8 @@ import {
   REJECTION_REASON_MIN,
   isReviewStatus,
   needsAuthorityRef,
+  authorityRefRequired,
+  REJECTED_DEFAULT_REF,
 } from "@/lib/review-status";
 import { uuidSchema } from "@/lib/validation";
 import { buildWhere, parseFilters } from "@/server/admin-requests";
@@ -45,9 +47,9 @@ export async function changeRequestStatusAction(requestId: string, _prev: Action
     if (Array.from(reason).length < REJECTION_REASON_MIN) return { fields: { reason: t("rq.err.reasonShort") }, values };
     if (Array.from(reason).length > REJECTION_REASON_MAX) return { fields: { reason: t("rq.err.reasonLong") }, values };
   }
-  if (needsAuthorityRef(status)) {
-    if (!authorityRef) return { fields: { authorityRef: t("rq.err.authorityRequired") }, values };
-    if (!AUTHORITY_REF_PATTERN.test(authorityRef)) return { fields: { authorityRef: t("rq.err.authorityInvalid") }, values };
+  if (authorityRefRequired(status) && !authorityRef) return { fields: { authorityRef: t("rq.err.authorityRequired") }, values };
+  if (needsAuthorityRef(status) && authorityRef && !AUTHORITY_REF_PATTERN.test(authorityRef)) {
+    return { fields: { authorityRef: t("rq.err.authorityInvalid") }, values };
   }
   if (status === current) return { error: t("rq.err.sameStatus"), tone: "info", values };
 
@@ -65,7 +67,7 @@ export async function changeRequestStatusAction(requestId: string, _prev: Action
     request,
     status,
     reason,
-    authorityRef: needsAuthorityRef(status) ? authorityRef : null,
+    authorityRef: needsAuthorityRef(status) ? authorityRef || REJECTED_DEFAULT_REF : null,
     silent,
   });
   if (!changeId) return { error: t("rq.err.changed"), tone: "warning", values };
@@ -134,8 +136,8 @@ export async function bulkChangeStatusAction(_prev: ActionState, formData: FormD
   if (targets.length > BULK_MAX) return { error: t("rq.bulk.err.tooMany", { max: BULK_MAX }), values };
 
   const same = targets.filter((r) => r.reviewStatus === status);
-  const noRef = targets.filter((r) => r.reviewStatus !== status && needsAuthorityRef(status) && !r.authorityRef);
-  const eligible = targets.filter((r) => r.reviewStatus !== status && !(needsAuthorityRef(status) && !r.authorityRef));
+  const noRef = targets.filter((r) => r.reviewStatus !== status && authorityRefRequired(status) && !r.authorityRef);
+  const eligible = targets.filter((r) => r.reviewStatus !== status && !(authorityRefRequired(status) && !r.authorityRef));
   if (eligible.length === 0) return { error: t("rq.bulk.err.nothing", { same: same.length, noRef: noRef.length }), tone: "info", values };
   if (!silent && eligible.length > NOTIFY_BATCH_MAX) {
     return { error: t("rq.bulk.err.notifyCap", { max: NOTIFY_BATCH_MAX, count: eligible.length }), tone: "warning", values };
@@ -151,7 +153,7 @@ export async function bulkChangeStatusAction(_prev: ActionState, formData: FormD
       request: r,
       status,
       reason,
-      authorityRef: r.authorityRef,
+      authorityRef: r.authorityRef ?? (status === "REJECTED" ? REJECTED_DEFAULT_REF : null),
       silent,
       bulk: true,
     });
