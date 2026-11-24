@@ -217,6 +217,12 @@ export function findLinks(text: string): LinkFinding[] {
   return out;
 }
 
+/**
+ * هل ينتهي النص (قبل المتغير) برابط https:// كامل ملاصق للمتغير بلا مسافة؟
+ * مثال صحيح: «...https://example.com/order?id=» ثم #Var2#. أما #Var2# وحده بعد مسافة أو نص فلا يصح.
+ */
+export const hasLinkPrefix = (before: string) => /https:\/\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?::\d+)?[^\s]*$/i.test(before);
+
 // -----------------------------------------------------------------------------
 // التقييم
 // -----------------------------------------------------------------------------
@@ -438,10 +444,14 @@ export function evaluateTemplate(input: {
     for (const l of links) {
       if (l.problem === "variable-host") notes.push(m("rules.links.variableHost", { url: l.url }));
     }
+    // متغير الرابط يجب أن يسبقه ملاصقاً له رابط https:// كامل (مزوّد الخدمة يرفض المتغير وحده)
     names.forEach((n, i) => {
-      if (specs[i].type === "URL") notes.push(m("rules.links.urlVar", { name: n }));
+      if (specs[i].type !== "URL") return;
+      if (hasLinkPrefix(text.slice(0, tokens[i].start))) notes.push(m("rules.links.urlVar", { name: n }));
+      else details.push(m("rules.links.urlVarPrefix", { name: n }));
     });
-    if (notes.length && status === "pass") status = "note";
+    if (details.length) status = "fail";
+    else if (notes.length && status === "pass") status = "note";
     if (!links.length && !notes.length) details.push(m("rules.links.none"));
     rules.push({ id: "links", number: 8, title: m("rules.links.title"), status, details: [...details, ...notes] });
   }
