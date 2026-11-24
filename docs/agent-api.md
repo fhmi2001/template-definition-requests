@@ -5,7 +5,7 @@
 
 ## GET /api/agent/requests
 `?status=RECEIVED|UNDER_REVIEW` (الافتراضي RECEIVED) `&limit=1..50` `&excludeSender=Janalkhair,...`
-قراءة فقط. يُرجع الأقدم أولاً مع: بيانات المرسل (التصنيف في Mobily)، العميل (الرقم الموحد، السجل التجاري)، نص الرسالة الجاهز، والمتغيرات بأنواع Mobily (Link عينته https://deewan.sa).
+قراءة فقط. يُرجع الأقدم أولاً مع: بيانات المرسل (التصنيف في Mobily)، العميل (الرقم الموحد، السجل التجاري)، نص الرسالة الجاهز، والمتغيرات بأنواع Mobily (عينة Link = الرابط الأساسي للرابط الملاصق للمتغير، مثل https://staging.zoneder5.ai).
 
 ## POST /api/agent/results
 ```json

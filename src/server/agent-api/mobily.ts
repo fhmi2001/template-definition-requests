@@ -1,4 +1,4 @@
-import { sanitizeSpecs, type VariableType } from "@/lib/template-rules";
+import { findTokens, linkBase, sanitizeSpecs, type VariableType } from "@/lib/template-rules";
 
 /** تصنيف Mobily لكل نوع مرسل في المنصة. */
 export const MOBILY_CLASSIFICATION: Record<string, string> = {
@@ -16,7 +16,7 @@ export const MOBILY_VARIABLE_TYPE: Record<VariableType, string> = {
   URL: "Link",
 };
 
-/** عينة الرابط الثابتة في Mobily (لا يُكتب https:// قبل المتغير في النص). */
+/** عينة احتياطية إن تعذر استخراج الرابط الأساسي. */
 export const LINK_SAMPLE = "https://deewan.sa";
 
 export type MobilyVariable = {
@@ -28,13 +28,19 @@ export type MobilyVariable = {
   sample: string | null;
 };
 
-export function mobilyVariables(raw: unknown): MobilyVariable[] {
+/**
+ * اسم/عينة متغير Link = الرابط الأساسي للرابط الذي كتبه العميل ملاصقاً للمتغير
+ * (مثل https://staging.zoneder5.ai من https://staging.zoneder5.ai/a/b?id=#Var2#).
+ */
+export function mobilyVariables(raw: unknown, content: string | null = ""): MobilyVariable[] {
+  const text = content ?? "";
+  const tokens = findTokens(text);
   return sanitizeSpecs(raw).map((v, i) => ({
     token: `#Var${i + 1}#`,
     platformType: v.type,
     mobilyType: v.type ? MOBILY_VARIABLE_TYPE[v.type] : null,
     maxLength: v.length,
-    sample: v.type === "URL" ? LINK_SAMPLE : null,
+    sample: v.type === "URL" ? ((tokens[i] && linkBase(text.slice(0, tokens[i].start))) || LINK_SAMPLE) : null,
   }));
 }
 
