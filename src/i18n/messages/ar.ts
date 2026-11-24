@@ -198,6 +198,8 @@ export const ar = {
   "rules.edges.title": "ألا يبدأ النص بمتغير ولا ينتهي بمتغير",
   "rules.edges.start": "النص يبدأ بالمتغير {name}. ابدأ بنص ثابت.",
   "rules.edges.end": "النص ينتهي بالمتغير {name}. اختم بنص ثابت.",
+  "rules.edges.startWord": "لا يوجد قبل المتغير {name} إلا نقطة أو رمز. اكتب قبله كلمة أو جملة حقيقية.",
+  "rules.edges.endWord": "لا يوجد بعد المتغير {name} إلا نقطة أو رمز أو رقم. اكتب بعده كلمة أو جملة حقيقية.",
   "rules.adjacent.title": "لا متغيرات متجاورة دون نص فاصل بينها",
   "rules.adjacent.pairs": (p) => `متجاوران دون نص فاصل (حرف أو رقم): ${(p.pairs as string[][]).map(([a, b]) => `${a} و${b}`).join("، ")}.`,
   "rules.links.title": "الروابط عبر https فقط، وبدون خدمات اختصار الروابط",

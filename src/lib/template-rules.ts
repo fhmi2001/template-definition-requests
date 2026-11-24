@@ -217,6 +217,9 @@ export function findLinks(text: string): LinkFinding[] {
   return out;
 }
 
+/** هل في النص كلمة حقيقية (حرفان على الأقل)؟ النقاط والرموز والأرقام والمسافات وحدها لا تُعدّ نصاً ثابتاً. */
+export const hasWord = (s: string) => /\p{L}[\p{L}\p{M}]+/u.test(s);
+
 /**
  * هل ينتهي النص (قبل المتغير) برابط https:// كامل ملاصق للمتغير بلا مسافة؟
  * مثال صحيح: «...https://example.com/order?id=» ثم #Var2#. أما #Var2# وحده بعد مسافة أو نص فلا يصح.
@@ -403,11 +406,19 @@ export function evaluateTemplate(input: {
       if (tokens[0].start === lead) {
         status = "fail";
         details.push(m("rules.edges.start", { name: names[0] }));
+      } else if (!hasWord(text.slice(0, tokens[0].start))) {
+        // قبل المتغير نقطة أو رمز فقط: التفاف على الشرط
+        status = "fail";
+        details.push(m("rules.edges.startWord", { name: names[0] }));
       }
       const lastToken = tokens[tokens.length - 1];
       if (lastToken.end === tail) {
         status = "fail";
         details.push(m("rules.edges.end", { name: names[names.length - 1] }));
+      } else if (!hasWord(text.slice(lastToken.end))) {
+        // بعد المتغير نقطة أو علامة أو رقم فقط: التفاف على الشرط
+        status = "fail";
+        details.push(m("rules.edges.endWord", { name: names[names.length - 1] }));
       }
     }
     rules.push({ id: "edges", number: 6, title: m("rules.edges.title"), status, details });

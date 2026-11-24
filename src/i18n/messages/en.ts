@@ -197,6 +197,8 @@ export const en: Record<MessageKey, Entry> = {
   "rules.edges.title": "Don't start or end the text with a variable",
   "rules.edges.start": "The text starts with the variable {name}. Start with fixed text.",
   "rules.edges.end": "The text ends with the variable {name}. End with fixed text.",
+  "rules.edges.startWord": "Only punctuation or symbols come before the variable {name}. Put a real word or sentence before it.",
+  "rules.edges.endWord": "Only punctuation, symbols or digits come after the variable {name}. Add a real word or sentence after it.",
   "rules.adjacent.title": "No adjacent variables without text between them",
   "rules.adjacent.pairs": (p) => `Adjacent with no separating text (a letter or digit): ${(p.pairs as string[][]).map(([a, b]) => `${a} and ${b}`).join(", ")}.`,
   "rules.links.title": "Links over https only, with no URL shorteners",
