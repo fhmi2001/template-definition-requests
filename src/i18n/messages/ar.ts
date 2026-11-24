@@ -362,7 +362,7 @@ export const ar = {
   "req.review.title": "قبل المتابعة",
   "req.review.hint": "اضغط «موافق» للمتابعة كما هو، أو «إلغاء» لتعديل القالب.",
   "req.review.edit": "إلغاء",
-  "req.review.confirm": "موافق"
+  "req.review.confirm": "موافق",
   "autosave.unsaved": "تغييرات غير محفوظة",
   "autosave.failed": "تعذّر الحفظ. نصك ما زال هنا.",
   "autosave.retry": "إعادة المحاولة",

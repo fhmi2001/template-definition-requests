@@ -361,7 +361,7 @@ export const en: Record<MessageKey, Entry> = {
   "req.review.title": "Before you continue",
   "req.review.hint": "Press OK to continue as is, or Cancel to edit the template.",
   "req.review.edit": "Cancel",
-  "req.review.confirm": "OK"
+  "req.review.confirm": "OK",
   "autosave.unsaved": "Unsaved changes",
   "autosave.failed": "Couldn't save. Your text is still here.",
   "autosave.retry": "Try again",
