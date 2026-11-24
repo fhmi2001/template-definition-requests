@@ -358,8 +358,10 @@ export const en: Record<MessageKey, Entry> = {
   "req.review.abuse": "The message contains explicit abusive language, which gets messages rejected.",
   "req.review.donation": "The message asks for donations or charity, which is not allowed in messages.",
   "req.review.bankTransfer": "The message asks for a bank transfer, or contains an account number, IBAN or transfer link, which is not allowed in messages.",
-  "req.review.edit": "Edit the template",
-  "req.review.confirm": "Confirm and continue as is",
+  "req.review.title": "Before you continue",
+  "req.review.hint": "Press OK to continue as is, or Cancel to edit the template.",
+  "req.review.edit": "Cancel",
+  "req.review.confirm": "OK"
   "autosave.unsaved": "Unsaved changes",
   "autosave.failed": "Couldn't save. Your text is still here.",
   "autosave.retry": "Try again",

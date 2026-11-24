@@ -34,6 +34,7 @@ import {
   type VariableType,
 } from "@/lib/template-rules";
 import { Alert } from "@/components/ui";
+import { reviewContent } from "@/lib/content-review";
 import { TemplatePreview } from "../../template-preview";
 import { buttonClass } from "@/components/button-styles";
 import { StepFooter } from "@/components/step-footer";
@@ -171,6 +172,7 @@ export function ContentEditor({
   signature,
   signatureEditHref,
   senderName,
+  senderType,
   initiallyKept = false,
 }: {
   draftId: string;
@@ -189,6 +191,8 @@ export function ContentEditor({
   signatureEditHref: string;
   /** اسم المرسل فوق المعاينة */
   senderName: string;
+  /** نوع المرسل: يُستعمل في التحقق الاختياري من المحتوى */
+  senderType: string | null;
   /** حُفظ مسبقاً بـ«حفظ والعودة لاحقاً» (keepDraft) */
   initiallyKept?: boolean;
 }) {
@@ -229,6 +233,9 @@ export function ContentEditor({
     const before = new Map(settled.rules.map((r) => [r.id, r]));
     return live.rules.map((r) => (r.status === "pass" ? r : (before.get(r.id) ?? r)));
   }, [live, settled]);
+  // الملاحظات (غير الإلزامية) لا تظهر في قائمة الشروط: تُعرض في نافذة منبثقة عند «التالي»
+  const noteMsgs = useMemo(() => live.rules.filter((r) => r.status === "note").flatMap((r) => r.details.map((d) => msg(t, d))), [live, t]);
+  const shownRules = useMemo(() => rules.map((r) => (r.status === "note" ? { ...r, status: "pass" as const, details: [] } : r)), [rules]);
 
   // الحفظ التلقائي: النص والمتغيرات كما هي، دون اشتراط تحقق الشروط
   const snapshot = useMemo(() => JSON.stringify({ text, specs }), [text, specs]);
@@ -318,10 +325,27 @@ export function ContentEditor({
     fd.set("variables", JSON.stringify(specs));
     return fd;
   }
-  const next = () => startTransition(() => saveAction(payload()));
-  const confirmNext = () => startTransition(() => saveAction(payload(true)));
-  const [reviewDismissed, setReviewDismissed] = useState<unknown>(null);
-  const showReview = !!saveState.warnings?.length && reviewDismissed !== saveState;
+  const reviewRef = useRef<HTMLDialogElement>(null);
+  const [reviewItems, setReviewItems] = useState<string[]>([]);
+  const askReview = (items: string[]) => {
+    setReviewItems(items);
+    reviewRef.current?.showModal();
+  };
+  // «التالي»: إن وُجدت ملاحظات غير إلزامية تظهر في نافذة: «موافق» للمتابعة أو «إلغاء» للتعديل
+  const next = () => {
+    const items = failing === 0 ? [...noteMsgs, ...reviewContent(text, senderType).map((f) => t(`req.review.${f}`))] : [];
+    if (items.length) askReview(items);
+    else startTransition(() => saveAction(payload(true)));
+  };
+  const confirmNext = () => {
+    reviewRef.current?.close();
+    startTransition(() => saveAction(payload(true)));
+  };
+  // احتياط: إن عاد الخادم بملاحظات على المحتوى تُعرض في النافذة نفسها
+  useEffect(() => {
+    if (saveState.warnings?.length) askReview(saveState.warnings);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saveState]);
   async function saveDraft() {
     setDrafting(true);
     // يحفظ آخر التغييرات ثم يعلّم المسودة «للعودة لاحقاً» حتى لا تُحذف عند الخروج
@@ -351,8 +375,8 @@ export function ContentEditor({
   // أجزاء SMS للرسالة كما تُرسل، والمتغيرات بأطوالها القصوى
   const sms = estimateSms(composeMessage(text, signature).trim(), specs);
   const blocking = (r: RuleResult) => r.status === "fail" || r.status === "pending";
-  const open = rules.filter((r) => r.status !== "pass");
-  const passed = rules.filter((r) => r.status === "pass");
+  const open = shownRules.filter((r) => r.status !== "pass");
+  const passed = shownRules.filter((r) => r.status === "pass");
   const failing = rules.filter(blocking).length;
   const counted = rules.length;
   const allMet = failing === 0;
@@ -744,22 +768,32 @@ export function ContentEditor({
 
       {/* ---------------- الأزرار ---------------- */}
       <div className="flex flex-col gap-3 lg:col-start-1">
-        {showReview ? (
-          <Alert tone="warning">
-            <p>{saveState.error}</p>
-            <ul className="mt-2 list-disc ps-5">
-              {saveState.warnings!.map((w) => <li key={w}>{w}</li>)}
-            </ul>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" onClick={() => setReviewDismissed(saveState)} disabled={busy} className={buttonClass("secondary")}>
-                {t("req.review.edit")}
-              </button>
-              <button type="button" onClick={confirmNext} disabled={busy} className={buttonClass("primary")}>
-                {saving ? t("common.saving") : t("req.review.confirm")}
-              </button>
-            </div>
-          </Alert>
-        ) : saveState.error && !saveState.warnings ? <Alert tone={saveState.tone ?? "error"}>{saveState.error}</Alert> : null}
+        {saveState.error && !saveState.warnings ? <Alert tone={saveState.tone ?? "error"}>{saveState.error}</Alert> : null}
+        <dialog
+          ref={reviewRef}
+          aria-labelledby="review-title"
+          className="m-auto w-[min(92vw,480px)] rounded-2xl border border-line bg-white p-6 text-ink shadow-[0_24px_48px_-24px_rgb(0_0_0/0.5)] backdrop:bg-night/50"
+        >
+          <h2 id="review-title" className="text-title font-bold">
+            {t("req.review.title")}
+          </h2>
+          <ul className="mt-3 flex list-disc flex-col gap-2 ps-5 text-body">
+            {reviewItems.map((w) => (
+              <li key={w} className="break-words">
+                <WithTokens text={w} />
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-meta text-muted">{t("req.review.hint")}</p>
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button type="button" autoFocus onClick={() => reviewRef.current?.close()} className={buttonClass("secondary")}>
+              {t("req.review.edit")}
+            </button>
+            <button type="button" onClick={confirmNext} disabled={busy} className={buttonClass("primary")}>
+              {t("req.review.confirm")}
+            </button>
+          </div>
+        </dialog>
         {showSavedLater ? <Alert tone="success">{t("req.ok.draftSaved")}</Alert> : null}
         <StepFooter backHref={backHref} backLabel={fromReview ? t("review.back") : t("common.previous")}>
           <button type="button" onClick={() => void saveDraft()} disabled={busy} className={buttonClass("secondary")}>
