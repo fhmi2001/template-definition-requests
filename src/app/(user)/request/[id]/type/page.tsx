@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
 import { requireUser } from "@/server/auth/dal";
 import { isFromReview, loadDraftForPage, requestPath, stepsDone } from "@/server/requests";
-import { AD_SENDER_NAME_MAX, SENDER_TYPES, isTypeBlocked, senderNameLength, senderTypeLabel } from "@/lib/sender-types";
+import { AD_SENDER_NAME_MAX, SENDER_TYPES, senderNameLength, senderTypeLabel, typeBlockReason } from "@/lib/sender-types";
 import { UserShell } from "@/components/user-shell";
 import { ChosenSender, SenderGone, StepHeader } from "../../request-ui";
 import { TypeForm } from "./type-form";
@@ -29,11 +29,14 @@ export default async function RequestTypePage({
   const options = sender
     ? SENDER_TYPES.map((value) => {
         const label = senderTypeLabel(t, value);
-        const blocked = isTypeBlocked(value, sender.name);
+        const blocked = typeBlockReason(value, sender.name);
         return {
-          blocked: blocked
-            ? t("type.adBlocked", { max: AD_SENDER_NAME_MAX, name: sender.name, n: senderNameLength(sender.name) })
-            : null,
+          blocked:
+            blocked === "adOnly"
+              ? t("type.adOnly", { name: sender.name })
+              : blocked
+                ? t("type.adBlocked", { max: AD_SENDER_NAME_MAX, name: sender.name, n: senderNameLength(sender.name) })
+                : null,
           value,
           label,
           sub: label === value ? null : value,

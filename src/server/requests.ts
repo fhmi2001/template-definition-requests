@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/server/db";
 import { availableSenderSelect, findClientSender, senderVisibleTo } from "@/server/client-senders";
 import { uuidSchema, awarenessClientNameSchema, templateSchema } from "@/lib/validation";
-import { AWARENESS, allowedSenderTypes, isTypeBlocked } from "@/lib/sender-types";
+import { AWARENESS, allowedSenderTypes, typeBlockReason } from "@/lib/sender-types";
 import type { MessageKey } from "@/i18n/translate";
 import {
   comparableMessage,
@@ -211,8 +211,9 @@ export async function checkDraftComplete(
   | { ok: false; step: "sender" | "type" | "template" | "content"; message: MessageKey; duplicate?: DuplicateRequest }
 > {
   if (!sender) return { ok: false, step: "sender", message: "req.check.senderGone" };
-  if (draft.senderType && isTypeBlocked(draft.senderType, sender.name)) {
-    return { ok: false, step: "type", message: "req.check.adNameTooLong" };
+  const block = draft.senderType ? typeBlockReason(draft.senderType, sender.name) : null;
+  if (block) {
+    return { ok: false, step: "type", message: block === "adOnly" ? "req.check.adOnly" : "req.check.adNameTooLong" };
   }
   if (!draft.senderType || !allowedSenderTypes(sender.name).includes(draft.senderType)) {
     return { ok: false, step: "type", message: "req.check.chooseType" };

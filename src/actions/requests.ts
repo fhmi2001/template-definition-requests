@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import type { ActionState } from "@/lib/action-state";
 import { awarenessClientNameSchema, fieldErrors, templateSchema, uuidSchema } from "@/lib/validation";
-import { AD_SENDER_NAME_MAX, AWARENESS, allowedSenderTypes, isTypeBlocked } from "@/lib/sender-types";
+import { AD_SENDER_NAME_MAX, AWARENESS, allowedSenderTypes, typeBlockReason } from "@/lib/sender-types";
 import { db } from "@/server/db";
 import { requireUser } from "@/server/auth/dal";
 import { findClientSender } from "@/server/client-senders";
@@ -97,8 +97,10 @@ export async function saveSenderTypeAction(draftId: string, _prev: ActionState, 
   const values = { senderType: types[0] ?? "", clientName: String(formData.get("clientName") ?? "") };
   if (types.length === 0) return { fields: { senderType: t("req.f.chooseType") }, values };
   if (types.length > 1) return { fields: { senderType: t("req.f.oneType") }, values };
-  if (isTypeBlocked(values.senderType, found.sender.name)) {
-    return { fields: { senderType: t("req.f.adNameTooLong", { max: AD_SENDER_NAME_MAX }) }, values };
+  const block = typeBlockReason(values.senderType, found.sender.name);
+  if (block) {
+    const message = block === "adOnly" ? t("req.f.adOnly", { name: found.sender.name }) : t("req.f.adNameTooLong", { max: AD_SENDER_NAME_MAX });
+    return { fields: { senderType: message }, values };
   }
   if (!allowedSenderTypes(found.sender.name).includes(values.senderType)) {
     return { fields: { senderType: t("req.f.typeUnavailable") }, values };

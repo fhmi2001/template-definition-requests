@@ -32,14 +32,30 @@ export const ADVERTISEMENT = "Advertisement";
 /** اسم المرسل للإعلاني: 8 أحرف على الأكثر، تُحسب المسافات والرموز. */
 export const AD_SENDER_NAME_MAX = 8;
 
-export const senderNameLength = (name: string) => Array.from(name).length;
+/** اسم مرسل إعلاني مسجَّل بلاحقة ‎-AD (مثل Dfruit-AD): لا يُستخدم إلا للنوع الإعلاني. */
+export const AD_SUFFIX = "-AD";
+export const isAdSenderName = (name: string) => /-AD$/i.test(name.trim());
 
-/** النوع ممنوع لهذا المرسل؟ (الإعلاني لاسم أطول من 8 أحرف) */
-export const isTypeBlocked = (type: string, senderName: string) =>
-  type === ADVERTISEMENT && senderNameLength(senderName) > AD_SENDER_NAME_MAX;
+/** طول الاسم بلا لاحقة ‎-AD: حد الأحرف الثمانية يخص الاسم نفسه، واللاحقة تُضاف فوقه (8 + 3 = 11). */
+export const senderNameLength = (name: string) => Array.from(isAdSenderName(name) ? name.trim().slice(0, -AD_SUFFIX.length) : name).length;
+
+export type TypeBlock = "adNameTooLong" | "adOnly";
 
 /**
- * الأنواع التي يختار منها العميل: الأربعة لكل العملاء، عدا الإعلاني إن كان اسم المرسل أطول من 8 أحرف.
+ * سبب منع النوع لهذا المرسل، أو null إن كان متاحاً:
+ * - adNameTooLong: الإعلاني لاسم أطول من 8 أحرف (بلا اللاحقة)
+ * - adOnly: نوع غير إعلاني لاسم ينتهي بـ ‎-AD
+ */
+export const typeBlockReason = (type: string, senderName: string): TypeBlock | null => {
+  if (type === ADVERTISEMENT) return senderNameLength(senderName) > AD_SENDER_NAME_MAX ? "adNameTooLong" : null;
+  return isAdSenderName(senderName) ? "adOnly" : null;
+};
+
+export const isTypeBlocked = (type: string, senderName: string) => typeBlockReason(type, senderName) !== null;
+
+/**
+ * الأنواع التي يختار منها العميل: الأربعة لكل العملاء، عدا الإعلاني إن كان اسم المرسل أطول من 8 أحرف،
+ * واسم المرسل المنتهي بـ ‎-AD للإعلاني وحده.
  * أنواع المرسل المسجّلة في ملف الإكسل تبقى للعرض في لوحة الإدارة فقط ولا تقيّد العميل.
  */
 export const allowedSenderTypes = (senderName: string): string[] => SENDER_TYPES.filter((t) => !isTypeBlocked(t, senderName));
