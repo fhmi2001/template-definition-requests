@@ -2,9 +2,9 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import type { ReviewStatus } from "@/generated/prisma/enums";
-import { changeRequestStatusAction, resendStatusEmailAction } from "@/actions/request-review";
+import { changeRequestStatusAction, deleteRequestsAction, resendStatusEmailAction } from "@/actions/request-review";
 import { initialState } from "@/lib/action-state";
-import { AUTHORITY_REF_MAX, REJECTION_REASON_MAX, REVIEW_STATUSES, REVIEW_STYLE, needsAuthorityRef } from "@/lib/review-status";
+import { AUTHORITY_REF_MAX, REJECTED_DEFAULT_REF, REJECTION_REASON_MAX, REVIEW_STATUSES, REVIEW_STYLE, authorityRefRequired, needsAuthorityRef } from "@/lib/review-status";
 import { Alert, SubmitButton, ConfirmButton, inputClass } from "@/components/ui";
 import { rememberStatusChange } from "@/components/status-motion";
 import { useT } from "@/i18n/client";
@@ -113,14 +113,15 @@ export function StatusForm({
       {askAuthorityRef ? (
         <div className="flex flex-col gap-1.5">
           <label htmlFor="authorityRef" className="text-[13px] font-semibold text-ink-2">
-            {t("authorityRef.label")} <span className="text-danger-600">*</span>
+            {t("authorityRef.label")} {rejecting ? null : <span className="text-danger-600">*</span>}
           </label>
           <input
             id="authorityRef"
             name="authorityRef"
             type="text"
             dir="ltr"
-            required
+            required={authorityRefRequired(selected)}
+            placeholder={rejecting ? REJECTED_DEFAULT_REF : undefined}
             autoComplete="off"
             spellCheck={false}
             maxLength={AUTHORITY_REF_MAX}
@@ -202,6 +203,22 @@ export function ResendEmailButton({ changeId }: { changeId: string }) {
       </SubmitButton>
       {state.error ? <span className="text-[13px] text-danger-600">{state.error}</span> : null}
       {state.ok && state.message ? <span className="text-[13px] text-brand-700">{state.message}</span> : null}
+    </form>
+  );
+}
+
+/** حذف الطلب نهائياً من صفحة تفاصيله (مع تأكيد)، ثم العودة إلى القائمة. */
+export function DeleteRequestForm({ requestId, refText }: { requestId: string; refText: string }) {
+  const [state, action] = useActionState(deleteRequestsAction, initialState);
+  const t = useT();
+  return (
+    <form action={action} className="flex flex-col gap-2">
+      <input type="hidden" name="ids" value={requestId} />
+      <input type="hidden" name="after" value="list" />
+      {state.error ? <Alert tone={state.tone ?? "error"}>{state.error}</Alert> : null}
+      <ConfirmButton variant="danger" pendingText={t("rq.del.working")} message={t("rq.del.confirmOne", { ref: refText })}>
+        {t("rq.del.one")}
+      </ConfirmButton>
     </form>
   );
 }

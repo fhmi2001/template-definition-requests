@@ -7,6 +7,8 @@ export type ActionState = {
   tone?: "error" | "warning" | "info";
   /** رسائل الحقول */
   fields?: Record<string, string>;
+  /** ملاحظات تحقق اختياري على المحتوى: يختار العميل المتابعة أو التعديل */
+  warnings?: string[];
   /** رسالة نجاح */
   message?: string;
   /** قيم الحقول لإعادة تعبئتها بعد الخطأ */

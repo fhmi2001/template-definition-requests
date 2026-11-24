@@ -14,6 +14,10 @@ const schema = z.object({
   EMAIL_REPLY_TO: z.string().email().optional(),
   // الرابط العام للتطبيق (لصورة الشعار في البريد عبر البوابة)
   APP_URL: z.string().url().optional(),
+  // رمز واجهة الوكلاء (/api/agent/*). اختياري: بدونه تُعطَّل الواجهة وتُرجع 404.
+  AGENT_API_TOKEN: z.string().min(40, "يجب أن يكون 40 حرفاً على الأقل").optional(),
+  // قائمة عناوين IP المسموحة لواجهة الوكلاء، مفصولة بفواصل (اختياري).
+  AGENT_API_ALLOWED_IPS: z.string().optional(),
   // رمز دخول المشرف يُرسل إلى بريده الخاص في حسابه (admins.email)؛ لا يوجد بريد إدارة مشترك.
 });
 
@@ -32,6 +36,8 @@ export function env(): Env {
     EMAIL_GATEWAY_KEY: process.env.EMAIL_GATEWAY_KEY || undefined,
     EMAIL_REPLY_TO: process.env.EMAIL_REPLY_TO || undefined,
     APP_URL: process.env.APP_URL || undefined,
+    AGENT_API_TOKEN: process.env.AGENT_API_TOKEN || undefined,
+    AGENT_API_ALLOWED_IPS: process.env.AGENT_API_ALLOWED_IPS || undefined,
   });
   if (!parsed.success) {
     const details = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(" | ");

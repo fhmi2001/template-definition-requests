@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useActionState, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { bulkChangeStatusAction } from "@/actions/request-review";
+import { bulkChangeStatusAction, deleteRequestsAction } from "@/actions/request-review";
 import { initialState } from "@/lib/action-state";
 import { REJECTION_REASON_MAX, REVIEW_STATUSES, isReviewStatus, needsAuthorityRef } from "@/lib/review-status";
 import { Alert, ConfirmButton, inputClass } from "@/components/ui";
@@ -102,6 +102,7 @@ export function BulkBar() {
   const { selected, allResults, pageIds, total, filters, selectAllResults, clear } = useSelection();
   const t = useT();
   const [state, action] = useActionState(bulkChangeStatusAction, initialState);
+  const [delState, delAction] = useActionState(deleteRequestsAction, initialState);
   const [status, setStatus] = useState("");
   const [silent, setSilent] = useState(false);
   const [reasonLength, setReasonLength] = useState(0);
@@ -116,6 +117,11 @@ export function BulkBar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
+  useEffect(() => {
+    if (delState.ok) clear();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [delState]);
+
   const count = allResults ? total : selected.size;
   const rejecting = status === "REJECTED";
   const canOfferAll = !allResults && total > pageIds.length && selected.size === pageIds.length;
@@ -124,20 +130,17 @@ export function BulkBar() {
 
   // الرسالة بعد النجاح تبقى ظاهرة حتى بعد تصفير الاختيار
   if (count === 0) {
-    return state.ok && state.message ? (
+    const done = delState.ok && delState.message ? delState.message : state.ok && state.message ? state.message : null;
+    return done ? (
       <div role="status" className="sticky bottom-4 z-10">
-        <Alert tone="success">{state.message}</Alert>
+        <Alert tone="success">{done}</Alert>
       </div>
     ) : null;
   }
 
   return (
-    <form
-      action={action}
-      noValidate
-      aria-label={t("rq.bulk.title")}
-      className="sticky bottom-4 z-10 flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 shadow-[0_16px_40px_-20px_rgb(0_0_0/0.45)]"
-    >
+    <div className="sticky bottom-4 z-10 flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 shadow-[0_16px_40px_-20px_rgb(0_0_0/0.45)]">
+    <form action={action} noValidate aria-label={t("rq.bulk.title")} className="flex flex-col gap-4">
       <input type="hidden" name="scope" value={allResults ? "all" : "ids"} />
       {allResults ? <input type="hidden" name="filters" value={filters} /> : [...selected].map((id) => <input key={id} type="hidden" name="ids" value={id} />)}
 
@@ -231,11 +234,23 @@ export function BulkBar() {
           variant={rejecting ? "danger" : "primary"}
           pendingText={t("rq.d.saving")}
           disabled={!status || tooMany || tooManyToNotify}
-          message={status ? t(silent ? "rq.bulk.confirmSilent" : "rq.bulk.confirm", { n: count, status: isReviewStatus(status) ? t(`rv.${status}`) : status }) : ""}
+          message={isReviewStatus(status) ? t(silent ? "rq.bulk.confirmSilent" : "rq.bulk.confirm", { n: count, status: t(`rv.${status}`) }) : ""}
         >
           {t("rq.bulk.apply", { n: count })}
         </ConfirmButton>
       </div>
     </form>
+
+    <form action={delAction} noValidate aria-label={t("rq.del.title")} className="flex flex-col gap-2 border-t border-hair pt-4">
+      <input type="hidden" name="scope" value={allResults ? "all" : "ids"} />
+      {allResults ? <input type="hidden" name="filters" value={filters} /> : [...selected].map((id) => <input key={id} type="hidden" name="ids" value={id} />)}
+      {delState.error ? <Alert tone={delState.tone ?? "error"}>{delState.error}</Alert> : null}
+      <div>
+        <ConfirmButton variant="danger" pendingText={t("rq.del.working")} disabled={tooMany} message={t("rq.del.confirm", { n: count })}>
+          {t("rq.del.apply", { n: count })}
+        </ConfirmButton>
+      </div>
+    </form>
+    </div>
   );
 }
