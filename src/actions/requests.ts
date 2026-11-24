@@ -23,6 +23,7 @@ import {
   purgeAbandonedDrafts,
   requestPath,
 } from "@/server/requests";
+import { reviewContent } from "@/lib/content-review";
 import {
   TEMPLATE_MAX_LENGTH,
   charCount,
@@ -186,6 +187,17 @@ export async function saveContentAction(draftId: string, _prev: ActionState, for
   if (!evaluation.ok) {
     const failed = evaluation.rules.filter((r) => r.status === "fail" || r.status === "pending").map((r) => msg(t, r.title));
     return { error: t("req.err.rulesFailed", { list: failed }) };
+  }
+  // تحقق اختياري من المحتوى: يُعرض للعميل مرة، وله أن يؤكد المتابعة أو يعدّل
+  if (formData.get("confirmReview") !== "1") {
+    const findings = reviewContent(text, found.draft.senderType);
+    if (findings.length) {
+      return {
+        error: t("req.review.intro"),
+        tone: "warning",
+        warnings: findings.map((f) => t(`req.review.${f}`)),
+      };
+    }
   }
   // فحص التكرار هنا أيضاً (لا في المراجعة فقط): يعرف العميل وهو يكتب النص أن طلباً مطابقاً قائم
   const duplicate = await findDuplicateRequest({ ...found.draft, content: text });

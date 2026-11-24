@@ -311,13 +311,17 @@ export function ContentEditor({
 
   const setSpec = (i: number, patch: Partial<VariableSpec>) => setSpecs((prev) => prev.map((s, k) => (k === i ? { ...s, ...patch } : s)));
 
-  function payload() {
+  function payload(confirmReview = false) {
     const fd = new FormData();
+    if (confirmReview) fd.set("confirmReview", "1");
     fd.set("content", text);
     fd.set("variables", JSON.stringify(specs));
     return fd;
   }
   const next = () => startTransition(() => saveAction(payload()));
+  const confirmNext = () => startTransition(() => saveAction(payload(true)));
+  const [reviewDismissed, setReviewDismissed] = useState<unknown>(null);
+  const showReview = !!saveState.warnings?.length && reviewDismissed !== saveState;
   async function saveDraft() {
     setDrafting(true);
     // يحفظ آخر التغييرات ثم يعلّم المسودة «للعودة لاحقاً» حتى لا تُحذف عند الخروج
@@ -740,7 +744,22 @@ export function ContentEditor({
 
       {/* ---------------- الأزرار ---------------- */}
       <div className="flex flex-col gap-3 lg:col-start-1">
-        {saveState.error ? <Alert tone={saveState.tone ?? "error"}>{saveState.error}</Alert> : null}
+        {showReview ? (
+          <Alert tone="warning">
+            <p>{saveState.error}</p>
+            <ul className="mt-2 list-disc ps-5">
+              {saveState.warnings!.map((w) => <li key={w}>{w}</li>)}
+            </ul>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" onClick={() => setReviewDismissed(saveState)} disabled={busy} className={buttonClass("secondary")}>
+                {t("req.review.edit")}
+              </button>
+              <button type="button" onClick={confirmNext} disabled={busy} className={buttonClass("primary")}>
+                {saving ? t("common.saving") : t("req.review.confirm")}
+              </button>
+            </div>
+          </Alert>
+        ) : saveState.error && !saveState.warnings ? <Alert tone={saveState.tone ?? "error"}>{saveState.error}</Alert> : null}
         {showSavedLater ? <Alert tone="success">{t("req.ok.draftSaved")}</Alert> : null}
         <StepFooter backHref={backHref} backLabel={fromReview ? t("review.back") : t("common.previous")}>
           <button type="button" onClick={() => void saveDraft()} disabled={busy} className={buttonClass("secondary")}>
