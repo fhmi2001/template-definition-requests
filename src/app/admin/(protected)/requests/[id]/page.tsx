@@ -13,7 +13,7 @@ import { messageSignature, sanitizeSpecs } from "@/lib/template-rules";
 import { uuidSchema } from "@/lib/validation";
 import { RequestDetails } from "@/app/(user)/request/request-details";
 import { AutoRefresh } from "../../imports/[id]/auto-refresh";
-import { ResendEmailButton, StatusForm } from "./review-forms";
+import { DeleteRequestForm, ResendEmailButton, StatusForm } from "./review-forms";
 import { RevealOnUpdate, StatusBadge } from "@/components/status-motion";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -128,6 +128,14 @@ export default async function RequestReviewPage({ params }: { params: Promise<{ 
             <p className="text-[13px] leading-5 text-muted">
               {recipient ? t("rq.d.emailTo", { email: `\u2068${recipient}\u2069`, lang: t(`lang.${reqLocale}`) }) : t("rq.d.noEmail")}
             </p>
+          </section>
+
+          <section aria-labelledby="delete-title" className={card}>
+            <h2 id="delete-title" className="text-lg font-bold">
+              {t("rq.del.title")}
+            </h2>
+            <p className="text-[13px] leading-5 text-muted">{t("rq.del.note")}</p>
+            <DeleteRequestForm requestId={r.id} refText={referenceText(r.referenceNo)} />
           </section>
 
           <section aria-labelledby="history-title" className={card}>

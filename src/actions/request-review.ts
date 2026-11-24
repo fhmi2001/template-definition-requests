@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { db } from "@/server/db";
 import { audit } from "@/server/audit";
@@ -168,4 +169,57 @@ export async function bulkChangeStatusAction(_prev: ActionState, formData: FormD
   if (noRef.length) parts.push(t("rq.bulk.skipNoRef", { n: noRef.length }));
   if (conflicts) parts.push(t("rq.bulk.skipConflict", { n: conflicts }));
   return { ok: true, message: parts.join(" · ") };
+}
+
+/**
+ * حذف نهائي لطلب أو عدة طلبات مقدَّمة: المحدَّد بالنقر (ids) أو كل نتائج البحث الحالية (scope=all مع الفلاتر).
+ * يُحذف معها سجل الحالات والمرفقات (cascade). لا يُرسل إشعار للعميل. كل طلب محذوف يُسجَّل في التدقيق بلقطة من بياناته.
+ * after=list: بعد حذف طلب من صفحة تفاصيله نعود لقائمة الطلبات.
+ */
+export async function deleteRequestsAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { admin } = await requireAdmin();
+  const { t } = await getT();
+
+  let where: Prisma.TemplateRequestWhereInput;
+  if (formData.get("scope") === "all") {
+    where = buildWhere(parseFilters(Object.fromEntries(new URLSearchParams(String(formData.get("filters") ?? "")))));
+  } else {
+    const ids = [...new Set(formData.getAll("ids").map(String))].filter((v) => uuidSchema.safeParse(v).success);
+    if (ids.length === 0) return { error: t("rq.bulk.err.none") };
+    if (ids.length > BULK_MAX) return { error: t("rq.bulk.err.tooMany", { max: BULK_MAX }) };
+    where = { id: { in: ids }, status: "SUBMITTED" };
+  }
+
+  const targets = await db.templateRequest.findMany({
+    where,
+    take: BULK_MAX + 1,
+    orderBy: [{ submittedAt: "asc" }, { referenceNo: "asc" }],
+    select: { id: true, referenceNo: true, senderName: true, templateName: true, reviewStatus: true, authorityRef: true, clientId: true },
+  });
+  if (targets.length === 0) return { error: t("rq.err.notFound") };
+  if (targets.length > BULK_MAX) return { error: t("rq.bulk.err.tooMany", { max: BULK_MAX }) };
+
+  const res = await db.templateRequest.deleteMany({ where: { id: { in: targets.map((r) => r.id) }, status: "SUBMITTED" } });
+  const ip = (await requestMeta()).ip;
+  for (const r of targets) {
+    await audit({
+      adminId: admin.id,
+      action: "request.delete",
+      entityType: "template_request",
+      entityId: r.id,
+      metadata: {
+        referenceNo: r.referenceNo,
+        senderName: r.senderName,
+        templateName: r.templateName,
+        reviewStatus: r.reviewStatus,
+        authorityRef: r.authorityRef,
+        clientId: r.clientId,
+        ...(formData.get("scope") === "all" ? { bulk: true } : {}),
+      },
+      ip,
+    });
+  }
+  revalidatePath("/admin/requests");
+  if (formData.get("after") === "list") redirect("/admin/requests");
+  return { ok: true, message: t("rq.del.ok", { n: res.count }) };
 }
