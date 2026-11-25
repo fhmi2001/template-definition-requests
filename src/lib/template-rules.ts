@@ -237,6 +237,10 @@ export const hasWord = (s: string) => /\p{L}[\p{L}\p{M}]+/u.test(s);
  * هل ينتهي النص (قبل المتغير) برابط https:// كامل ملاصق للمتغير بلا مسافة؟
  * مثال صحيح: «...https://example.com/order?id=» ثم #Var2#. أما #Var2# وحده بعد مسافة أو نص فلا يصح.
  */
+/** الرابط الأساسي (https://host[:port]) من الرابط الملاصق قبل المتغير، أو null. هو اسم/عينة متغير Link. */
+export const linkBase = (before: string): string | null =>
+  before.match(/(https:\/\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?::\d+)?)[^\s]*$/i)?.[1] ?? null;
+
 export const hasLinkPrefix = (before: string) => /https:\/\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?::\d+)?[^\s]*$/i.test(before);
 
 // -----------------------------------------------------------------------------

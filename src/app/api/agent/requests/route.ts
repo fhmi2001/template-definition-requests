@@ -72,7 +72,7 @@ export async function GET(request: Request) {
         content: r.content,
         /** النص كما يُلصق في Mobily (مع سطر Client Name للتوعوي). */
         message: composeMessage(r.content ?? "", messageSignature(r.senderType, r.awarenessClientName)),
-        variables: mobilyVariables(r.variables),
+        variables: mobilyVariables(r.variables, r.content),
       },
     })),
   });

@@ -44,12 +44,8 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         authorityRef: true,
         senderName: true,
         senderType: true,
-        templateName: true,
         customerType: true,
         client: { select: { id: true, name: true } },
-        user: { select: { email: true } },
-        // أرقام المنشأة من بيانات المرسل المستوردة من ملف الإكسل
-        sender: { select: { enterpriseUnifiedNumber: true, crNumber: true } },
       },
     }),
     db.templateRequest.count({ where }),
@@ -191,21 +187,19 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
       ) : (
         <BulkProvider pageIds={requests.map((r) => r.id)} total={total} filters={filtersQuery(f, { page: 1 }).slice(1)}>
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table aria-labelledby="rq-title" className="w-full min-w-[1180px] border-collapse text-sm">
+          <table aria-labelledby="rq-title" className="w-full min-w-[760px] table-auto border-collapse text-sm">
             <thead>
               <tr className="border-b border-line bg-canvas text-[13px] text-ink-2">
-                <th scope="col" className="w-12 px-4 py-3">
+                <th scope="col" className="w-10 px-3 py-3">
                   <HeadCheck />
                 </th>
-                <th scope="col" className="px-4 py-3 font-semibold">{t("rq.th.ref")}</th>
-                <th scope="col" className="px-4 py-3 font-semibold">{t("rq.th.submitted")}</th>
-                <th scope="col" className="px-4 py-3 font-semibold">{t("col.client")}</th>
-                <th scope="col" className="px-4 py-3 font-semibold">{t("col.senderName")}</th>
-                <th scope="col" className="px-4 py-3 font-semibold">{t("ent.title")}</th>
-                <th scope="col" className="px-4 py-3 font-semibold">{t("template.name")}</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Customer Type</th>
-                <th scope="col" className="px-4 py-3 font-semibold">{t("col.status")}</th>
-                <th scope="col" className="px-4 py-3 font-semibold">
+                <th scope="col" className="px-3 py-3 font-semibold">{t("rq.th.ref")}</th>
+                <th scope="col" className="px-3 py-3 font-semibold">{t("rq.th.submitted")}</th>
+                <th scope="col" className="px-3 py-3 font-semibold">{t("col.client")}</th>
+                <th scope="col" className="px-3 py-3 font-semibold">{t("col.senderName")}</th>
+                <th scope="col" className="px-3 py-3 font-semibold">Customer Type</th>
+                <th scope="col" className="px-3 py-3 font-semibold">{t("col.status")}</th>
+                <th scope="col" className="px-3 py-3 font-semibold">
                   <span className="sr-only">{t("common.actions")}</span>
                 </th>
               </tr>
@@ -213,48 +207,24 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
             <tbody>
               {requests.map((r) => (
                 <tr key={r.id} className="border-b border-hair align-top last:border-0">
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-3">
                     <RowCheck id={r.id} refText={referenceText(r.referenceNo)} />
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3">
+                  <td className="whitespace-nowrap px-3 py-3">
                     <Link href={`/admin/requests/${r.id}`} dir="ltr" className="font-mono font-semibold text-brand-600 underline-offset-4 hover:underline">
                       {referenceText(r.referenceNo)}
                     </Link>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-[13px] text-muted">{formatDateTime(r.submittedAt, locale)}</td>
-                  <td className="px-4 py-3 leading-6">
-                    <div className="font-semibold">{r.client.name}</div>
-                    {r.user ? (
-                      <div dir="ltr" className="font-mono text-[13px] text-muted">
-                        {r.user.email}
-                      </div>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3 leading-6">
+                  <td className="whitespace-nowrap px-3 py-3 text-[13px] text-muted">{formatDateTime(r.submittedAt, locale)}</td>
+                  <td className="px-3 py-3 font-semibold leading-6">{r.client.name}</td>
+                  <td className="px-3 py-3 leading-6">
                     <div dir="ltr" className="font-mono font-medium">
                       {r.senderName}
                     </div>
                     {r.senderType ? <div className="text-[13px] text-muted">{senderTypeDisplay(t, r.senderType)}</div> : null}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-[13px] leading-6">
-                    <div>
-                      <span className="text-muted">{t("ent.unifiedShort")}</span>{" "}
-                      <span dir="ltr" className="font-mono text-ink">
-                        {r.sender?.enterpriseUnifiedNumber ?? "—"}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-muted">{t("ent.crShort")}</span>{" "}
-                      <span dir="ltr" className="font-mono text-ink">
-                        {r.sender?.crNumber ?? "—"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="max-w-[260px] px-4 py-3 leading-6">
-                    <div className="break-words">{r.templateName ?? "—"}</div>
-                  </td>
-                  <td className="px-4 py-3">{r.customerType ? customerTypeLabel(t, r.customerType) : "—"}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-3">{r.customerType ? customerTypeLabel(t, r.customerType) : "—"}</td>
+                  <td className="px-3 py-3">
                     {r.reviewStatus ? (
                       <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] font-semibold ${REVIEW_STYLE[r.reviewStatus]}`}>
                         {t(`rv.${r.reviewStatus}`)}
@@ -266,7 +236,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                     {/* آخر طلب غيّر المشرف حالته: يُظلَّل الصف ويظهر «كانت: …» لثوانٍ */}
                     <RecentChangeNote id={r.id} status={r.reviewStatus} labels={statusLabels} wasLabel={t("rq.was")} />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-3">
                     <div className="flex flex-col items-start gap-2">
                       <QuickStatus requestId={r.id} refText={referenceText(r.referenceNo)} current={r.reviewStatus} authorityRef={r.authorityRef} />
                       <Link href={`/admin/requests/${r.id}`} className="font-semibold text-brand-600 underline-offset-4 hover:underline">
