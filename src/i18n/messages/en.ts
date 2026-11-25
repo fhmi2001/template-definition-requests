@@ -964,7 +964,7 @@ export const en: Record<MessageKey, Entry> = {
   "mail.footer": "This is an automated message from the Template Definition Requests platform. Please don't reply.",
   "mail.digest.received.subject": "We received your {n} requests: {refs}",
   "mail.digest.received.heading": "Your {n} template definition requests were received",
-  "mail.digest.received.body": "We received the {n} requests below in one batch. Each will be reviewed and submitted to the Communications Authority for approval, and we'll email you when their status changes.",
+  "mail.digest.received.body": "We received the {n} requests below in one batch. Each will be reviewed and sent to the service provider for approval, and we'll email you when their status changes.",
   "mail.digest.status.subject": "Status update for {n} requests: {refs}",
   "mail.digest.status.heading": "The status of {n} of your requests has changed",
   "mail.digest.status.body": "Here are the latest status changes for {n} of your requests, sent together in one email.",
